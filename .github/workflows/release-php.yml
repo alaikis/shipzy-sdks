@@ -1,0 +1,21 @@
+name: release-php
+
+on:
+  push:
+    tags: ['v*.*.*', 'v*.*.*-*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: php } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.2' }
+      - run: composer install --no-progress
+      - run: composer test
+      - name: Notify Packagist
+        run: |
+          curl -sfXPOST -H 'content-type:application/json' \
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
+            -d '{"repository":{"url":"https://github.com/alaikis/shipzy-sdks"}}'

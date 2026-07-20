@@ -1,0 +1,18 @@
+name: release-go
+
+on:
+  push:
+    tags: ['v*.*.*', 'v*.*.*-*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: go } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.25' }
+      - run: go build ./...
+      - run: go test ./...
+      - name: Note
+        run: echo "Go proxy will index this tag automatically. Verify at https://pkg.go.dev/github.com/alaikis/shipzy-sdks/go"

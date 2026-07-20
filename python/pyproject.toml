@@ -1,0 +1,22 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "shipzy-sdk"
+version = "0.1.0-alpha.1"
+description = "Official Shipzy logistics platform Python SDK (early alpha, WIP)"
+authors = ["Shipzy Team"]
+license = "MIT"
+readme = "README.md"
+keywords = ["shipzy", "logistics", "sdk", "alpha", "wip"]
+packages = [{ include = "shipzy_sdk" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

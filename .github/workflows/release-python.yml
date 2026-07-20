@@ -1,0 +1,19 @@
+name: release-python
+
+on:
+  push:
+    tags: ['v*.*.*', 'v*.*.*-*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: python } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install poetry
+      - run: poetry install --no-interaction
+      - run: poetry run pytest
+      - run: poetry build
+      - run: poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}

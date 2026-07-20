@@ -1,0 +1,28 @@
+# Go
+go/dist/
+go/bin/
+go/**/*.test.out
+
+# PHP
+php/vendor/
+php/composer.lock
+php/.phpunit.result.cache
+
+# Node
+node/node_modules/
+node/dist/
+node/coverage/
+
+# Python
+python/__pycache__/
+python/.pytest_cache/
+python/*.egg-info/
+python/dist/
+python/.venv/
+**/__pycache__/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
