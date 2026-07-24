@@ -8,11 +8,15 @@ using System.Threading.Tasks;
 
 namespace Shipzy.Sdk
 {
+    public enum UserRole { Merchant, Carrier }
+
     public class ShipzyConfig
     {
         public string BaseUrl { get; set; } = "https://api.shipzy.me";
         public string Token { get; set; }
         public int TimeoutSeconds { get; set; } = 30;
+        public UserRole Role { get; set; } = UserRole.Merchant;
+        public string CarrierCode { get; set; }
     }
 
     public class ShipzyException : Exception
@@ -32,6 +36,8 @@ namespace Shipzy.Sdk
         public T Data { get; set; }
         public string Message { get; set; }
     }
+
+    // ... (types remain the same)
 
     public class EpodListItem
     {
@@ -113,9 +119,14 @@ namespace Shipzy.Sdk
         private readonly ShipzyConfig _config;
         public EpodClient(ShipzyConfig config) { _config = config; _http = new HttpClient { Timeout = TimeSpan.FromSeconds(config.TimeoutSeconds), BaseAddress = new Uri(config.BaseUrl.TrimEnd('/')) }; }
         public void SetToken(string token) { _config.Token = token; }
-        private async Task<T>> RequestAsync<T>(string path, string method = "GET", object body = null) { var req = new HttpRequestMessage(new HttpMethod(method), path); req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _config.Token); if (body != null) req.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"); var resp = await _http.SendAsync(req); var content = await resp.Content.ReadAsStringAsync(); if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized) throw new ShipzyAuthException("Unauthorized"); if (!resp.IsSuccessStatusCode) throw new ShipzyException($"HTTP {(int)resp.StatusCode}: {content}", (int)resp.StatusCode); return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); }
+        private string GetAuthHeader() {
+            if (_config.Role == UserRole.Carrier && !string.IsNullOrEmpty(_config.CarrierCode) && !string.IsNullOrEmpty(_config.Token))
+                return $"Bearer {_config.CarrierCode}:{_config.Token}";
+            return $"Bearer {_config.Token}";
+        }
+        private async Task<T>> RequestAsync<T>(string path, string method = "GET", object body = null) { var req = new HttpRequestMessage(new HttpMethod(method), path); req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", GetAuthHeader().Replace("Bearer ", "")); if (body != null) req.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"); var resp = await _http.SendAsync(req); var content = await resp.Content.ReadAsStringAsync(); if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized) throw new ShipzyAuthException("Unauthorized"); if (!resp.IsSuccessStatusCode) throw new ShipzyException($"HTTP {(int)resp.StatusCode}: {content}", (int)resp.StatusCode); return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); }
         public async Task<ApiResult<EpodListResponse>> ListAsync(int page = 1, int pageSize = 25, string status = null, string trackingNo = null) { var q = $"?page={page}&page_size={pageSize}"; if (status != null) q += $"&status={Uri.EscapeDataString(status)}"; if (trackingNo != null) q += $"&tracking_no={Uri.EscapeDataString(trackingNo)}"; return await RequestAsync<ApiResult<EpodListResponse>>($"/api/v1/shipment/epod/list{q}"); }
-        public async Task<ApiResult<EpodDetail>> GetAsync(string id) => await RequestAsync<ApiResult<EpodDetail>>($"/api/v1/shipment/epod/{id}");
+        public async Task<ApiResult<EpodDetail>> GetAsync(string id) => await RequestAsync<ApiResult<EpodDetail>>($"/api/v1/shipment/epod/${id}");
         public async Task<ApiResult<EpodDetail>> CreateAsync(object data) => await RequestAsync<ApiResult<EpodDetail>>("/api/v1/shipment/epod/create", "POST", data);
         public async Task<ApiResult<EpodDetail>> GenerateFromAsync(string orderId, object options = null) => await RequestAsync<ApiResult<EpodDetail>>("/api/v1/shipment/epod/generate-from-order", "POST", new { order_id = orderId, options });
         public async Task<ApiResult<EpodDetail>> UpdateAsync(string id, object data) => await RequestAsync<ApiResult<EpodDetail>>($"/api/v1/shipment/epod/{id}/update", "PUT", data);

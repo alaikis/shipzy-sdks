@@ -1,10 +1,14 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
+pub const UserRole = enum { merchant, carrier };
+
 pub const ShipzyConfig = struct {
     base_url: []const u8 = "https://api.shipzy.me",
     token: ?[]const u8 = null,
     timeout_seconds: u64 = 30,
+    role: UserRole = .merchant,
+    carrier_code: ?[]const u8 = null,
 };
 
 pub const EpodListItem = struct { id: []const u8, tracking_no: []const u8, status: []const u8, recipient_name: ?[]const u8, created_at: []const u8 };
@@ -58,6 +62,7 @@ pub const ShipzyClient = struct {
     order: OrderClient,
     address: AddressClient,
     carrier_epod: CarrierEpodClient,
+    role: UserRole,
 
     pub fn init(allocator: Allocator, config: ShipzyConfig) ShipzyClient {
         return .{
@@ -65,6 +70,7 @@ pub const ShipzyClient = struct {
             .order = OrderClient.init(allocator, config),
             .address = AddressClient.init(allocator, config),
             .carrier_epod = CarrierEpodClient.init(allocator, config),
+            .role = config.role,
         };
     }
     pub fn deinit(self: *ShipzyClient) void {

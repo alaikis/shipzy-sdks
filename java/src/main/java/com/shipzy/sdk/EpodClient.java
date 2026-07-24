@@ -12,6 +12,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class EpodClient {
+    public enum UserRole { MERCHANT, CARRIER }
+
     private final HttpClient httpClient;
     private final ShipzyConfig config;
     private static final Gson gson = new Gson();
@@ -26,10 +28,16 @@ public class EpodClient {
     public void setToken(String token) { this.config.setToken(token); }
     public ShipzyConfig getConfig() { return config; }
 
+    private String getAuthHeader() {
+        if (config.getRole() == UserRole.CARRIER && config.getCarrierCode() != null && !config.getCarrierCode().isEmpty())
+            return "Bearer " + config.getCarrierCode() + ":" + config.getToken();
+        return "Bearer " + config.getToken();
+    }
+
     private <T> T request(String path, String method, Class<T> responseType, Object body) throws Exception {
         var builder = HttpRequest.newBuilder()
             .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
-            .header("Authorization", "Bearer " + config.getToken())
+            .header("Authorization", getAuthHeader())
             .header("Content-Type", "application/json");
         if ("POST".equals(method)) builder.POST(HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
         else if ("PUT".equals(method)) builder.PUT(HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
@@ -59,9 +67,13 @@ public class EpodClient {
         private String baseUrl = "https://api.shipzy.me";
         private String token;
         private int timeoutSeconds = 30;
+        private UserRole role = UserRole.MERCHANT;
+        private String carrierCode;
         public String getBaseUrl() { return baseUrl; } public void setBaseUrl(String v) { this.baseUrl = v; }
         public String getToken() { return token; } public void setToken(String v) { this.token = v; }
         public int getTimeoutSeconds() { return timeoutSeconds; } public void setTimeoutSeconds(int v) { this.timeoutSeconds = v; }
+        public UserRole getRole() { return role; } public void setRole(UserRole v) { this.role = v; }
+        public String getCarrierCode() { return carrierCode; } public void setCarrierCode(String v) { this.carrierCode = v; }
     }
 
     public static class EpodListResponse { public List<EpodListItem> data; public int total; public int page; @SerializedName("page_size") public int pageSize; }
@@ -134,6 +146,9 @@ class CarrierEpodClient {
 
 class ShipzyClient {
     public final EpodClient epod; public final OrderClient order; public final AddressClient address; public final CarrierEpodClient carrierEpod;
-    public ShipzyClient(EpodClient.ShipzyConfig c) { epod = new EpodClient(c); order = new OrderClient(c); address = new AddressClient(c); carrierEpod = new CarrierEpodClient(c); }
+    public final UserRole role;
+    public ShipzyClient(EpodClient.ShipzyConfig c) { epod = new EpodClient(c); order = new OrderClient(c); address = new AddressClient(c); carrierEpod = new CarrierEpodClient(c); role = c.getRole(); }
     public void updateToken(String t) { epod.setToken(t); order.setToken(t); address.setToken(t); carrierEpod.setToken(t); }
+    public boolean isMerchant() { return role == UserRole.MERCHANT; }
+    public boolean isCarrier() { return role == UserRole.CARRIER; }
 }

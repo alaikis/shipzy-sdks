@@ -10,10 +10,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+enum class UserRole { MERCHANT, CARRIER }
+
 data class ShipzyConfig(
     val baseUrl: String = "https://api.shipzy.me",
     var token: String = "",
-    val timeoutSeconds: Int = 30
+    val timeoutSeconds: Int = 30,
+    var role: UserRole = UserRole.MERCHANT,
+    var carrierCode: String = ""
 )
 
 @Serializable
@@ -32,9 +36,10 @@ class EpodClient(private val config: ShipzyConfig) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
     fun setToken(token: String) { config.token = token }
+    private fun getAuthHeader(): String = if (config.role == UserRole.CARRIER && config.carrierCode.isNotEmpty()) "Bearer ${config.carrierCode}:${config.token}" else "Bearer ${config.token}"
     private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Get, body: Any? = null): T {
         val response = client.request(config.baseUrl.trimEnd('/') + path) {
-            this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json)
+            this.method = method; header(HttpHeaders.Authorization, getAuthHeader()); header(HttpHeaders.ContentType, ContentType.Application.Json)
             if (body != null) setBody(body)
         }
         if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
@@ -108,5 +113,8 @@ class CarrierEpodClient(private val config: ShipzyConfig) {
 
 class ShipzyClient(config: ShipzyConfig) {
     val epod = EpodClient(config); val order = OrderClient(config); val address = AddressClient(config); val carrierEpod = CarrierEpodClient(config)
+    val role = config.role
     fun updateToken(token: String) { epod.setToken(token); order.setToken(token); address.setToken(token); carrierEpod.setToken(token) }
+    fun isMerchant() = role == UserRole.MERCHANT
+    fun isCarrier() = role == UserRole.CARRIER
 }

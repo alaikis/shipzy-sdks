@@ -16,12 +16,22 @@ module Shipzy
   end
 
   class Config
-    attr_accessor :base_url, :token, :timeout_seconds
+    attr_accessor :base_url, :token, :timeout_seconds, :role, :carrier_code
 
     def initialize
       @base_url = 'https://api.shipzy.me'
       @token = nil
       @timeout_seconds = 30
+      @role = :merchant
+      @carrier_code = nil
+    end
+
+    def merchant?
+      @role == :merchant
+    end
+
+    def carrier?
+      @role == :carrier
     end
   end
 
@@ -35,6 +45,14 @@ module Shipzy
     end
 
     protected
+
+    def auth_header
+      if @config.carrier? && @config.carrier_code && @config.token
+        "Bearer #{@config.carrier_code}:#{@config.token}"
+      else
+        "Bearer #{@config.token}"
+      end
+    end
 
     def request(path, method: :get, body: nil)
       uri = URI.join(@config.base_url, path)
@@ -50,7 +68,7 @@ module Shipzy
                       end
 
       request = request_class.new(uri.request_uri)
-      request['Authorization'] = "Bearer #{@config.token}" if @config.token
+      request['Authorization'] = auth_header if @config.token
       request['Content-Type'] = 'application/json'
       request.body = body.to_json if body
 
@@ -244,9 +262,10 @@ module Shipzy
   end
 
   class ShipzyClient
-    attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address
+    attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address, :role
 
     def initialize(config = Config.new)
+      @role = config.role
       @epod = EpodClient.new(config)
       @order = OrderClient.new(config)
       @ecmr = EcmrClient.new(config)
@@ -262,6 +281,14 @@ module Shipzy
       @address.set_token(token)
       @carrier_epod.set_token(token)
       @carrier_address.set_token(token)
+    end
+
+    def merchant?
+      @role == :merchant
+    end
+
+    def carrier?
+      @role == :carrier
     end
   end
 

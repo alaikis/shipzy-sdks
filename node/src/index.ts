@@ -2,15 +2,20 @@ export const VERSION = '1.0.0';
 
 // ============ Config ============
 
+export type UserRole = 'merchant' | 'carrier';
+
 export interface ShipzyConfig {
     baseUrl: string;
     token?: string;
     timeout: number;
+    role?: UserRole;
+    carrierCode?: string;
 }
 
 export const DEFAULT_CONFIG: Partial<ShipzyConfig> = {
     baseUrl: 'https://api.shipzy.me',
     timeout: 30000,
+    role: 'merchant',
 };
 
 // ============ Errors ============
@@ -42,10 +47,17 @@ class HttpClient {
         this.config.token = token;
     }
 
+    protected getAuthHeader(): string {
+        if (this.config.role === 'carrier' && this.config.carrierCode && this.config.token) {
+            return `Bearer ${this.config.carrierCode}:${this.config.token}`;
+        }
+        return `Bearer ${this.config.token || ''}`;
+    }
+
     protected async request<T>(path: string, method: string = 'GET', body?: unknown): Promise<T> {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (this.config.token) {
-            headers['Authorization'] = `Bearer ${this.config.token}`;
+            headers['Authorization'] = this.getAuthHeader();
         }
 
         const controller = new AbortController();
@@ -391,17 +403,22 @@ export class ShipzyClient {
     public address: AddressClient;
     public carrierEpod: CarrierEpodClient;
     public carrierAddress: CarrierAddressClient;
+    public role: UserRole;
+    private config: ShipzyConfig;
 
     constructor(config: Partial<ShipzyConfig> = {}) {
-        this.epod = new EpodClient(config);
-        this.order = new OrderClient(config);
-        this.ecmr = new EcmrClient(config);
-        this.address = new AddressClient(config);
-        this.carrierEpod = new CarrierEpodClient(config);
-        this.carrierAddress = new CarrierAddressClient(config);
+        this.config = { ...DEFAULT_CONFIG, ...config } as ShipzyConfig;
+        this.role = this.config.role || 'merchant';
+        this.epod = new EpodClient(this.config);
+        this.order = new OrderClient(this.config);
+        this.ecmr = new EcmrClient(this.config);
+        this.address = new AddressClient(this.config);
+        this.carrierEpod = new CarrierEpodClient(this.config);
+        this.carrierAddress = new CarrierAddressClient(this.config);
     }
 
     updateToken(token: string): void {
+        this.config.token = token;
         this.epod.setToken(token);
         this.order.setToken(token);
         this.ecmr.setToken(token);
@@ -412,12 +429,22 @@ export class ShipzyClient {
 
     updateConfig(config: Partial<ShipzyConfig>): void {
         if (config.baseUrl) {
-            this.epod.config.baseUrl = config.baseUrl;
-            this.order.config.baseUrl = config.baseUrl;
-            this.ecmr.config.baseUrl = config.baseUrl;
-            this.address.config.baseUrl = config.baseUrl;
-            this.carrierEpod.config.baseUrl = config.baseUrl;
-            this.carrierAddress.config.baseUrl = config.baseUrl;
+            this.config.baseUrl = config.baseUrl;
         }
+        if (config.role) {
+            this.role = config.role;
+            this.config.role = config.role;
+        }
+        if (config.carrierCode) {
+            this.config.carrierCode = config.carrierCode;
+        }
+    }
+
+    isMerchant(): boolean {
+        return this.role === 'merchant';
+    }
+
+    isCarrier(): boolean {
+        return this.role === 'carrier';
     }
 }
