@@ -78,7 +78,7 @@ export class EpodClient extends HttpClient {
         return this.request(`/api/v1/shipment/epod/${id}/update`, 'PUT', data);
     }
 
-    async deliver(id: string, data: Record<string, unknown> = {}): Promise<ApiResult<EpodDetail>> {
+    async deliver(id: string, data: Record<string, unknown> = {}): Promise<ApiResult<SignUrlResponse & { sign_token_expires_at?: string }>> {
         return this.request(`/api/v1/shipment/epod/${id}/delivery`, 'POST', data);
     }
 
@@ -98,7 +98,7 @@ export class EpodClient extends HttpClient {
         return this.request(`/api/v1/shipment/epod/${id}/sign`, 'POST', {});
     }
 
-    async generatePdf(id: string): Promise<ApiResult<{ status: string; pdf_url?: string }>> {
+    async generatePdf(id: string): Promise<ApiResult<{ pdf_url?: string }>> {
         return this.request(`/api/v1/shipment/epod/${id}/pdf`, 'POST', {});
     }
 }
