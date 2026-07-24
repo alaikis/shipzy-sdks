@@ -1,5 +1,17 @@
 /**
- * EPOD 全链路测试 — Node SDK（仅服务端，不含 RN）
+ * EPOD 全链路测试 — Node SDK（含完整签收流程）
+ * 
+ * 完整流程：
+ * 1. 创建订单 + 自动生成 EPOD
+ * 2. 获取 EPOD 列表
+ * 3. 获取 EPOD 详情
+ * 4. 生成签署 URL（商户端）
+ * 5. 公开端：获取签收详情（收件人视角）
+ * 6. 公开端：记录同意（GDPR consent）
+ * 7. 公开端：采集签名（收件人签署）
+ * 8. 获取 PDF
+ * 9. 验证 EPOD
+ * 10. 更新 EPOD（白名单字段）
  */
 
 import { ShipzyClient } from './dist/index';
@@ -11,7 +23,6 @@ const API_TOKEN = process.env.SHIPZY_API_TOKEN || '';
 
 if (!API_TOKEN) {
     console.error('❌ 请设置环境变量 SHIPZY_API_TOKEN');
-    console.error('   示例: SHIPZY_API_TOKEN=your_token npx tsx test-epod-lifecycle.ts');
     process.exit(1);
 }
 
@@ -46,6 +57,7 @@ async function step(name: string, fn: () => Promise<void>) {
         await fn();
     } catch (err: any) {
         console.error(`  ❌ 步骤异常: ${err.message}`);
+        if (err.data) console.error(`     详情: ${JSON.stringify(err.data)}`);
         failed++;
     }
 }
@@ -56,7 +68,10 @@ interface TestContext {
     orderId?: string;
     epodId?: string;
     signUrl?: string;
+    signToken?: string;
+    consentId?: string;
     evidenceHash?: string;
+    pdfUrl?: string;
 }
 
 const ctx: TestContext = {};
@@ -65,47 +80,39 @@ const ctx: TestContext = {};
 
 async function testCreateOrderWithDocuments() {
     await step('1. 创建订单 + 自动生成 EPOD', async () => {
-        try {
-            const result = await client.order.createWithDocuments({
-                order: {
-                    order_no: `TEST-${Date.now()}`,
-                    recipient_name: 'Test Recipient',
-                    recipient_phone: '+31612345678',
-                    delivery_address: {
-                        full_name: 'Test Recipient',
-                        street: 'Keizersgracht',
-                        house_number: '100',
-                        postal_code: '1015 AA',
-                        city: 'Amsterdam',
-                        country_code: 'NL',
-                    },
+        const result = await client.order.createWithDocuments({
+            order: {
+                order_no: `TEST-${Date.now()}`,
+                recipient_name: 'Jan de Vries',
+                recipient_phone: '+31612345678',
+                delivery_address: {
+                    full_name: 'Jan de Vries',
+                    street: 'Keizersgracht',
+                    house_number: '100',
+                    postal_code: '1015 AA',
+                    city: 'Amsterdam',
+                    country_code: 'NL',
                 },
-                auto_generate: {
-                    epod: true,
-                    ecmr: false,
-                },
-                epod_overrides: {
-                    delivery_mode: 'carrier',
-                },
-                channels: [],
-            });
+            },
+            auto_generate: {
+                epod: true,
+                ecmr: false,
+            },
+            epod_overrides: {
+                delivery_mode: 'carrier',
+            },
+            channels: [],
+        });
 
-            assert(result.code === 0, `响应 code = ${result.code}`);
-            assertNotNil(result.data.order, '订单已创建');
-            assertNotNil(result.data.epod, 'EPOD 已自动生成');
+        assert(result.code === 0, `响应 code = ${result.code}`);
+        assertNotNil(result.data.order, '订单已创建');
+        assertNotNil(result.data.epod, 'EPOD 已自动生成');
 
-            ctx.orderId = result.data.order?.id;
-            ctx.epodId = result.data.epod?.id;
+        ctx.orderId = result.data.order?.id;
+        ctx.epodId = result.data.epod?.id;
 
-            console.log(`  📋 orderId: ${ctx.orderId}`);
-            console.log(`  📋 epodId: ${ctx.epodId}`);
-        } catch (err: any) {
-            // Try to get more details from the error
-            if (err.data) {
-                console.log(`  📋 错误详情: ${JSON.stringify(err.data)}`);
-            }
-            throw err;
-        }
+        console.log(`  📋 orderId: ${ctx.orderId}`);
+        console.log(`  📋 epodId: ${ctx.epodId}`);
     });
 }
 
@@ -120,12 +127,6 @@ async function testGetEpodList() {
         assert(result.code === 0, `响应 code = ${result.code}`);
         assert(Array.isArray(result.data.data), '返回 EPOD 数组');
         assert(result.data.total > 0, `EPOD 总数 > 0 (total=${result.data.total})`);
-
-        // Store the first EPOD ID for subsequent tests
-        if (result.data.data.length > 0 && !ctx.epodId) {
-            ctx.epodId = result.data.data[0].id;
-            console.log(`  📋 使用已有 EPOD: ${ctx.epodId}`);
-        }
     });
 }
 
@@ -146,7 +147,7 @@ async function testGetEpodDetail() {
 }
 
 async function testGenerateSignUrl() {
-    await step('4. 生成签署 URL', async () => {
+    await step('4. 生成签署 URL（商户端）', async () => {
         if (!ctx.epodId) {
             console.log('  ⚠️ 跳过（无 epodId）');
             return;
@@ -158,33 +159,100 @@ async function testGenerateSignUrl() {
         assertNotNil(result.data.sign_url, `签署 URL: ${result.data.sign_url}`);
 
         ctx.signUrl = result.data.sign_url;
+        
+        // Extract token from sign URL
+        const url = new URL(result.data.sign_url);
+        const pathParts = url.pathname.split('/');
+        ctx.signToken = pathParts[pathParts.length - 1];
+        
+        console.log(`  📋 signToken: ${ctx.signToken}`);
+        console.log(`  📋 expiresAt: ${result.data.sign_token_expires_at}`);
         assert(result.data.sign_url.includes('https://'), '签署 URL 为 HTTPS');
     });
 }
 
-async function testCaptureProof() {
-    await step('5. 采集签名证据', async () => {
-        if (!ctx.epodId) {
-            console.log('  ⚠️ 跳过（无 epodId）');
+async function testPublicSignDetail() {
+    await step('5. 公开端：获取签收详情（收件人视角）', async () => {
+        if (!ctx.signToken) {
+            console.log('  ⚠️ 跳过（无 signToken）');
             return;
         }
 
-        const result = await client.epod.captureProof(ctx.epodId, {
-            signature_data: 'base64-encoded-test-signature',
-            proof_type: 'signature',
-        });
+        // Public endpoint - no auth header needed
+        const response = await fetch(`${BASE_URL}/api/v1/open/epod/sign/${ctx.signToken}`);
+        const result = await response.json();
 
-        assert(result.code === 0, `响应 code = ${result.code}`);
-        assertNotNil(result.data.document_hash, `文档哈希: ${result.data.document_hash}`);
-        // hash_locked 取决于后端状态机，可能为 true 或 false
-        console.log(`  📋 hash_locked: ${result.data.hash_locked}`);
-
-        ctx.evidenceHash = result.data.document_hash;
+        assert(result.tracking_no !== undefined, `追踪号: ${result.tracking_no}`);
+        assert(result.recipient_name !== undefined, `收件人: ${result.recipient_name}`);
+        assert(result.signature_level_required !== undefined, `签名级别: ${result.signature_level_required}`);
+        assert(Array.isArray(result.allowed_proof_types), `允许的证明类型: ${result.allowed_proof_types?.join(', ')}`);
+        
+        console.log(`  📋 policyUrl: ${result.policy_url}`);
+        console.log(`  📋 signatureLevel: ${result.signature_level_required}`);
+        console.log(`  📋 allowedProofTypes: ${result.allowed_proof_types?.join(', ')}`);
+        
+        // Store policy version hash for consent
+        (ctx as any).policyVersionHash = result.policy_version_hash;
     });
 }
 
-async function testGetPdfStatus() {
-    await step('6. 获取 PDF 状态', async () => {
+async function testPublicSignConsent() {
+    await step('6. 公开端：记录同意（GDPR consent）', async () => {
+        if (!ctx.signToken) {
+            console.log('  ⚠️ 跳过（无 signToken）');
+            return;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/v1/open/epod/sign/${ctx.signToken}/consent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                consent_types: ['delivery'],
+                policy_version_hash: (ctx as any).policyVersionHash || '',
+            }),
+        });
+        const result = await response.json();
+
+        assert(response.status === 200, `Consent 记录成功 (HTTP ${response.status})`);
+        assertNotNil(result.consent_id, `Consent ID: ${result.consent_id}`);
+        
+        ctx.consentId = result.consent_id;
+    });
+}
+
+async function testPublicSignCapture() {
+    await step('7. 公开端：采集签名（收件人签署）', async () => {
+        if (!ctx.signToken || !ctx.consentId) {
+            console.log('  ⚠️ 跳过（缺少 signToken 或 consentId）');
+            return;
+        }
+
+        // Simulate a signature (base64 encoded)
+        const mockSignature = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        const response = await fetch(`${BASE_URL}/api/v1/open/epod/sign/${ctx.signToken}/capture`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                consent_id: ctx.consentId,
+                signature_data: mockSignature,
+                proof_type: 'signature',
+            }),
+        });
+        const result = await response.json();
+
+        assert(response.status === 200, `签名采集成功 (HTTP ${response.status})`);
+        assertNotNil(result.evidence_hash, `证据哈希: ${result.evidence_hash}`);
+        assert(result.status === 'delivered', `状态已更新为: ${result.status}`);
+        // hash_locked 取决于后端状态机，可能为 true 或 false
+        console.log(`  📋 hash_locked: ${result.hash_locked}`);
+        
+        ctx.evidenceHash = result.evidence_hash;
+    });
+}
+
+async function testGetPdf() {
+    await step('8. 获取 PDF', async () => {
         if (!ctx.epodId) {
             console.log('  ⚠️ 跳过（无 epodId）');
             return;
@@ -193,31 +261,17 @@ async function testGetPdfStatus() {
         const result = await client.epod.generatePdf(ctx.epodId);
 
         assert(result.code === 0, `响应 code = ${result.code}`);
-        // 后端返回 {pdf_url: "..."}，可能为空（PDF 未生成时）
-        console.log(`  📋 PDF URL: ${result.data.pdf_url || '(未生成)'}`);
-    });
-}
-
-async function testMarkDelivered() {
-    await step('7. 生成签收邀请（原标记送达，现为 invite_sign 流程）', async () => {
-        if (!ctx.epodId) {
-            console.log('  ⚠️ 跳过（无 epodId）');
-            return;
+        if (result.data.pdf_url) {
+            ctx.pdfUrl = result.data.pdf_url;
+            console.log(`  📋 PDF URL: ${result.data.pdf_url}`);
+        } else {
+            console.log('  📋 PDF 尚未生成（可能需等待异步渲染）');
         }
-
-        // 后端 EpodDelivery 不再直接标记 delivered，改为生成签署 URL（GDPR Art.7 合规）
-        const result = await client.epod.deliver(ctx.epodId, {
-            delivery_date: new Date().toISOString().split('T')[0],
-            remark: 'Test delivery',
-        });
-
-        assert(result.code === 0, `响应 code = ${result.code}`);
-        assertNotNil(result.data.sign_url, `签署邀请 URL: ${result.data.sign_url?.substring(0, 60)}...`);
     });
 }
 
 async function testVerifyEpod() {
-    await step('8. 验证 EPOD', async () => {
+    await step('9. 验证 EPOD', async () => {
         if (!ctx.epodId) {
             console.log('  ⚠️ 跳过（无 epodId）');
             return;
@@ -231,14 +285,14 @@ async function testVerifyEpod() {
 }
 
 async function testUpdateEpod() {
-    await step('9. 更新 EPOD（白名单字段）', async () => {
+    await step('10. 更新 EPOD（白名单字段）', async () => {
         if (!ctx.epodId) {
             console.log('  ⚠️ 跳过（无 epodId）');
             return;
         }
 
         const result = await client.epod.update(ctx.epodId, {
-            remark: 'Updated remark',
+            remark: 'Updated after signature capture',
         });
 
         assert(result.code === 0, `响应 code = ${result.code}`);
@@ -248,7 +302,7 @@ async function testUpdateEpod() {
 // ============ 主函数 ============
 
 async function main() {
-    console.log('🚀 EPOD 全链路测试开始');
+    console.log('🚀 EPOD 全链路测试开始（含完整签收流程）');
     console.log(`📍 Base URL: ${BASE_URL}`);
     console.log(`🔑 Token: ${API_TOKEN.substring(0, 8)}...`);
 
@@ -259,9 +313,10 @@ async function main() {
         await testGetEpodList();
         await testGetEpodDetail();
         await testGenerateSignUrl();
-        await testCaptureProof();
-        await testGetPdfStatus();
-        await testMarkDelivered();
+        await testPublicSignDetail();
+        await testPublicSignConsent();
+        await testPublicSignCapture();
+        await testGetPdf();
         await testVerifyEpod();
         await testUpdateEpod();
     } catch (err: any) {
