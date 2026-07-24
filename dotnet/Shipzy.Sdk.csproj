@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Shipzy.Sdk</RootNamespace>
+    <AssemblyName>Shipzy.Sdk</AssemblyName>
+    <Version>0.1.0-alpha.1</Version>
+    <Authors>Shipzy</Authors>
+    <Description>Official Shipzy logistics platform SDK for .NET</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>shipzy;logistics;epod;sdk</PackageTags>
+    <RepositoryUrl>https://github.com/alaikis/shipzy-sdks</RepositoryUrl>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+[package]
+name = "shipzy-sdk"
+version = "0.1.0-alpha.1"
+edition = "2021"
+description = "Official Shipzy logistics platform SDK for Rust"
+license = "MIT"
+repository = "https://github.com/alaikis/shipzy-sdks"
+keywords = ["shipzy", "logistics", "epod", "sdk"]
+categories = ["api-bindings"]
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+urlencoding = "2"
+tokio = { version = "1", features = ["full"] }
+
+[dev-dependencies]
+tokio-test = "0.4"

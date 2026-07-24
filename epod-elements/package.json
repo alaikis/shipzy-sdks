@@ -1,0 +1,35 @@
+{
+    "name": "@shipzy/epod-elements",
+    "version": "1.0.0",
+    "description": "Shipzy EPOD Web Elements - Framework-agnostic EPOD management components",
+    "license": "MIT",
+    "main": "./dist/epod-elements.umd.js",
+    "module": "./dist/epod-elements.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/epod-elements.mjs",
+            "require": "./dist/epod-elements.umd.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "keywords": [
+        "shipzy",
+        "epod",
+        "proof-of-delivery",
+        "web-components",
+        "custom-elements"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alaikis/user.shipzy.me",
+        "directory": "src/lib/sdk/user/epod-web-elements"
+    },
+    "bugs": {
+        "url": "https://github.com/alaikis/user.shipzy.me/issues"
+    },
+    "homepage": "https://github.com/alaikis/user.shipzy.me#readme"
+}
