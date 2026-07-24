@@ -1,64 +1,74 @@
 import { describe, it, expect } from 'vitest';
-import { EpodClient, ShipzyClient, ShipzyConfig, ShipzyError, ShipzyAuthError, VERSION } from '../src/index';
+import {
+    ShipzyClient, EpodClient, OrderClient, EcmrClient, AddressClient,
+    CarrierEpodClient, CarrierAddressClient,
+    ShipzyConfig, ShipzyError, ShipzyAuthError, VERSION
+} from '../src/index';
 
 describe('VERSION', () => {
-    it('should have a version string', () => {
-        expect(VERSION).toBeTypeOf('string');
-        expect(VERSION.length).toBeGreaterThan(0);
-    });
-});
-
-describe('EpodClient', () => {
-    it('should create with default config', () => {
-        const client = new EpodClient();
-        expect(client).toBeInstanceOf(EpodClient);
-    });
-
-    it('should create with custom config', () => {
-        const client = new EpodClient({
-            baseUrl: 'http://localhost:1417',
-            token: 'test-token',
-            timeout: 60000,
-        });
-        expect(client).toBeInstanceOf(EpodClient);
-    });
-
-    it('should update token', () => {
-        const client = new EpodClient();
-        client.setToken('new-token');
-        // No exception thrown
-        expect(true).toBe(true);
+    it('should have a version', () => {
+        expect(VERSION).toBe('1.0.0');
     });
 });
 
 describe('ShipzyClient', () => {
-    it('should create with default config', () => {
-        const client = new ShipzyClient();
-        expect(client).toBeInstanceOf(ShipzyClient);
+    it('should create with all sub-clients', () => {
+        const client = new ShipzyClient({ token: 'test' });
         expect(client.epod).toBeInstanceOf(EpodClient);
+        expect(client.order).toBeInstanceOf(OrderClient);
+        expect(client.ecmr).toBeInstanceOf(EcmrClient);
+        expect(client.address).toBeInstanceOf(AddressClient);
+        expect(client.carrierEpod).toBeInstanceOf(CarrierEpodClient);
+        expect(client.carrierAddress).toBeInstanceOf(CarrierAddressClient);
     });
 
-    it('should update token', () => {
-        const client = new ShipzyClient();
+    it('should update token across all clients', () => {
+        const client = new ShipzyClient({ token: 'old' });
         client.updateToken('new-token');
-        // No exception thrown
-        expect(true).toBe(true);
+        expect(client.epod.config.token).toBe('new-token');
+        expect(client.order.config.token).toBe('new-token');
+        expect(client.ecmr.config.token).toBe('new-token');
+        expect(client.address.config.token).toBe('new-token');
+        expect(client.carrierEpod.config.token).toBe('new-token');
+        expect(client.carrierAddress.config.token).toBe('new-token');
+    });
+
+    it('should update base URL across all clients', () => {
+        const client = new ShipzyClient({ baseUrl: 'https://old.example.com' });
+        client.updateConfig({ baseUrl: 'https://new.example.com' });
+        expect(client.epod.config.baseUrl).toBe('https://new.example.com');
+        expect(client.order.config.baseUrl).toBe('https://new.example.com');
     });
 });
 
-describe('ShipzyError', () => {
-    it('should have status code', () => {
-        const error = new ShipzyError('test error', 400);
-        expect(error.statusCode).toBe(400);
-        expect(error.message).toBe('test error');
-        expect(error.name).toBe('ShipzyError');
+describe('Sub-clients', () => {
+    it('EpodClient should have correct config', () => {
+        const client = new EpodClient({ baseUrl: 'http://localhost:1417', token: 'tok' });
+        expect(client.config.baseUrl).toBe('http://localhost:1417');
+        expect(client.config.token).toBe('tok');
+    });
+
+    it('OrderClient should have correct config', () => {
+        const client = new OrderClient({ baseUrl: 'http://localhost:1417' });
+        expect(client.config.baseUrl).toBe('http://localhost:1417');
+    });
+
+    it('EcmrClient should have correct config', () => {
+        const client = new EcmrClient({ timeout: 60000 });
+        expect(client.config.timeout).toBe(60000);
     });
 });
 
-describe('ShipzyAuthError', () => {
-    it('should always be 401', () => {
-        const error = new ShipzyAuthError('unauthorized');
-        expect(error.statusCode).toBe(401);
-        expect(error.name).toBe('ShipzyAuthError');
+describe('Errors', () => {
+    it('ShipzyError should have status code', () => {
+        const err = new ShipzyError('bad request', 400);
+        expect(err.statusCode).toBe(400);
+        expect(err.name).toBe('ShipzyError');
+    });
+
+    it('ShipzyAuthError should be 401', () => {
+        const err = new ShipzyAuthError('unauthorized');
+        expect(err.statusCode).toBe(401);
+        expect(err.name).toBe('ShipzyAuthError');
     });
 });

@@ -17,83 +17,96 @@ data class ShipzyConfig(
 )
 
 @Serializable
-data class EpodListResponse(
-    val data: List<EpodListItem> = emptyList(),
-    val total: Int = 0,
-    val page: Int = 0,
-    @SerialName("page_size") val pageSize: Int = 0
-)
-
+data class EpodListResponse(val data: List<EpodListItem> = emptyList(), val total: Int = 0, val page: Int = 0, @SerialName("page_size") val pageSize: Int = 0)
 @Serializable
-data class EpodListItem(
-    val id: String = "",
-    @SerialName("tracking_no") val trackingNo: String = "",
-    val status: String = "",
-    @SerialName("recipient_name") val recipientName: String? = null,
-    @SerialName("created_at") val createdAt: String = ""
-)
-
+data class EpodListItem(val id: String = "", @SerialName("tracking_no") val trackingNo: String = "", val status: String = "", @SerialName("recipient_name") val recipientName: String? = null, @SerialName("created_at") val createdAt: String = "")
 @Serializable
-data class EpodDetail(
-    val id: String = "",
-    @SerialName("tracking_no") val trackingNo: String = "",
-    val status: String = "",
-    @SerialName("recipient_name") val recipientName: String? = null,
-    @SerialName("recipient_phone") val recipientPhone: String? = null,
-    @SerialName("created_at") val createdAt: String = "",
-    @SerialName("updated_at") val updatedAt: String = "",
-    @SerialName("sign_url") val signUrl: String? = null,
-    @SerialName("evidence_hash") val evidenceHash: String? = null
-)
-
+data class EpodDetail(val id: String = "", @SerialName("tracking_no") val trackingNo: String = "", val status: String = "", @SerialName("recipient_name") val recipientName: String? = null, @SerialName("recipient_phone") val recipientPhone: String? = null, @SerialName("created_at") val createdAt: String = "", @SerialName("updated_at") val updatedAt: String = "", @SerialName("sign_url") val signUrl: String? = null, @SerialName("evidence_hash") val evidenceHash: String? = null)
 @Serializable
-data class SignUrlResponse(
-    @SerialName("sign_url") val signUrl: String = ""
-)
+data class SignUrlResponse(@SerialName("sign_url") val signUrl: String = "")
 
 open class ShipzyException(message: String, val statusCode: Int) : Exception(message)
 class ShipzyAuthException(message: String) : ShipzyException(message, 401)
 
 class EpodClient(private val config: ShipzyConfig) {
-
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
-    private val client = HttpClient(CIO) {
-        install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L }
-    }
-
-    fun setToken(token: String) {
-        config.token = token
-    }
-
+    private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
+    fun setToken(token: String) { config.token = token }
     private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Get, body: Any? = null): T {
         val response = client.request(config.baseUrl.trimEnd('/') + path) {
-            this.method = method
-            header(HttpHeaders.Authorization, "Bearer ${config.token}")
-            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json)
             if (body != null) setBody(body)
         }
-
         if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
         if (!response.status.isSuccess()) throw ShipzyException("HTTP ${response.status.value}", response.status.value)
-
         return response.body()
     }
-
     suspend fun list(page: Int = 1, pageSize: Int = 25, status: String? = null, trackingNo: String? = null): EpodListResponse {
-        val query = listOfNotNull(
-            "page=$page",
-            "page_size=$pageSize",
-            status?.let { "status=${java.net.URLEncoder.encode(it, "UTF-8")}" },
-            trackingNo?.let { "tracking_no=${java.net.URLEncoder.encode(it, "UTF-8")}" }
-        ).joinToString("&")
-        return request("/api/v1/shipment/epod/list?$query")
+        val q = listOfNotNull("page=$page", "page_size=$pageSize", status?.let { "status=${java.net.URLEncoder.encode(it, "UTF-8")}" }, trackingNo?.let { "tracking_no=${java.net.URLEncoder.encode(it, "UTF-8")}" }).joinToString("&")
+        return request("/api/v1/shipment/epod/list?$q")
     }
+    suspend fun get(id: String): EpodDetail = request("/api/v1/shipment/epod/$id")
+    suspend fun create(data: Any): EpodDetail = request("/api/v1/shipment/epod/create", HttpMethod.Post, data)
+    suspend fun generateFromOrder(orderId: String): EpodDetail = request("/api/v1/shipment/epod/generate-from-order", HttpMethod.Post, mapOf("order_id" to orderId))
+    suspend fun update(id: String, data: Any): EpodDetail = request("/api/v1/shipment/epod/$id/update", HttpMethod.Put, data)
+    suspend fun deliver(id: String): EpodDetail = request("/api/v1/shipment/epod/$id/delivery", HttpMethod.Post)
+    suspend fun fail(id: String, remark: String): EpodDetail = request("/api/v1/shipment/epod/$id/fail", HttpMethod.Post, mapOf("remark" to remark))
+    suspend fun generateSignUrl(id: String): SignUrlResponse = request("/api/v1/shipment/epod/$id/sign", HttpMethod.Post)
+}
 
-    suspend fun get(epodId: String): EpodDetail {
-        return request("/api/v1/shipment/epod/$epodId")
+class OrderClient(private val config: ShipzyConfig) {
+    private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
+    fun setToken(token: String) { config.token = token }
+    private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Get, body: Any? = null): T {
+        val response = client.request(config.baseUrl.trimEnd('/') + path) { this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json); if (body != null) setBody(body) }
+        if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
+        if (!response.status.isSuccess()) throw ShipzyException("HTTP ${response.status.value}", response.status.value)
+        return response.body()
     }
+    suspend fun list(page: Int = 1, pageSize: Int = 25, status: String? = null): EpodListResponse {
+        val q = listOfNotNull("page=$page", "page_size=$pageSize", status?.let { "status=${java.net.URLEncoder.encode(it, "UTF-8")}" }).joinToString("&")
+        return request("/api/v1/order/list?$q")
+    }
+    suspend fun get(id: String): Any = request("/api/v1/order/$id")
+    suspend fun create(data: Any): Any = request("/api/v1/order/create", HttpMethod.Post, data)
+    suspend fun update(id: String, data: Any): Any = request("/api/v1/order/$id/update", HttpMethod.Post, data)
+    suspend fun cancel(id: String): Any = request("/api/v1/order/$id/cancel", HttpMethod.Post)
+}
 
-    suspend fun generateSignUrl(epodId: String): SignUrlResponse {
-        return request("/api/v1/shipment/epod/$epodId/sign", HttpMethod.Post)
+class AddressClient(private val config: ShipzyConfig) {
+    private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
+    fun setToken(token: String) { config.token = token }
+    private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Post, body: Any? = null): T {
+        val response = client.request(config.baseUrl.trimEnd('/') + path) { this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json); if (body != null) setBody(body) }
+        if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
+        if (!response.status.isSuccess()) throw ShipzyException("HTTP ${response.status.value}", response.status.value)
+        return response.body()
     }
+    suspend fun list(params: Any? = null): Any = request("/api/v1/merchant/addresses/list", body = params)
+    suspend fun create(data: Any): Any = request("/api/v1/merchant/addresses/create", body = data)
+    suspend fun update(id: String, data: Any): Any = request("/api/v1/merchant/addresses/$id/update", body = data)
+    suspend fun delete(id: String): Any = request("/api/v1/merchant/addresses/$id/delete")
+}
+
+class CarrierEpodClient(private val config: ShipzyConfig) {
+    private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
+    fun setToken(token: String) { config.token = token }
+    private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Get, body: Any? = null): T {
+        val response = client.request(config.baseUrl.trimEnd('/') + path) { this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json); if (body != null) setBody(body) }
+        if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
+        if (!response.status.isSuccess()) throw ShipzyException("HTTP ${response.status.value}", response.status.value)
+        return response.body()
+    }
+    suspend fun list(page: Int = 1, pageSize: Int = 25, status: String? = null): EpodListResponse {
+        val q = listOfNotNull("page=$page", "page_size=$pageSize", status?.let { "status=${java.net.URLEncoder.encode(it, "UTF-8")}" }).joinToString("&")
+        return request("/api/v1/carrier/epod/list?$q")
+    }
+    suspend fun get(id: String): EpodDetail = request("/api/v1/carrier/epod/$id")
+    suspend fun deliver(id: String): EpodDetail = request("/api/v1/carrier/epod/$id/delivery", HttpMethod.Post)
+    suspend fun fail(id: String, remark: String): EpodDetail = request("/api/v1/carrier/epod/$id/fail", HttpMethod.Post, mapOf("remark" to remark))
+}
+
+class ShipzyClient(config: ShipzyConfig) {
+    val epod = EpodClient(config); val order = OrderClient(config); val address = AddressClient(config); val carrierEpod = CarrierEpodClient(config)
+    fun updateToken(token: String) { epod.setToken(token); order.setToken(token); address.setToken(token); carrierEpod.setToken(token) }
 }
