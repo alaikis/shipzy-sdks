@@ -407,7 +407,7 @@ export type { Product, ProductStatus, ProductCategory, CreateProductRequest, Pro
 export type { TenantAddress, TenantAddressListResponse } from './merchant-address';
 
 // ============ RN (React Native / Expo) ============
-// Re-export for convenience; users can also import from '@shipzy/sdk/rn'
-
-export { ShipzyProvider, useShipzy, EpodList, EpodDetail, EpodCreate, EpodSignature } from './rn';
-export type { EpodListProps, EpodDetailProps, EpodCreateProps, EpodSignatureProps } from './rn';
+// Note: RN module is not re-exported from the main entry point to avoid
+// requiring react-native as a dependency. Import directly from '@shipzy/sdk/rn'.
+// export { ShipzyProvider, useShipzy, EpodList, EpodDetail, EpodCreate, EpodSignature } from './rn';
+// export type { EpodListProps, EpodDetailProps, EpodCreateProps, EpodSignatureProps } from './rn';
