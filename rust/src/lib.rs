@@ -4,6 +4,7 @@ use std::time::Duration;
 
 const DEFAULT_BASE_URL: &str = "https://api.shipzy.me";
 
+#[derive(Debug, Clone)]
 pub struct ShipzyConfig {
     pub base_url: String,
     pub token: Option<String>,
@@ -153,5 +154,45 @@ impl EpodClient {
 
     pub async fn generate_sign_url(&self, epod_id: &str) -> Result<SignUrlResponse> {
         self.request(&format!("/api/v1/shipment/epod/{}/sign", epod_id), reqwest::Method::POST, None).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_with_default_config() {
+        let config = ShipzyConfig::default();
+        let client = EpodClient::new(config);
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn new_with_custom_config() {
+        let config = ShipzyConfig {
+            base_url: "http://localhost:1417".to_string(),
+            token: Some("test-token".to_string()),
+            timeout_seconds: 60,
+        };
+        let client = EpodClient::new(config);
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn config_default_values() {
+        let config = ShipzyConfig::default();
+        assert_eq!(config.base_url, "https://api.shipzy.me");
+        assert_eq!(config.token, None);
+        assert_eq!(config.timeout_seconds, 30);
+    }
+
+    #[test]
+    fn shipzy_error_display() {
+        let err = ShipzyError::Auth;
+        assert_eq!(err.to_string(), "Unauthorized");
+
+        let err = ShipzyError::Http { status: 404, message: "Not found".to_string() };
+        assert_eq!(err.to_string(), "HTTP error 404: Not found");
     }
 }
