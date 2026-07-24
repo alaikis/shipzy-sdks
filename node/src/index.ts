@@ -406,10 +406,8 @@ export type { Provider, ProviderActivation, Capability, ActivateRequest } from '
 export type { Product, ProductStatus, ProductCategory, CreateProductRequest, ProductListResponse } from './product';
 export type { TenantAddress, TenantAddressListResponse } from './merchant-address';
 
-// ============ epod-elements (browser-only) ============
-// Re-export for convenience; users can also import from '@shipzy/sdk/epod-elements'
+// ============ RN (React Native / Expo) ============
+// Re-export for convenience; users can also import from '@shipzy/sdk/rn'
 
-export { Epod, EpodApiClient, EpodAuthError, EpodApiError, epodAuth, EpodAuthManager, registerEpodElements } from './epod-elements';
-export type { ShowListOptions, ShowDetailOptions, ShowCreateOptions, ShowSignatureOptions } from './epod-elements';
-export type { EpodApiClientConfig } from './epod-elements';
-export type { AuthState } from './epod-elements';
+export { ShipzyProvider, useShipzy, EpodList, EpodDetail, EpodCreate, EpodSignature } from './rn';
+export type { EpodListProps, EpodDetailProps, EpodCreateProps, EpodSignatureProps } from './rn';
