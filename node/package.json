@@ -1,7 +1,7 @@
 {
   "name": "@shipzy/sdk",
   "version": "1.1.1",
-  "description": "Official Shipzy logistics platform SDK (early alpha, WIP)",
+  "description": "Official Shipzy logistics platform SDK",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -16,6 +16,16 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./epod-elements": {
+      "import": {
+        "types": "./dist/epod-elements/index.d.ts",
+        "default": "./dist/epod-elements/index.js"
+      },
+      "require": {
+        "types": "./dist/epod-elements/index.d.cts",
+        "default": "./dist/epod-elements/index.cjs"
+      }
     }
   },
   "files": ["dist"],
@@ -29,7 +39,7 @@
     "provenance": true
   },
   "engines": { "node": ">=20" },
-  "keywords": ["shipzy", "logistics", "sdk", "alpha", "wip"],
+  "keywords": ["shipzy", "logistics", "sdk", "epod", "web-components"],
   "license": "MIT",
   "devDependencies": {
     "tsup": "^8.0.0",
