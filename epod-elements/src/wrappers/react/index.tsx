@@ -159,3 +159,54 @@ export function EpodCreate(props: EpodCreateProps) {
         style: props.style,
     });
 }
+
+export interface EpodSignatureProps {
+    token: string;
+    baseUrl?: string;
+    lang?: string;
+    onComplete?: (data: { evidenceHash: string; epodId: string }) => void;
+    onError?: (error: { message: string }) => void;
+    className?: string;
+    style?: React.CSSProperties;
+}
+
+export function EpodSignature(props: EpodSignatureProps) {
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const { onComplete, onError, ...attrs } = props;
+
+        containerRef.current.innerHTML = '';
+        const el = document.createElement('shipzy-epod-signature');
+
+        el.setAttribute('token', attrs.token);
+        if (attrs.baseUrl) el.setAttribute('base-url', attrs.baseUrl);
+        if (attrs.lang) el.setAttribute('lang', attrs.lang);
+
+        if (onComplete) {
+            el.addEventListener('signature-complete', (e: Event) => {
+                onComplete((e as CustomEvent).detail);
+            });
+        }
+
+        if (onError) {
+            el.addEventListener('error', (e: Event) => {
+                onError((e as CustomEvent).detail);
+            });
+        }
+
+        containerRef.current.appendChild(el);
+
+        return () => {
+            el.remove();
+        };
+    }, [props.token, props.baseUrl, props.lang]);
+
+    return createElement('div', {
+        ref: containerRef,
+        className: props.className,
+        style: props.style,
+    });
+}

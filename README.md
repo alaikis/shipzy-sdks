@@ -2,16 +2,16 @@
 
 Official multi-language SDK for the Shipzy logistics platform.
 
-**Current version:** `0.1.0-alpha.1` (early alpha, API not stable)
+**Current version:** `1.1.1`
 
 ## Install
 
 | Language | Command |
 |----------|---------|
-| Go | `go get github.com/alaikis/shipzy-sdks/go@v0.1.0-alpha.1` |
-| PHP | `composer require shipzy/sdk:0.1.0-alpha.1` |
-| Node / TypeScript | `npm i @shipzy/sdk@0.1.0-alpha.1` |
-| Python | `pip install shipzy-sdk==0.1.0-alpha.1` |
+| Go | `go get github.com/alaikis/shipzy-sdks/go@v1.1.1` |
+| PHP | `composer require shipzy/sdk:1.1.1` |
+| Node / TypeScript | `npm i @shipzy/sdk@1.1.1` |
+| Python | `pip install shipzy-sdk==1.1.1` |
 
 Package names finalized in `.naming.md`.
 

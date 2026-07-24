@@ -1,6 +1,6 @@
 {
     "name": "@shipzy/epod-elements",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "description": "Shipzy EPOD Web Elements - Framework-agnostic EPOD management components",
     "license": "MIT",
     "main": "./dist/epod-elements.umd.js",

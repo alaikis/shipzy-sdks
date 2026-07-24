@@ -155,3 +155,54 @@ export class EpodCreateWrapper {
         }
     }
 }
+
+export interface EpodSignatureProps {
+    token: string;
+    baseUrl?: string;
+    lang?: string;
+    onComplete?: (data: { evidenceHash: string; epodId: string }) => void;
+    onError?: (error: { message: string }) => void;
+}
+
+export class EpodSignatureWrapper {
+    private el: HTMLElement | null = null;
+    private target: HTMLElement | null = null;
+    private props: EpodSignatureProps;
+
+    constructor(target: HTMLElement, props: EpodSignatureProps) {
+        this.target = target;
+        this.props = props;
+        this.create();
+    }
+
+    private create() {
+        if (!this.target) return;
+        this.target.innerHTML = '';
+
+        this.el = document.createElement('shipzy-epod-signature');
+        this.el.setAttribute('token', this.props.token);
+        if (this.props.baseUrl) this.el.setAttribute('base-url', this.props.baseUrl);
+        if (this.props.lang) this.el.setAttribute('lang', this.props.lang);
+
+        if (this.props.onComplete) {
+            this.el.addEventListener('signature-complete', (e: Event) => {
+                this.props.onComplete!((e as CustomEvent).detail);
+            });
+        }
+
+        if (this.props.onError) {
+            this.el.addEventListener('error', (e: Event) => {
+                this.props.onError!((e as CustomEvent).detail);
+            });
+        }
+
+        this.target.appendChild(this.el);
+    }
+
+    destroy() {
+        if (this.el) {
+            this.el.remove();
+            this.el = null;
+        }
+    }
+}

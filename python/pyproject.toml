@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "shipzy-sdk"
-version = "0.1.0-alpha.1"
+version = "1.1.1"
 description = "Official Shipzy logistics platform Python SDK (early alpha, WIP)"
 authors = ["Shipzy Team"]
 license = "MIT"

@@ -141,3 +141,49 @@ export const EpodCreate = defineComponent<EpodCreateProps>({
         return () => h('div', { ref: containerRef });
     },
 });
+
+export interface EpodSignatureProps {
+    token: string;
+    baseUrl?: string;
+    lang?: string;
+}
+
+export const EpodSignature = defineComponent<EpodSignatureProps>({
+    name: 'EpodSignature',
+    props: {
+        token: { type: String, required: true },
+        baseUrl: String,
+        lang: String,
+    },
+    emits: ['complete', 'error'],
+    setup(props, { emit }) {
+        const containerRef = ref<HTMLElement | null>(null);
+        let el: HTMLElement | null = null;
+
+        function createElement() {
+            if (!containerRef.current) return;
+            containerRef.current.innerHTML = '';
+
+            el = document.createElement('shipzy-epod-signature');
+            el.setAttribute('token', props.token);
+            if (props.baseUrl) el.setAttribute('base-url', props.baseUrl);
+            if (props.lang) el.setAttribute('lang', props.lang);
+
+            el.addEventListener('signature-complete', (e: Event) => {
+                emit('complete', (e as CustomEvent).detail);
+            });
+            el.addEventListener('error', (e: Event) => {
+                emit('error', (e as CustomEvent).detail);
+            });
+
+            containerRef.current.appendChild(el);
+        }
+
+        onMounted(createElement);
+        onUnmounted(() => { if (el) el.remove(); });
+
+        watch(() => [props.token, props.baseUrl, props.lang], createElement);
+
+        return () => h('div', { ref: containerRef });
+    },
+});

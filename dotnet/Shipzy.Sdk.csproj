@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Shipzy.Sdk</RootNamespace>
     <AssemblyName>Shipzy.Sdk</AssemblyName>
-    <Version>0.1.0-alpha.1</Version>
+    <Version>1.1.1</Version>
     <Authors>Shipzy</Authors>
     <Description>Official Shipzy logistics platform SDK for .NET</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
