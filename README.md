@@ -20,7 +20,7 @@ Package names finalized in `.naming.md`.
 - `go/` — Go SDK (`shared`, `multilang`, `tms`)
 - `php/` — PHP SDK (PSR-4, PHP 8.2+)
 - `node/` — TypeScript SDK (ESM + CJS, Node 20+)
-- `python/` — Python SDK (Python 3.10+)
+- `swift/` — Swift SDK (iOS 15+, macOS 12+)
 
 ## CI
 
