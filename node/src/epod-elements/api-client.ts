@@ -101,6 +101,27 @@ export class EpodApiClient {
             method: 'POST',
         });
     }
+
+    // ============ Tracking APIs ============
+
+    async trackingDetail(trackingNo: string): Promise<TrackingDetail> {
+        return this.request<TrackingDetail>(`/api/v1/tracking/${encodeURIComponent(trackingNo)}`);
+    }
+
+    async trackingList(params: {
+        page?: number;
+        page_size?: number;
+        status?: string;
+    } = {}): Promise<TrackingListResponse> {
+        const searchParams = new URLSearchParams();
+        if (params.page) searchParams.append('page', String(params.page));
+        if (params.page_size) searchParams.append('page_size', String(params.page_size));
+        if (params.status) searchParams.append('status', params.status);
+
+        const query = searchParams.toString();
+        const path = `/api/v1/merchant/tracking/list${query ? '?' + query : ''}`;
+        return this.request<TrackingListResponse>(path);
+    }
 }
 
 export class EpodAuthError extends Error {
@@ -110,11 +131,58 @@ export class EpodAuthError extends Error {
     }
 }
 
-export class EpodApiError extends Error {
+export interface EpodApiError extends Error {
     code: number;
-    constructor(message: string, code: number) {
-        super(message);
-        this.name = 'EpodApiError';
-        this.code = code;
-    }
+}
+
+// ============ Tracking Types ============
+
+export interface TrackingEvent {
+    remark: string;
+    event_time: string;
+    event_type: string;
+    location?: {
+        lat: number;
+        lng: number;
+        label?: string;
+    };
+}
+
+export interface TrackingDetail {
+    tracking_no: string;
+    status: string;
+    carrier_name: string;
+    latest_event?: string;
+    estimated_delivery?: string;
+    actual_delivery?: string;
+    origin?: {
+        full_name?: string;
+        city?: string;
+        country_code?: string;
+        latitude?: number;
+        longitude?: number;
+    };
+    destination?: {
+        full_name?: string;
+        city?: string;
+        country_code?: string;
+        latitude?: number;
+        longitude?: number;
+    };
+    events: TrackingEvent[];
+}
+
+export interface TrackingListItem {
+    tracking_no: string;
+    status: string;
+    carrier_name: string;
+    latest_event?: string;
+    updated_at: string;
+}
+
+export interface TrackingListResponse {
+    data: TrackingListItem[];
+    total: number;
+    page: number;
+    page_size: number;
 }
