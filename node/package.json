@@ -1,7 +1,7 @@
 {
-  "name": "@shipzy/sdk",
+  "name": "@zymeup/sdk",
   "version": "1.1.1",
-  "description": "Official Shipzy logistics platform SDK",
+  "description": "Official Zymeup logistics platform SDK",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
