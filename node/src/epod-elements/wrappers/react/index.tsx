@@ -164,8 +164,9 @@ export interface EpodSignatureProps {
     token: string;
     baseUrl?: string;
     lang?: string;
-    onComplete?: (data: { evidenceHash: string; epodId: string }) => void;
-    onError?: (error: { message: string }) => void;
+    consentRequired?: boolean;
+    onSignatureCapture?: (data: { evidenceHash: string; status: string }) => void;
+    onError?: (error: { message: string; code: number }) => void;
     className?: string;
     style?: React.CSSProperties;
 }
@@ -176,18 +177,19 @@ export function EpodSignature(props: EpodSignatureProps) {
     useEffect(() => {
         if (!containerRef.current) return;
 
-        const { onComplete, onError, ...attrs } = props;
+        const { onSignatureCapture, onError, ...attrs } = props;
 
         containerRef.current.innerHTML = '';
-        const el = document.createElement('shipzy-epod-signature');
+        const el = document.createElement('zymeup-epod-signature');
 
         el.setAttribute('token', attrs.token);
         if (attrs.baseUrl) el.setAttribute('base-url', attrs.baseUrl);
         if (attrs.lang) el.setAttribute('lang', attrs.lang);
+        el.setAttribute('consent-required', String(attrs.consentRequired !== false));
 
-        if (onComplete) {
-            el.addEventListener('signature-complete', (e: Event) => {
-                onComplete((e as CustomEvent).detail);
+        if (onSignatureCapture) {
+            el.addEventListener('signature-capture', (e: Event) => {
+                onSignatureCapture((e as CustomEvent).detail);
             });
         }
 
@@ -202,7 +204,7 @@ export function EpodSignature(props: EpodSignatureProps) {
         return () => {
             el.remove();
         };
-    }, [props.token, props.baseUrl, props.lang]);
+    }, [props.token, props.baseUrl, props.lang, props.consentRequired]);
 
     return createElement('div', {
         ref: containerRef,

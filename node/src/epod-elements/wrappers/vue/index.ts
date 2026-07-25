@@ -1,4 +1,4 @@
-import { defineComponent, h, ref, onMounted, onUnmounted, watch } from 'vue';
+﻿import { defineComponent, h, ref, onMounted, onUnmounted, watch } from 'vue';
 import '../index';
 
 export interface EpodListProps {
@@ -25,7 +25,7 @@ export const EpodList = defineComponent<EpodListProps>({
             if (!containerRef.current) return;
             containerRef.current.innerHTML = '';
 
-            el = document.createElement('shipzy-epod-list');
+            el = document.createElement('zymeup-epod-list');
             if (props.token) el.setAttribute('token', props.token);
             if (props.baseUrl) el.setAttribute('base-url', props.baseUrl);
             if (props.pageSize) el.setAttribute('page-size', String(props.pageSize));
@@ -72,7 +72,7 @@ export const EpodDetail = defineComponent<EpodDetailProps>({
             if (!containerRef.current) return;
             containerRef.current.innerHTML = '';
 
-            el = document.createElement('shipzy-epod-detail');
+            el = document.createElement('zymeup-epod-detail');
             if (props.token) el.setAttribute('token', props.token);
             if (props.baseUrl) el.setAttribute('base-url', props.baseUrl);
             el.setAttribute('epod-id', props.epodId);
@@ -118,7 +118,7 @@ export const EpodCreate = defineComponent<EpodCreateProps>({
             if (!containerRef.current) return;
             containerRef.current.innerHTML = '';
 
-            el = document.createElement('shipzy-epod-create');
+            el = document.createElement('zymeup-epod-create');
             if (props.token) el.setAttribute('token', props.token);
             if (props.baseUrl) el.setAttribute('base-url', props.baseUrl);
             if (props.orderId) el.setAttribute('order-id', props.orderId);
@@ -146,6 +146,7 @@ export interface EpodSignatureProps {
     token: string;
     baseUrl?: string;
     lang?: string;
+    consentRequired?: boolean;
 }
 
 export const EpodSignature = defineComponent<EpodSignatureProps>({
@@ -154,8 +155,9 @@ export const EpodSignature = defineComponent<EpodSignatureProps>({
         token: { type: String, required: true },
         baseUrl: String,
         lang: String,
+        consentRequired: { type: Boolean, default: true },
     },
-    emits: ['complete', 'error'],
+    emits: ['signature-capture', 'error'],
     setup(props, { emit }) {
         const containerRef = ref<HTMLElement | null>(null);
         let el: HTMLElement | null = null;
@@ -164,13 +166,14 @@ export const EpodSignature = defineComponent<EpodSignatureProps>({
             if (!containerRef.current) return;
             containerRef.current.innerHTML = '';
 
-            el = document.createElement('shipzy-epod-signature');
+            el = document.createElement('zymeup-epod-signature');
             el.setAttribute('token', props.token);
             if (props.baseUrl) el.setAttribute('base-url', props.baseUrl);
             if (props.lang) el.setAttribute('lang', props.lang);
+            el.setAttribute('consent-required', String(props.consentRequired));
 
-            el.addEventListener('signature-complete', (e: Event) => {
-                emit('complete', (e as CustomEvent).detail);
+            el.addEventListener('signature-capture', (e: Event) => {
+                emit('signature-capture', (e as CustomEvent).detail);
             });
             el.addEventListener('error', (e: Event) => {
                 emit('error', (e as CustomEvent).detail);
@@ -182,7 +185,7 @@ export const EpodSignature = defineComponent<EpodSignatureProps>({
         onMounted(createElement);
         onUnmounted(() => { if (el) el.remove(); });
 
-        watch(() => [props.token, props.baseUrl, props.lang], createElement);
+        watch(() => [props.token, props.baseUrl, props.lang, props.consentRequired], createElement);
 
         return () => h('div', { ref: containerRef });
     },
