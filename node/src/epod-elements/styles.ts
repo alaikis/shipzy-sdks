@@ -116,6 +116,42 @@ export const epodSharedStyles = `
 .epod-status-delivered { background: #dcfce7; color: #166534; }
 .epod-status-failed { background: #fee2e2; color: #991b1b; }
 .epod-status-partial { background: #ffedd5; color: #9a3412; }
+.epod-status-in_transit { background: #dbeafe; color: #1e40af; }
+.epod-status-out_for_delivery { background: #ffedd5; color: #9a3412; }
+.epod-status-exception { background: #fee2e2; color: #991b1b; }
+
+.epod-timeline {
+    position: relative;
+    padding-left: 24px;
+    border-left: 2px solid var(--epod-border);
+}
+
+.epod-timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.epod-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.epod-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--epod-primary);
+    border: 2px solid var(--epod-bg);
+}
+
+.epod-timeline-time {
+    font-size: 12px;
+    color: var(--epod-text-secondary);
+    margin-top: 4px;
+}
 
 .epod-pagination {
     display: flex;
