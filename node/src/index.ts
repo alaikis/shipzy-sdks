@@ -374,7 +374,7 @@ export class CarrierAddressClient extends HttpClient {
 
 // ============ VERSION ============
 
-export const VERSION = '1.1.1';
+export const VERSION = '1.2.0';
 
 // ============ Module Imports ============
 
