@@ -131,8 +131,13 @@ export class EpodAuthError extends Error {
     }
 }
 
-export interface EpodApiError extends Error {
+export class EpodApiError extends Error {
     code: number;
+    constructor(message: string, code: number) {
+        super(message);
+        this.name = 'EpodApiError';
+        this.code = code;
+    }
 }
 
 // ============ Tracking Types ============
