@@ -39,6 +39,24 @@ export class HttpClient {
         this.config.token = token;
     }
 
+    setConfig(config: Partial<ShipzyConfig>): void {
+        if (config.baseUrl) {
+            this.config.baseUrl = config.baseUrl;
+        }
+        if (config.token) {
+            this.config.token = config.token;
+        }
+        if (config.timeout) {
+            this.config.timeout = config.timeout;
+        }
+        if (config.role) {
+            this.config.role = config.role;
+        }
+        if (config.carrierCode) {
+            this.config.carrierCode = config.carrierCode;
+        }
+    }
+
     protected getAuthHeader(): string {
         if (this.config.role === 'carrier' && this.config.carrierCode && this.config.token) {
             return `Bearer ${this.config.carrierCode}:${this.config.token}`;

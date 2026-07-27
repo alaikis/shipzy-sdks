@@ -7,7 +7,7 @@ import {
 
 describe('VERSION', () => {
     it('should have a version', () => {
-        expect(VERSION).toBe('1.0.0');
+        expect(VERSION).toBe('1.2.0');
     });
 });
 

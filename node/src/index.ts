@@ -455,6 +455,19 @@ export class ShipzyClient {
         if (config.carrierCode) {
             this.config.carrierCode = config.carrierCode;
         }
+        // 同步更新所有子客户端的配置
+        this.epod.setConfig(config);
+        this.order.setConfig(config);
+        this.ecmr.setConfig(config);
+        this.address.setConfig(config);
+        this.carrierEpod.setConfig(config);
+        this.carrierAddress.setConfig(config);
+        if (this.pickupPoints) this.pickupPoints.setConfig(config);
+        if (this.parcel) this.parcel.setConfig(config);
+        if (this.ageVerification) this.ageVerification.setConfig(config);
+        if (this.activation) this.activation.setConfig(config);
+        if (this.product) this.product.setConfig(config);
+        if (this.merchantAddress) this.merchantAddress.setConfig(config);
     }
 
     isMerchant(): boolean {
