@@ -1,26 +1,38 @@
-﻿# Shipzy SDK
+﻿# Zymeup SDK
 
-Official multi-language SDK for the Shipzy logistics platform.
+Official multi-language SDK for the Zymeup logistics platform.
 
-**Current version:** `1.1.1`
+**Current version:** `1.2.0`
 
 ## Install
 
 | Language | Command |
 |----------|---------|
-| Go | `go get github.com/alaikis/shipzy-sdks/go@v1.1.1` |
-| PHP | `composer require shipzy/sdk:1.1.1` |
-| Node / TypeScript | `npm i @shipzy/sdk@1.1.1` |
-| Python | `pip install shipzy-sdk==1.1.1` |
-
-Package names finalized in `.naming.md`.
+| Go | `go get github.com/alaikis/shipzy-sdks/go@v1.2.0` |
+| PHP | `composer require zymeup/zymeup-sdk:1.2.0` |
+| Node / TypeScript | `npm i @zymeup/sdk@1.2.0` |
+| Python | `pip install zymeup-sdk==1.2.0` |
 
 ## Structure
 
 - `go/` — Go SDK (`shared`, `multilang`, `tms`)
-- `php/` — PHP SDK (PSR-4, PHP 8.2+)
+- `php/` — PHP SDK (PSR-4, PHP 8.0+)
 - `node/` — TypeScript SDK (ESM + CJS, Node 20+)
-- `swift/` — Swift SDK (iOS 15+, macOS 12+)
+  - `src/` — Core SDK (ShipzyClient, EpodClient, OrderClient, etc.)
+  - `src/epod-elements/` — Web Components (EPOD list, detail, create, login, signature)
+  - `src/rn/` — React Native components (ShipzyProvider, EpodList, EpodDetail, EpodSignature)
+
+## Features
+
+| Feature | Node.js | Go | PHP | Python |
+|---------|---------|-----|-----|--------|
+| Order Management | ✅ | ❌ | ❌ | ❌ |
+| EPOD (Electronic Proof of Delivery) | ✅ | ❌ | ❌ | ❌ |
+| ECMR (Electronic Consignment Note) | ✅ | ❌ | ❌ | ❌ |
+| Tracking | ✅ | ❌ | ❌ | ❌ |
+| Address Book | ✅ | ❌ | ❌ | ❌ |
+| Web Components | ✅ | ❌ | ❌ | ❌ |
+| React Native | ✅ | ❌ | ❌ | ❌ |
 
 ## CI
 
