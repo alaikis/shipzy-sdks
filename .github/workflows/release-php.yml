@@ -17,5 +17,5 @@ jobs:
       - name: Notify Packagist
         run: |
           curl -sfXPOST -H 'content-type:application/json' \
-            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
-            -d '{"repository":{"url":"https://github.com/alaikis/shipzy-sdks"}}'
+            "https://packagist.org/api/update-package" \
+            -d "{\"repository\":{\"url\":\"https://github.com/alaikis/shipzy-sdks\"},\"username\":\"${{ secrets.PACKAGIST_USERNAME }}\",\"apiToken\":\"${{ secrets.PACKAGIST_TOKEN }}\"}" || echo "Packagist notification failed (non-critical)"
