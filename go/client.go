@@ -1,7 +1,6 @@
 package zymeup
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 )
