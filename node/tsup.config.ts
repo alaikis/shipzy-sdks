@@ -14,14 +14,6 @@ export default defineConfig([
     dts: true,
     sourcemap: true,
     outDir: 'dist/epod-elements',
-  },
-  {
-    entry: ['src/rn/index.tsx'],
-    format: ['esm', 'cjs'],
-    dts: true,
-    sourcemap: true,
-    outDir: 'dist/rn',
     external: ['react', 'react-native', 'react-native-webview'],
-    jsxFactory: 'React.createElement',
   },
 ])

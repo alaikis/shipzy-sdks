@@ -25,7 +25,7 @@ export class EpodSignatureComponent extends EpodBaseComponent {
     }
 
     private token: string = '';
-    private lang: string = 'en';
+    private _lang: string = 'en';
     private consentRequired: boolean = true;
     private detail: SignDetail | null = null;
     private loading = true;
@@ -43,7 +43,7 @@ export class EpodSignatureComponent extends EpodBaseComponent {
             this.loadDetail();
         }
         if (name === 'lang' && newValue) {
-            this.lang = newValue;
+            this._lang = newValue;
         }
         if (name === 'consent-required') {
             this.consentRequired = newValue !== 'false';
