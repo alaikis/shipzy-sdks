@@ -1,6 +1,6 @@
 ﻿package tms
 
-import "github.com/alaikis/shipzy-sdks/go/shared"
+import "github.com/zymeup/zymeup-sdk-go/shared"
 
 type Shipment struct {
 	ID              string
