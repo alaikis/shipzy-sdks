@@ -1,3 +1,3 @@
-module github.com/zymeup/zymeup-sdk-go
+module github.com/alaikis/shipzy-sdks/go
 
 go 1.21
