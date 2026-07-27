@@ -13,5 +13,8 @@
         "psr-4": {
             "Zymeup\\SDK\\": "src/"
         }
+    },
+    "scripts": {
+        "test": "echo 'No tests defined' && exit 0"
     }
 }
