@@ -10,7 +10,7 @@ Official multi-language SDK for the Zymeup logistics platform.
 |----------|---------|
 | Go | `go get github.com/alaikis/shipzy-sdks/go@v1.2.0` |
 | PHP | `composer require alaikas/zymeup-sdk:1.2.0` |
-| Node / TypeScript | `npm i @alaikas/zymeup-sdk@1.2.0` |
+| Node / TypeScript | `npm i @zymeup/sdk@1.2.0` |
 | Python | `pip install zymeup-sdk==1.2.0` |
 
 ## Structure
