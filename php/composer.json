@@ -1,5 +1,5 @@
 {
-    "name": "zymeup/zymeup-sdk",
+    "name": "alaikas/zymeup-sdk",
     "description": "Official Zymeup logistics platform SDK for PHP",
     "version": "1.2.0",
     "type": "library",

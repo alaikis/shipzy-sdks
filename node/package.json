@@ -1,5 +1,5 @@
 {
-  "name": "@zymeup/sdk",
+  "name": "@alaikas/zymeup-sdk",
   "version": "1.2.0",
   "description": "Official Zymeup logistics platform SDK",
   "type": "module",

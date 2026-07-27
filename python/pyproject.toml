@@ -3,14 +3,14 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "shipzy-sdk"
-version = "1.1.1"
-description = "Official Shipzy logistics platform Python SDK (early alpha, WIP)"
-authors = ["Shipzy Team"]
+name = "zymeup-sdk"
+version = "1.2.0"
+description = "Official Zymeup logistics platform Python SDK"
+authors = ["Zymeup Team"]
 license = "MIT"
 readme = "README.md"
-keywords = ["shipzy", "logistics", "sdk", "alpha", "wip"]
-packages = [{ include = "shipzy_sdk" }]
+keywords = ["zymeup", "logistics", "sdk"]
+packages = [{ include = "zymeup_sdk" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
