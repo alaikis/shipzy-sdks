@@ -79,5 +79,9 @@
   },
   "dependencies": {
     "react": "^19.2.8"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "author": ""
 }

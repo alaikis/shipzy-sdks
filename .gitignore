@@ -12,6 +12,7 @@ php/.phpunit.result.cache
 node/node_modules/
 node/dist/
 node/coverage/
+node/.npmrc
 
 # Python
 python/__pycache__/
