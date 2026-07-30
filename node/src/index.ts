@@ -385,6 +385,9 @@ import { AgeVerificationClient } from './age-verification';
 import { ActivationClient } from './activation';
 import { ProductClient } from './product';
 import { MerchantAddressClient } from './merchant-address';
+import { FinanceClient } from './finance';
+import { ComplianceClient } from './compliance';
+import { CPSCClient } from './lib/cpsc/client';
 import { DELIVERY_MODES, NOTIFICATION_CHANNELS, validateChannelRequirements } from './notification';
 import type { DeliveryMode, ChannelType, NotificationResult } from './notification';
 
@@ -404,7 +407,10 @@ export class ShipzyClient {
     public activation: ActivationClient;
     public product: ProductClient;
     public merchantAddress: MerchantAddressClient;
+    public finance: FinanceClient;
+    public compliance: ComplianceClient;
     public publicEpod: PublicEpodClient;
+    public cpsc: CPSCClient;
     public role: UserRole;
     private config: ShipzyConfig;
 
@@ -424,7 +430,10 @@ export class ShipzyClient {
         this.activation = new ActivationClient(this.config);
         this.product = new ProductClient(this.config);
         this.merchantAddress = new MerchantAddressClient(this.config);
+        this.finance = new FinanceClient(this.config);
+        this.compliance = new ComplianceClient(this.config);
         this.publicEpod = new PublicEpodClient(this.config.baseUrl);
+        this.cpsc = new CPSCClient(this.config);
     }
 
     updateToken(token: string): void {
@@ -442,6 +451,9 @@ export class ShipzyClient {
         this.activation.setToken(token);
         this.product.setToken(token);
         this.merchantAddress.setToken(token);
+        this.finance.setToken(token);
+        this.compliance.setToken(token);
+        this.cpsc.setToken(token);
     }
 
     updateConfig(config: Partial<ShipzyConfig>): void {
@@ -468,6 +480,9 @@ export class ShipzyClient {
         if (this.activation) this.activation.setConfig(config);
         if (this.product) this.product.setConfig(config);
         if (this.merchantAddress) this.merchantAddress.setConfig(config);
+        if (this.finance) this.finance.setConfig(config);
+        if (this.compliance) this.compliance.setConfig(config);
+        if (this.cpsc) this.cpsc.setConfig(config);
     }
 
     isMerchant(): boolean {
@@ -490,6 +505,34 @@ export type { AgeVerificationEvent, AgeVerificationMethod, AgeMinAge, CreateAgeV
 export type { Provider, ProviderActivation, Capability, ActivateRequest } from './activation';
 export type { Product, ProductStatus, ProductCategory, CreateProductRequest, ProductListResponse } from './product';
 export type { TenantAddress, TenantAddressListResponse } from './merchant-address';
+export type { Invoice, Subscription } from './finance';
+export type { CustomsDeclaration, CreateCustomsRequest, ComplianceCheckRequest, ComplianceCheckResult, CountryRequirements } from './compliance';
+export type {
+    CertificateType,
+    IdentifierType,
+    LabType,
+    POCType,
+    ProductIdentifier,
+    Manufacturer,
+    Lab,
+    PointOfContact,
+    CoreProduct,
+    ProductEntry,
+    TradePartyEntry,
+    Collection,
+    APIResponse,
+    CollectionsResponse,
+    ImportLogResponse,
+    ExportResponse,
+    TradePartyListResponse,
+    ExportFilter,
+    CertificateQuery,
+    CPSCSettings,
+    SaveCredentialRequest,
+    ImportRequest,
+    CertificatesRequest
+} from './lib/cpsc/types';
+export { CPSCClient } from './lib/cpsc/client';
 
 // ============ RN (React Native / Expo) ============
 // Note: RN module is not re-exported from the main entry point to avoid
