@@ -385,6 +385,7 @@ import { AgeVerificationClient } from './age-verification';
 import { ActivationClient } from './activation';
 import { ProductClient } from './product';
 import { MerchantAddressClient } from './merchant-address';
+import { TrackingClient } from './tracking';
 import { FinanceClient } from './finance';
 import { ComplianceClient } from './compliance';
 import { CPSCClient } from './lib/cpsc/client';
@@ -407,6 +408,7 @@ export class ShipzyClient {
     public activation: ActivationClient;
     public product: ProductClient;
     public merchantAddress: MerchantAddressClient;
+    public tracking: TrackingClient;
     public finance: FinanceClient;
     public compliance: ComplianceClient;
     public publicEpod: PublicEpodClient;
@@ -430,6 +432,7 @@ export class ShipzyClient {
         this.activation = new ActivationClient(this.config);
         this.product = new ProductClient(this.config);
         this.merchantAddress = new MerchantAddressClient(this.config);
+        this.tracking = new TrackingClient(this.config);
         this.finance = new FinanceClient(this.config);
         this.compliance = new ComplianceClient(this.config);
         this.publicEpod = new PublicEpodClient(this.config.baseUrl);
@@ -451,6 +454,7 @@ export class ShipzyClient {
         this.activation.setToken(token);
         this.product.setToken(token);
         this.merchantAddress.setToken(token);
+        this.tracking.setToken(token);
         this.finance.setToken(token);
         this.compliance.setToken(token);
         this.cpsc.setToken(token);
@@ -480,6 +484,7 @@ export class ShipzyClient {
         if (this.activation) this.activation.setConfig(config);
         if (this.product) this.product.setConfig(config);
         if (this.merchantAddress) this.merchantAddress.setConfig(config);
+        if (this.tracking) this.tracking.setConfig(config);
         if (this.finance) this.finance.setConfig(config);
         if (this.compliance) this.compliance.setConfig(config);
         if (this.cpsc) this.cpsc.setConfig(config);
@@ -505,6 +510,7 @@ export type { AgeVerificationEvent, AgeVerificationMethod, AgeMinAge, CreateAgeV
 export type { Provider, ProviderActivation, Capability, ActivateRequest } from './activation';
 export type { Product, ProductStatus, ProductCategory, CreateProductRequest, ProductListResponse } from './product';
 export type { TenantAddress, TenantAddressListResponse } from './merchant-address';
+export type { TrackingEvent, TrackingDetail, TrackingListItem, TrackingListResponse } from './tracking';
 export type { Invoice, Subscription } from './finance';
 export type { CustomsDeclaration, CreateCustomsRequest, ComplianceCheckRequest, ComplianceCheckResult, CountryRequirements } from './compliance';
 export type {
