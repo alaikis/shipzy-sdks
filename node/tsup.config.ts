@@ -16,4 +16,25 @@ export default defineConfig([
     outDir: 'dist/epod-elements',
     external: ['react', 'react-native', 'react-native-webview'],
   },
+  {
+    entry: ['vue/index.ts'],
+    format: ['esm', 'cjs'],
+    dts: true,
+    outDir: 'dist/vue',
+    external: ['vue'],
+  },
+  {
+    entry: ['solid/index.ts'],
+    format: ['esm', 'cjs'],
+    dts: true,
+    outDir: 'dist/solid',
+    external: ['solid-js'],
+  },
+  {
+    entry: ['react/index.tsx'],
+    format: ['esm', 'cjs'],
+    dts: true,
+    outDir: 'dist/react',
+    external: ['react', 'react-dom'],
+  },
 ])

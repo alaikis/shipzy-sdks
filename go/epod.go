@@ -10,6 +10,10 @@ type EpodClient struct {
 	client *Client
 }
 
+func NewEpodClient(c *Client) *EpodClient {
+	return &EpodClient{client: c}
+}
+
 type EpodListItem struct {
 	ID          string `json:"id"`
 	TrackingNo  string `json:"tracking_no"`

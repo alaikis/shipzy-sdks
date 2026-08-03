@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -106,7 +107,7 @@ func (s *trackingServiceImpl) Track(ctx context.Context, trackingNo string, carr
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := json.NewDecoder(resp.Body).ReadAll()
+		body, _ := io.ReadAll(resp.Body)
 		return nil, shared.NewShipzyError(resp.StatusCode, string(body), nil)
 	}
 
@@ -154,7 +155,7 @@ func (s *trackingServiceImpl) List(ctx context.Context, filter *TrackingListFilt
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := json.NewDecoder(resp.Body).ReadAll()
+		body, _ := io.ReadAll(resp.Body)
 		return nil, shared.NewShipzyError(resp.StatusCode, string(body), nil)
 	}
 

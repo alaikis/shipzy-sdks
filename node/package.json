@@ -1,6 +1,6 @@
 {
   "name": "@zymeup/sdk",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Official Zymeup logistics platform SDK",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -35,6 +35,36 @@
       "require": {
         "types": "./dist/rn/index.d.cts",
         "default": "./dist/rn/index.cjs"
+      }
+    },
+    "./vue": {
+      "import": {
+        "types": "./dist/vue/index.d.ts",
+        "default": "./dist/vue/index.js"
+      },
+      "require": {
+        "types": "./dist/vue/index.d.cts",
+        "default": "./dist/vue/index.cjs"
+      }
+    },
+    "./solid": {
+      "import": {
+        "types": "./dist/solid/index.d.ts",
+        "default": "./dist/solid/index.js"
+      },
+      "require": {
+        "types": "./dist/solid/index.d.cts",
+        "default": "./dist/solid/index.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react/index.d.ts",
+        "default": "./dist/react/index.js"
+      },
+      "require": {
+        "types": "./dist/react/index.d.cts",
+        "default": "./dist/react/index.cjs"
       }
     }
   },
