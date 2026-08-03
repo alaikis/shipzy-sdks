@@ -42,4 +42,12 @@ export class FinanceClient extends HttpClient {
     async cancelSubscription(id: string): Promise<ApiResult<{ status: string }>> {
         return this.request(`/api/finance/subscriptions/${encodeURIComponent(id)}/cancel`, 'POST');
     }
+
+    async restoreSubscription(id: string): Promise<ApiResult<{ status: string }>> {
+        return this.request(`/api/finance/subscriptions/${encodeURIComponent(id)}/restore`, 'POST');
+    }
+
+    async downloadInvoice(id: string): Promise<ApiResult<{ url: string }>> {
+        return this.request(`/api/v1/merchant/invoices/${encodeURIComponent(id)}/download`);
+    }
 }

@@ -391,6 +391,9 @@ import { ComplianceClient } from './compliance';
 import { CPSCClient } from './lib/cpsc/client';
 import { DELIVERY_MODES, NOTIFICATION_CHANNELS, validateChannelRequirements } from './notification';
 import type { DeliveryMode, ChannelType, NotificationResult } from './notification';
+import { CarrierClient } from './carrier';
+import { PlatformConfigClient } from './platform';
+import { UploadClient } from './upload';
 
 // ============ Main SDK ============
 
@@ -414,6 +417,9 @@ export class ShipzyClient {
     public publicEpod: PublicEpodClient;
     public cpsc: CPSCClient;
     public role: UserRole;
+    public carrier: CarrierClient;
+    public platformConfig: PlatformConfigClient;
+    public upload: UploadClient;
     private config: ShipzyConfig;
 
     constructor(config: Partial<ShipzyConfig> = {}) {
@@ -437,6 +443,9 @@ export class ShipzyClient {
         this.compliance = new ComplianceClient(this.config);
         this.publicEpod = new PublicEpodClient(this.config.baseUrl);
         this.cpsc = new CPSCClient(this.config);
+        this.carrier = new CarrierClient(this.config);
+        this.platformConfig = new PlatformConfigClient(this.config);
+        this.upload = new UploadClient(this.config);
     }
 
     updateToken(token: string): void {
@@ -458,6 +467,9 @@ export class ShipzyClient {
         this.finance.setToken(token);
         this.compliance.setToken(token);
         this.cpsc.setToken(token);
+        this.carrier.setToken(token);
+        this.platformConfig.setToken(token);
+        this.upload.setToken(token);
     }
 
     updateConfig(config: Partial<ShipzyConfig>): void {
@@ -488,6 +500,9 @@ export class ShipzyClient {
         if (this.finance) this.finance.setConfig(config);
         if (this.compliance) this.compliance.setConfig(config);
         if (this.cpsc) this.cpsc.setConfig(config);
+        if (this.carrier) this.carrier.setConfig(config);
+        if (this.platformConfig) this.platformConfig.setConfig(config);
+        if (this.upload) this.upload.setConfig(config);
     }
 
     isMerchant(): boolean {
@@ -539,6 +554,8 @@ export type {
     CertificatesRequest
 } from './lib/cpsc/types';
 export { CPSCClient } from './lib/cpsc/client';
+export type { Carrier } from './carrier';
+export type { PlatformConfig } from './platform';
 
 // ============ RN (React Native / Expo) ============
 // Note: RN module is not re-exported from the main entry point to avoid
