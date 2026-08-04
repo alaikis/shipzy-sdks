@@ -1,13 +1,14 @@
 <?php
-namespace Shipzy\Sdk\Tests;
+
+namespace Zymeup\SDK\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Shipzy\Sdk\Shared\Version;
+use Zymeup\SDK\ZymeupClient;
 
 final class VersionTest extends TestCase
 {
     public function testVersionConstant(): void
     {
-        $this->assertSame('0.1.0-alpha.1', Version::CURRENT);
+        $this->assertSame('2.0.0', ZymeupClient::VERSION);
     }
 }

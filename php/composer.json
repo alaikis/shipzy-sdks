@@ -14,7 +14,15 @@
             "Zymeup\\SDK\\": "src/"
         }
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0 || ^11.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Zymeup\\SDK\\Tests\\": "tests/"
+        }
+    },
     "scripts": {
-        "test": "echo 'No tests defined' && exit 0"
+        "test": "vendor/bin/phpunit"
     }
 }

@@ -67,10 +67,17 @@ class ZymeupClient
         $this->cpsc = new CpscClient($this);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function request(string $method, string $path, array $data = []): array
     {
         $url = $this->baseUrl . $path;
         $ch = curl_init();
+
+        if ($ch === false) {
+            throw new \RuntimeException('Failed to initialize cURL handle');
+        }
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -86,12 +93,41 @@ class ZymeupClient
         }
 
         if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            $encoded = json_encode($data);
+            if ($encoded === false) {
+                curl_close($ch);
+                throw new \RuntimeException('Failed to encode request body: ' . json_last_error_msg());
+            }
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $encoded);
         }
 
         $response = curl_exec($ch);
+
+        if ($response === false) {
+            $error = curl_error($ch);
+            $errno = curl_errno($ch);
+            curl_close($ch);
+            throw new \RuntimeException("cURL request failed (errno {$errno}): {$error}");
+        }
+
+        $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        return json_decode($response, true) ?? [];
+        $decoded = json_decode($response, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException(
+                "Failed to decode response (HTTP {$statusCode}): " . json_last_error_msg()
+            );
+        }
+
+        if ($statusCode >= 400) {
+            throw new \RuntimeException(
+                "HTTP {$statusCode} error for {$method} {$path}: "
+                . (is_array($decoded) ? json_encode($decoded) : $response)
+            );
+        }
+
+        return $decoded ?? [];
     }
 }
