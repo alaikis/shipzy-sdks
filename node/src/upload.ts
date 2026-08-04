@@ -31,8 +31,12 @@ export class UploadClient extends HttpClient {
     async uploadFile(endpoint: string, file: File): Promise<ApiResult<{ url: string }>> {
         const formData = new FormData();
         formData.append('file', file);
-        const result = await this.request(endpoint, 'POST', formData as unknown as Record<string, unknown>) as any;
-        return result as ApiResult<{ url: string }>;
+        const resp = await fetch(`${this.config.baseUrl}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${this.config.token}` },
+            body: formData,
+        });
+        return resp.json();
     }
 
     async brandingUploadLogo(file: File): Promise<ApiResult<{ logo_url: string }>> {
