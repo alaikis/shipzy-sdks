@@ -1,62 +1,120 @@
-use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
-use serde::{Deserialize, Serialize};
-use std::time::Duration;
+pub mod activation;
+pub mod age_verification;
+pub mod ecmr;
+pub mod error;
+pub mod finance;
+pub mod http_client;
+pub mod merchant_address;
+pub mod notification;
+pub mod order;
+pub mod pickup_points;
+pub mod product;
+pub mod support_ticket;
+pub mod types;
 
-const DEFAULT_BASE_URL: &str = "https://api.shipzy.me";
+pub use activation::*;
+pub use age_verification::*;
+pub use ecmr::*;
+pub use error::*;
+pub use finance::*;
+pub use http_client::*;
+pub use merchant_address::*;
+pub use notification::*;
+pub use order::*;
+pub use pickup_points::*;
+pub use product::*;
+pub use support_ticket::*;
+pub use types::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)] pub enum UserRole { Merchant, Carrier }
-#[derive(Debug, Clone)] pub struct ShipzyConfig { pub base_url: String, pub token: Option<String>, pub timeout_seconds: u64, pub role: UserRole, pub carrier_code: Option<String> }
-impl Default for ShipzyConfig { fn default() -> Self { Self { base_url: DEFAULT_BASE_URL.to_string(), token: None, timeout_seconds: 30, role: UserRole::Merchant, carrier_code: None } } }
-
-#[derive(Debug, Serialize, Deserialize)] pub struct EpodListResponse { pub data: Vec<EpodListItem>, pub total: i64, pub page: i32, #[serde(rename = "page_size")] pub page_size: i32 }
-#[derive(Debug, Serialize, Deserialize)] pub struct EpodListItem { pub id: String, #[serde(rename = "tracking_no")] pub tracking_no: String, pub status: String, #[serde(rename = "recipient_name")] pub recipient_name: Option<String>, #[serde(rename = "created_at")] pub created_at: String }
-#[derive(Debug, Serialize, Deserialize)] pub struct EpodDetail { pub id: String, #[serde(rename = "tracking_no")] pub tracking_no: String, pub status: String, #[serde(rename = "recipient_name")] pub recipient_name: Option<String>, #[serde(rename = "recipient_phone")] pub recipient_phone: Option<String>, #[serde(rename = "created_at")] pub created_at: String, #[serde(rename = "updated_at")] pub updated_at: String, #[serde(rename = "sign_url")] pub sign_url: Option<String>, #[serde(rename = "evidence_hash")] pub evidence_hash: Option<String> }
-#[derive(Debug, Serialize, Deserialize)] pub struct SignUrlResponse { #[serde(rename = "sign_url")] pub sign_url: String }
-#[derive(Debug, Serialize, Deserialize)] pub struct OrderListResponse { pub data: Vec<OrderListItem>, pub total: i64, pub page: i32, #[serde(rename = "page_size")] pub page_size: i32 }
-#[derive(Debug, Serialize, Deserialize)] pub struct OrderListItem { pub id: String, #[serde(rename = "order_no")] pub order_no: String, pub status: String, #[serde(rename = "customer_name")] pub customer_name: Option<String>, #[serde(rename = "total_amount")] pub total_amount: Option<f64>, pub currency: Option<String>, #[serde(rename = "created_at")] pub created_at: String }
-#[derive(Debug, Serialize, Deserialize)] pub struct AddressListResponse { pub data: Vec<AddressItem>, pub total: i64 }
-#[derive(Debug, Serialize, Deserialize)] pub struct AddressItem { pub id: String, #[serde(rename = "full_name")] pub full_name: Option<String>, pub street: Option<String>, #[serde(rename = "house_number")] pub house_number: Option<String>, #[serde(rename = "postal_code")] pub postal_code: Option<String>, pub city: Option<String>, #[serde(rename = "country_code")] pub country_code: Option<String>, pub phone: Option<String>, pub email: Option<String>, #[serde(rename = "is_default")] pub is_default: Option<bool> }
-
-#[derive(Debug, thiserror::Error)] pub enum ShipzyError {
-    #[error("HTTP error {status}: {message}")] Http { status: u16, message: String },
-    #[error("Unauthorized")] Auth,
-    #[error("Request error: {0}")] Reqwest(#[from] reqwest::Error),
-    #[error("JSON error: {0}")] Json(#[from] serde_json::Error),
+pub struct ShipzyClient {
+    pub order: OrderClient,
+    pub ecmr: EcmrClient,
+    pub address: MerchantAddressClient,
+    pub activation: ActivationClient,
+    pub age_verification: AgeVerificationClient,
+    pub pickup_points: PickupPointClient,
+    pub product: ProductClient,
+    pub finance: FinanceClient,
+    pub support_ticket: SupportTicketClient,
+    pub role: UserRole,
 }
-pub type Result<T> = std::result::Result<T, ShipzyError>;
 
-pub struct HttpClient { client: reqwest::Client, config: ShipzyConfig }
-impl HttpClient { pub fn new(config: ShipzyConfig) -> Result<Self> { Ok(Self { client: reqwest::Client::builder().timeout(Duration::from_secs(config.timeout_seconds)).build()?, config }) } }
-impl HttpClient { pub fn set_token(&mut self, token: &str) { self.config.token = Some(token.to_string()); } }
-impl HttpClient { fn get_auth_header(&self) -> String { match (&self.config.role, &self.config.carrier_code, &self.config.token) { (UserRole::Carrier, Some(cc), Some(tok)) => format!("Bearer {}:{}", cc, tok), (_, _, Some(tok)) => format!("Bearer {}", tok), _ => String::new() } } }
+impl ShipzyClient {
+    pub fn new(config: ShipzyConfig) -> error::Result<Self> {
+        let role = config.role;
+        Ok(Self {
+            order: OrderClient::new(http_client::HttpClient::new(config.clone())?),
+            ecmr: EcmrClient::new(http_client::HttpClient::new(config.clone())?),
+            address: MerchantAddressClient::new(http_client::HttpClient::new(config.clone())?),
+            activation: ActivationClient::new(http_client::HttpClient::new(config.clone())?),
+            age_verification: AgeVerificationClient::new(http_client::HttpClient::new(config.clone())?),
+            pickup_points: PickupPointClient::new(http_client::HttpClient::new(config.clone())?),
+            product: ProductClient::new(http_client::HttpClient::new(config.clone())?),
+            finance: FinanceClient::new(http_client::HttpClient::new(config.clone())?),
+            support_ticket: SupportTicketClient::new(http_client::HttpClient::new(config)?),
+            role,
+        })
+    }
 
-pub struct EpodClient { inner: HttpClient }
-impl EpodClient { pub fn new(config: ShipzyConfig) -> Result<Self> { Ok(Self { inner: HttpClient::new(config)? }) } pub fn set_token(&mut self, token: &str) { self.inner.set_token(token); } }
-impl EpodClient { async fn request<T: serde::de::DeserializeOwned>(&self, path: &str, method: reqwest::Method, body: Option<serde_json::Value>) -> Result<T> { let url = format!("{}{}", self.inner.config.base_url.trim_end_matches('/'), path); let mut b = self.inner.client.request(method, &url); if self.inner.config.token.is_some() { b = b.header(AUTHORIZATION, self.inner.get_auth_header()); } b = b.header(CONTENT_TYPE, "application/json"); if let Some(ref v) = body { b = b.json(v); } let r = b.send().await?; let s = r.status(); if s == reqwest::StatusCode::UNAUTHORIZED { return Err(ShipzyError::Auth); } if !s.is_success() { return Err(ShipzyError::Http { status: s.as_u16(), message: r.text().await.unwrap_or_default() }); } Ok(r.json().await?) } }
-impl EpodClient { pub async fn list(&self, page: i32, page_size: i32, status: Option<&str>, tracking_no: Option<&str>) -> Result<EpodListResponse> { let mut q = format!("?page={}&page_size={}", page, page_size); if let Some(s) = status { q.push_str(&format!("&status={}", urlencoding::encode(s))); } if let Some(t) = tracking_no { q.push_str(&format!("&tracking_no={}", urlencoding::encode(t))); } self.request(&format!("/api/v1/shipment/epod/list{}", q), reqwest::Method::GET, None).await } pub async fn get(&self, id: &str) -> Result<EpodDetail> { self.request(&format!("/api/v1/shipment/epod/{}", id), reqwest::Method::GET, None).await } pub async fn create(&self, body: serde_json::Value) -> Result<EpodDetail> { self.request("/api/v1/shipment/epod/create", reqwest::Method::POST, Some(body)).await } pub async fn generate_from_order(&self, order_id: &str) -> Result<EpodDetail> { self.request("/api/v1/shipment/epod/generate-from-order", reqwest::Method::POST, Some(serde_json::json!({ "order_id": order_id }))).await } pub async fn update(&self, id: &str, body: serde_json::Value) -> Result<EpodDetail> { self.request(&format!("/api/v1/shipment/epod/{}/update", id), reqwest::Method::PUT, Some(body)).await } pub async fn deliver(&self, id: &str) -> Result<EpodDetail> { self.request(&format!("/api/v1/shipment/epod/{}/delivery", id), reqwest::Method::POST, None).await } pub async fn fail(&self, id: &str, remark: &str) -> Result<EpodDetail> { self.request(&format!("/api/v1/shipment/epod/{}/fail", id), reqwest::Method::POST, Some(serde_json::json!({ "remark": remark }))).await } pub async fn generate_sign_url(&self, id: &str) -> Result<SignUrlResponse> { self.request(&format!("/api/v1/shipment/epod/{}/sign", id), reqwest::Method::POST, None).await } }
+    pub fn update_token(&mut self, token: &str) {
+        self.order.inner.set_token(token);
+        self.ecmr.inner.set_token(token);
+        self.address.inner.set_token(token);
+        self.activation.inner.set_token(token);
+        self.age_verification.inner.set_token(token);
+        self.pickup_points.inner.set_token(token);
+        self.product.inner.set_token(token);
+        self.finance.inner.set_token(token);
+        self.support_ticket.inner.set_token(token);
+    }
 
-pub struct OrderClient { inner: HttpClient }
-impl OrderClient { pub fn new(config: ShipzyConfig) -> Result<Self> { Ok(Self { inner: HttpClient::new(config)? }) } pub fn set_token(&mut self, token: &str) { self.inner.set_token(token); } }
-impl OrderClient { async fn request<T: serde::de::DeserializeOwned>(&self, path: &str, method: reqwest::Method, body: Option<serde_json::Value>) -> Result<T> { let url = format!("{}{}", self.inner.config.base_url.trim_end_matches('/'), path); let mut b = self.inner.client.request(method, &url); if let Some(ref t) = self.inner.config.token { b = b.header(AUTHORIZATION, format!("Bearer {}", t)); } b = b.header(CONTENT_TYPE, "application/json"); if let Some(ref v) = body { b = b.json(v); } let r = b.send().await?; let s = r.status(); if s == reqwest::StatusCode::UNAUTHORIZED { return Err(ShipzyError::Auth); } if !s.is_success() { return Err(ShipzyError::Http { status: s.as_u16(), message: r.text().await.unwrap_or_default() }); } Ok(r.json().await?) } }
-impl OrderClient { pub async fn list(&self, page: i32, page_size: i32, status: Option<&str>) -> Result<OrderListResponse> { let mut q = format!("?page={}&page_size={}", page, page_size); if let Some(s) = status { q.push_str(&format!("&status={}", urlencoding::encode(s))); } self.request(&format!("/api/v1/order/list{}", q), reqwest::Method::GET, None).await } pub async fn get(&self, id: &str) -> Result<serde_json::Value> { self.request(&format!("/api/v1/order/{}", id), reqwest::Method::GET, None).await } pub async fn create(&self, body: serde_json::Value) -> Result<serde_json::Value> { self.request("/api/v1/order/create", reqwest::Method::POST, Some(body)).await } pub async fn update(&self, id: &str, body: serde_json::Value) -> Result<serde_json::Value> { self.request(&format!("/api/v1/order/{}/update", id), reqwest::Method::POST, Some(body)).await } pub async fn cancel(&self, id: &str) -> Result<serde_json::Value> { self.request(&format!("/api/v1/order/{}/cancel", id), reqwest::Method::POST, None).await } }
+    pub fn is_merchant(&self) -> bool {
+        self.role == UserRole::Merchant
+    }
 
-pub struct AddressClient { inner: HttpClient }
-impl AddressClient { pub fn new(config: ShipzyConfig) -> Result<Self> { Ok(Self { inner: HttpClient::new(config)? }) } pub fn set_token(&mut self, token: &str) { self.inner.set_token(token); } }
-impl AddressClient { async fn request<T: serde::de::DeserializeOwned>(&self, path: &str, method: reqwest::Method, body: Option<serde_json::Value>) -> Result<T> { let url = format!("{}{}", self.inner.config.base_url.trim_end_matches('/'), path); let mut b = self.inner.client.request(method, &url); if let Some(ref t) = self.inner.config.token { b = b.header(AUTHORIZATION, format!("Bearer {}", t)); } b = b.header(CONTENT_TYPE, "application/json"); if let Some(ref v) = body { b = b.json(v); } let r = b.send().await?; let s = r.status(); if s == reqwest::StatusCode::UNAUTHORIZED { return Err(ShipzyError::Auth); } if !s.is_success() { return Err(ShipzyError::Http { status: s.as_u16(), message: r.text().await.unwrap_or_default() }); } Ok(r.json().await?) } }
-impl AddressClient { pub async fn list(&self, body: Option<serde_json::Value>) -> Result<AddressListResponse> { self.request("/api/v1/merchant/addresses/list", reqwest::Method::POST, body).await } pub async fn create(&self, body: serde_json::Value) -> Result<AddressItem> { self.request("/api/v1/merchant/addresses/create", reqwest::Method::POST, Some(body)).await } pub async fn update(&self, id: &str, body: serde_json::Value) -> Result<AddressItem> { self.request(&format!("/api/v1/merchant/addresses/{}/update", id), reqwest::Method::POST, Some(body)).await } pub async fn delete(&self, id: &str) -> Result<serde_json::Value> { self.request(&format!("/api/v1/merchant/addresses/{}/delete", id), reqwest::Method::POST, None).await } }
-
-pub struct CarrierEpodClient { inner: HttpClient }
-impl CarrierEpodClient { pub fn new(config: ShipzyConfig) -> Result<Self> { Ok(Self { inner: HttpClient::new(config)? }) } pub fn set_token(&mut self, token: &str) { self.inner.set_token(token); } }
-impl CarrierEpodClient { async fn request<T: serde::de::DeserializeOwned>(&self, path: &str, method: reqwest::Method, body: Option<serde_json::Value>) -> Result<T> { let url = format!("{}{}", self.inner.config.base_url.trim_end_matches('/'), path); let mut b = self.inner.client.request(method, &url); if let Some(ref t) = self.inner.config.token { b = b.header(AUTHORIZATION, format!("Bearer {}", t)); } b = b.header(CONTENT_TYPE, "application/json"); if let Some(ref v) = body { b = b.json(v); } let r = b.send().await?; let s = r.status(); if s == reqwest::StatusCode::UNAUTHORIZED { return Err(ShipzyError::Auth); } if !s.is_success() { return Err(ShipzyError::Http { status: s.as_u16(), message: r.text().await.unwrap_or_default() }); } Ok(r.json().await?) } }
-impl CarrierEpodClient { pub async fn list(&self, page: i32, page_size: i32, status: Option<&str>) -> Result<EpodListResponse> { let mut q = format!("?page={}&page_size={}", page, page_size); if let Some(s) = status { q.push_str(&format!("&status={}", urlencoding::encode(s))); } self.request(&format!("/api/v1/carrier/epod/list{}", q), reqwest::Method::GET, None).await } pub async fn get(&self, id: &str) -> Result<EpodDetail> { self.request(&format!("/api/v1/carrier/epod/{}", id), reqwest::Method::GET, None).await } pub async fn deliver(&self, id: &str) -> Result<EpodDetail> { self.request(&format!("/api/v1/carrier/epod/{}/delivery", id), reqwest::Method::POST, None).await } pub async fn fail(&self, id: &str, remark: &str) -> Result<EpodDetail> { self.request(&format!("/api/v1/carrier/epod/{}/fail", id), reqwest::Method::POST, Some(serde_json::json!({ "remark": remark }))).await } }
-
-pub struct ShipzyClient { pub epod: EpodClient, pub order: OrderClient, pub address: AddressClient, pub carrier_epod: CarrierEpodClient, pub role: UserRole }
-impl ShipzyClient { pub fn new(config: ShipzyConfig) -> Result<Self> { Ok(Self { epod: EpodClient::new(config.clone())?, order: OrderClient::new(config.clone())?, address: AddressClient::new(config.clone())?, carrier_epod: CarrierEpodClient::new(config.clone())?, role: config.role }) } pub fn update_token(&mut self, token: &str) { self.epod.set_token(token); self.order.set_token(token); self.address.set_token(token); self.carrier_epod.set_token(token); } pub fn is_merchant(&self) -> bool { self.role == UserRole::Merchant } pub fn is_carrier(&self) -> bool { self.role == UserRole::Carrier } }
+    pub fn is_carrier(&self) -> bool {
+        self.role == UserRole::Carrier
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn new_with_default_config() { let c = ShipzyConfig::default(); let cl = EpodClient::new(c); assert!(cl.is_ok()); }
-    #[test] fn config_default_values() { let c = ShipzyConfig::default(); assert_eq!(c.base_url, "https://api.shipzy.me"); assert_eq!(c.token, None); assert_eq!(c.timeout_seconds, 30); }
-    #[test] fn shipzy_error_display() { let e = ShipzyError::Auth; assert_eq!(e.to_string(), "Unauthorized"); let e = ShipzyError::Http { status: 404, message: "Not found".to_string() }; assert_eq!(e.to_string(), "HTTP error 404: Not found"); }
+
+    #[test]
+    fn new_with_default_config() {
+        let c = ShipzyConfig::default();
+        let cl = ShipzyClient::new(c);
+        assert!(cl.is_ok());
+    }
+
+    #[test]
+    fn config_default_values() {
+        let c = ShipzyConfig::default();
+        assert_eq!(c.base_url, "https://api.zymeup.com");
+        assert_eq!(c.token, None);
+        assert_eq!(c.timeout_seconds, 30);
+    }
+
+    #[test]
+    fn shipzy_error_display() {
+        let e = error::ShipzyError::Auth;
+        assert_eq!(e.to_string(), "Unauthorized");
+        let e = error::ShipzyError::Http {
+            status: 404,
+            message: "Not found".to_string(),
+        };
+        assert_eq!(e.to_string(), "HTTP error 404: Not found");
+    }
+
+    #[test]
+    fn notification_validate_channels() {
+        let missing = notification::validate_channel_requirements(
+            &[ChannelType::Email, ChannelType::Sms],
+            None,
+            None,
+        );
+        assert!(missing.contains(&"email".to_string()));
+        assert!(missing.contains(&"phone".to_string()));
+    }
 }
