@@ -3,6 +3,7 @@
 require 'net/http'
 require 'json'
 require 'uri'
+require 'securerandom'
 
 module Shipzy
   class Error < StandardError; end
