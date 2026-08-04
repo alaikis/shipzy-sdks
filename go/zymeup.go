@@ -20,15 +20,15 @@ func NewZymeupClient(apiKey string) *ZymeupClient {
 	c := NewClient(apiKey)
 	return &ZymeupClient{
 		Epod:            NewEpodClient(c),
-		Order:           NewOrderClient(nil),
-		Ecmr:            NewEcmrClient(),
-		Address:         NewAddressClient(),
-		Activation:      NewActivationClient(),
-		AgeVerification: NewAgeVerificationClient(),
-		PickupPoint:     NewPickupPointClient(),
-		Product:         NewProductClient(),
-		Finance:         NewFinanceClient(),
-		Notification:    NewNotificationClient(),
-		SupportTicket:   NewSupportTicketClient(),
+		Order:           NewOrderClient(c),
+		Ecmr:            NewEcmrClient(c),
+		Address:         NewAddressClient(c),
+		Activation:      NewActivationClient(c),
+		AgeVerification: NewAgeVerificationClient(c),
+		PickupPoint:     NewPickupPointClient(c),
+		Product:         NewProductClient(c),
+		Finance:         NewFinanceClient(c),
+		Notification:    NewNotificationClient(c),
+		SupportTicket:   NewSupportTicketClient(c),
 	}
 }
