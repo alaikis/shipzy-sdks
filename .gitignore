@@ -27,3 +27,11 @@ python/.venv/
 Thumbs.db
 .idea/
 .vscode/
+
+# .NET
+dotnet/bin/
+dotnet/obj/
+
+# Rust
+rust/target/
+rust/Cargo.lock
