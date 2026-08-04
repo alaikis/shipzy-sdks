@@ -1,6 +1,33 @@
 """Zymeup Python SDK"""
-__version__ = "1.2.0"
+__version__ = "2.0.0"
 
-from .client import ZymeupClient
+from .client import ZymeupClient, VERSION
+from .epod import EpodClient
+from .order import OrderClient
+from .ecmr import EcmrClient
+from .merchant_address import MerchantAddressClient
+from .activation import ActivationClient
+from .age_verification import AgeVerificationClient
+from .pickup_points import PickupPointClient
+from .product import ProductClient
+from .finance import FinanceClient
+from .notification import DELIVERY_MODES, NOTIFICATION_CHANNELS, validate_channel_requirements
+from .support_ticket import SupportTicketClient
 
-__all__ = ["ZymeupClient"]
+__all__ = [
+    "ZymeupClient",
+    "VERSION",
+    "EpodClient",
+    "OrderClient",
+    "EcmrClient",
+    "MerchantAddressClient",
+    "ActivationClient",
+    "AgeVerificationClient",
+    "PickupPointClient",
+    "ProductClient",
+    "FinanceClient",
+    "DELIVERY_MODES",
+    "NOTIFICATION_CHANNELS",
+    "validate_channel_requirements",
+    "SupportTicketClient",
+]
