@@ -23,6 +23,18 @@ class ZymeupClient
     public FinanceClient $finance;
     public NotificationClient $notification;
     public SupportTicketClient $supportTicket;
+    public MerchantAddressClient $merchantAddress;
+    public ShipmentClient $shipment;
+    public ParcelClient $parcel;
+    public ComplianceClient $compliance;
+    public CarrierEpodClient $carrierEpod;
+    public CarrierAddressClient $carrierAddress;
+    public PublicEpodClient $publicEpod;
+    public CarrierClient $carrier;
+    public PlatformConfigClient $platformConfig;
+    public UploadClient $upload;
+    public TrackingClient $tracking;
+    public CpscClient $cpsc;
 
     public function __construct(string $apiKey, string $baseUrl = self::BASE_URL, int $timeout = 30)
     {
@@ -41,6 +53,18 @@ class ZymeupClient
         $this->finance = new FinanceClient($this);
         $this->notification = new NotificationClient($this);
         $this->supportTicket = new SupportTicketClient($this);
+        $this->merchantAddress = new MerchantAddressClient($this);
+        $this->shipment = new ShipmentClient($this);
+        $this->parcel = new ParcelClient($this);
+        $this->compliance = new ComplianceClient($this);
+        $this->carrierEpod = new CarrierEpodClient($this);
+        $this->carrierAddress = new CarrierAddressClient($this);
+        $this->publicEpod = new PublicEpodClient($this);
+        $this->carrier = new CarrierClient($this);
+        $this->platformConfig = new PlatformConfigClient($this);
+        $this->upload = new UploadClient($this);
+        $this->tracking = new TrackingClient($this);
+        $this->cpsc = new CpscClient($this);
     }
 
     public function request(string $method, string $path, array $data = []): array
@@ -56,6 +80,10 @@ class ZymeupClient
             'Content-Type: application/json',
             'User-Agent: zymeup-sdk-php/' . self::VERSION,
         ]);
+
+        if ($method !== 'GET') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        }
 
         if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
