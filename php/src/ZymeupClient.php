@@ -4,7 +4,7 @@ namespace Zymeup\SDK;
 
 class ZymeupClient
 {
-    const VERSION = '2.0.0';
+    const VERSION = '2.0.1';
     const BASE_URL = 'https://api.zymeup.com';
 
     private string $apiKey;
