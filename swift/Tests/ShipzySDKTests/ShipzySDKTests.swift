@@ -3,7 +3,7 @@ import XCTest
 
 final class ShipzySDKTests: XCTestCase {
     func testVersion() {
-        XCTAssertEqual(VERSION, "1.1.1")
+        XCTAssertEqual(VERSION, "2.0.0")
     }
 
     func testShipzyConfigDefaults() {
