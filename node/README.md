@@ -1,6 +1,6 @@
 # @zymeup/sdk
 
-Official Node.js SDK for the [Zymeup](https://zymeup.com) logistics platform. Provides typed API clients for merchants and carriers, plus browser Web Components with framework wrappers for Vue, Solid, and React.
+Official Node.js SDK for the [Zymeup](https://zymeup.com) logistics platform. Provides typed API clients for merchants and carriers, plus browser-native Web Components.
 
 ## Features
 
@@ -17,9 +17,7 @@ Official Node.js SDK for the [Zymeup](https://zymeup.com) logistics platform. Pr
 - **Finance** — Invoices and subscriptions
 - **Notification** — Multi-channel delivery (Email, SMS, WhatsApp)
 - **Support Ticket** — Ticket management
-- **Web Components** — `<zymeup-epod-list>`, `<zymeup-epod-detail>`, `<zymeup-epod-create>`, `<zymeup-epod-signature>`, etc.
-- **Framework Wrappers** — Vue 3, Solid.js, and React bindings for Web Components
-- **React Native** — WebView-based components (import from `@zymeup/sdk/rn`)
+- **Web Components** — `<shipzy-epod-list>`, `<shipzy-epod-detail>`, `<shipzy-epod-create>`, `<shipzy-epod-signature>`, etc.
 
 ## Installation
 
@@ -140,7 +138,7 @@ client.updateConfig({ baseUrl: 'https://staging-api.zymeup.com' });
 
 ## Web Components
 
-The SDK includes browser-native Web Components for EPOD workflows. No framework required.
+The SDK includes browser-native Web Components for EPOD workflows. No framework required — works in any HTML page or any framework via standard custom elements.
 
 ```typescript
 import '@zymeup/sdk/epod-elements';
@@ -150,23 +148,23 @@ import '@zymeup/sdk/epod-elements';
 
 | Element | Description |
 |---------|-------------|
-| `<zymeup-epod-list>` | Paginated EPOD list with status filter |
-| `<zymeup-epod-detail>` | EPOD detail view with actions |
-| `<zymeup-epod-create>` | EPOD creation form |
-| `<zymeup-epod-signature>` | Signature capture (public, token-based) |
-| `<zymeup-epod-login>` | EPOD login |
-| `<zymeup-tracking-list>` | Tracking event list |
-| `<zymeup-tracking-detail>` | Tracking event detail |
+| `<shipzy-epod-list>` | Paginated EPOD list with status filter |
+| `<shipzy-epod-detail>` | EPOD detail view with actions |
+| `<shipzy-epod-create>` | EPOD creation form |
+| `<shipzy-epod-signature>` | Signature capture (public, token-based) |
+| `<shipzy-epod-login>` | EPOD login |
+| `<shipzy-tracking-list>` | Tracking event list |
+| `<shipzy-tracking-detail>` | Tracking event detail |
 
 ### Usage
 
 ```html
-<zymeup-epod-list
+<shipzy-epod-list
   token="your-api-key"
   base-url="https://api.zymeup.com"
   page-size="10"
   status-filter="pending"
-></zymeup-epod-list>
+></shipzy-epod-list>
 
 <script type="module">
   import '@zymeup/sdk/epod-elements';
@@ -183,65 +181,27 @@ Elements emit custom events:
 - `created` — `detail.epodId`
 - `error` — `detail.message`
 
-## Framework Wrappers
+### Imperative API
 
-### Vue 3
-
-```bash
-# No extra install needed — included in @zymeup/sdk
-```
+For programmatic control:
 
 ```typescript
-import { EpodList, EpodDetail, EpodCreate, EpodSignature } from '@zymeup/sdk/epod-elements/wrappers/vue';
+import { Epod } from '@zymeup/sdk/epod-elements';
+
+// Show list in a container
+Epod.showList({
+  target: '#my-container',
+  token: 'your-api-key',
+  onSelect: (epodId) => console.log('Selected:', epodId),
+});
+
+// Show signature capture
+Epod.showSignature({
+  target: '#sign-container',
+  token: 'sign-token',
+  onComplete: (data) => console.log('Signed:', data),
+});
 ```
-
-```vue
-<template>
-  <EpodList token="your-api-key" @select="onSelect" />
-</template>
-
-<script setup>
-import { EpodList } from '@zymeup/sdk/epod-elements/wrappers/vue';
-
-function onSelect(epodId) {
-  console.log('Selected:', epodId);
-}
-</script>
-```
-
-**Available components:** `EpodList`, `EpodDetail`, `EpodCreate`, `EpodSignature`
-
-**Vue 3 bindings** (composition API helper):
-
-```typescript
-import { useZymeup } from '@zymeup/sdk/vue';
-
-const client = useZymeup({ apiKey: 'your-api-key' });
-```
-
-### Solid.js
-
-```typescript
-import { createZymeup } from '@zymeup/sdk/solid';
-
-const client = createZymeup({ apiKey: 'your-api-key' });
-```
-
-### React
-
-```typescript
-import { ShipzyClient } from '@zymeup/sdk/react';
-
-const client = new ShipzyClient({ apiKey: 'your-api-key' });
-```
-
-### React Native
-
-```typescript
-import { ShipzyProvider, useShipzy, EpodList } from '@zymeup/sdk/rn';
-```
-
-Requires `react-native-webview` as a peer dependency.
 
 ## Building
 

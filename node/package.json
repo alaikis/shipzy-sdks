@@ -26,46 +26,6 @@
         "types": "./dist/epod-elements/index.d.cts",
         "default": "./dist/epod-elements/index.cjs"
       }
-    },
-    "./rn": {
-      "import": {
-        "types": "./dist/rn/index.d.ts",
-        "default": "./dist/rn/index.js"
-      },
-      "require": {
-        "types": "./dist/rn/index.d.cts",
-        "default": "./dist/rn/index.cjs"
-      }
-    },
-    "./vue": {
-      "import": {
-        "types": "./dist/vue/index.d.ts",
-        "default": "./dist/vue/index.js"
-      },
-      "require": {
-        "types": "./dist/vue/index.d.cts",
-        "default": "./dist/vue/index.cjs"
-      }
-    },
-    "./solid": {
-      "import": {
-        "types": "./dist/solid/index.d.ts",
-        "default": "./dist/solid/index.js"
-      },
-      "require": {
-        "types": "./dist/solid/index.d.cts",
-        "default": "./dist/solid/index.cjs"
-      }
-    },
-    "./react": {
-      "import": {
-        "types": "./dist/react/index.d.ts",
-        "default": "./dist/react/index.js"
-      },
-      "require": {
-        "types": "./dist/react/index.d.cts",
-        "default": "./dist/react/index.cjs"
-      }
     }
   },
   "files": [
@@ -87,27 +47,13 @@
     "logistics",
     "sdk",
     "epod",
-    "web-components",
-    "react-native",
-    "expo"
+    "web-components"
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/react": "^18.3.31",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
-  },
-  "peerDependencies": {
-    "react-native-webview": "*"
-  },
-  "peerDependenciesMeta": {
-    "react-native-webview": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "react": "^19.2.8"
   },
   "directories": {
     "test": "tests"
