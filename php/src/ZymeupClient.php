@@ -12,6 +12,15 @@ class ZymeupClient
     private int $timeout;
     private string $role = 'merchant';
 
+    /** @var callable|null */
+    private $onRequest = null;
+    /** @var callable|null */
+    private $onResponse = null;
+    /** @var callable|null */
+    private $onError = null;
+    private int $maxRetries = 3;
+    private int $retryDelayMs = 1000;
+
     public EpodClient $epod;
     public OrderClient $order;
     public EcmrClient $ecmr;
@@ -67,67 +76,143 @@ class ZymeupClient
         $this->cpsc = new CpscClient($this);
     }
 
+    public function setOnRequest(?callable $fn): void
+    {
+        $this->onRequest = $fn;
+    }
+
+    public function setOnResponse(?callable $fn): void
+    {
+        $this->onResponse = $fn;
+    }
+
+    public function setOnError(?callable $fn): void
+    {
+        $this->onError = $fn;
+    }
+
+    public function setMaxRetries(int $n): void
+    {
+        $this->maxRetries = $n;
+    }
+
+    public function setRetryDelayMs(int $ms): void
+    {
+        $this->retryDelayMs = $ms;
+    }
+
     /**
      * @throws \RuntimeException
      */
     public function request(string $method, string $path, array $data = []): array
     {
         $url = $this->baseUrl . $path;
-        $ch = curl_init();
 
-        if ($ch === false) {
-            throw new \RuntimeException('Failed to initialize cURL handle');
+        if ($this->onRequest !== null) {
+            ($this->onRequest)($method, $path, $data);
         }
 
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $this->apiKey,
-            'Content-Type: application/json',
-            'User-Agent: zymeup-sdk-php/' . self::VERSION,
-        ]);
+        $lastException = null;
+        $attempts = $this->maxRetries + 1;
 
-        if ($method !== 'GET') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        }
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            $ch = curl_init();
 
-        if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
-            $encoded = json_encode($data);
-            if ($encoded === false) {
-                curl_close($ch);
-                throw new \RuntimeException('Failed to encode request body: ' . json_last_error_msg());
+            if ($ch === false) {
+                $ex = new \RuntimeException('Failed to initialize cURL handle');
+                if ($this->onError !== null) {
+                    ($this->onError)($ex);
+                }
+                throw $ex;
             }
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $encoded);
-        }
 
-        $response = curl_exec($ch);
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $this->apiKey,
+                'Content-Type: application/json',
+                'User-Agent: zymeup-sdk-php/' . self::VERSION,
+            ]);
 
-        if ($response === false) {
-            $error = curl_error($ch);
-            $errno = curl_errno($ch);
+            if ($method !== 'GET') {
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+            }
+
+            if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
+                $encoded = json_encode($data);
+                if ($encoded === false) {
+                    curl_close($ch);
+                    $ex = new \RuntimeException('Failed to encode request body: ' . json_last_error_msg());
+                    if ($this->onError !== null) {
+                        ($this->onError)($ex);
+                    }
+                    throw $ex;
+                }
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $encoded);
+            }
+
+            $response = curl_exec($ch);
+
+            if ($response === false) {
+                $error = curl_error($ch);
+                $errno = curl_errno($ch);
+                curl_close($ch);
+                $lastException = new \RuntimeException("cURL request failed (errno {$errno}): {$error}");
+
+                if ($attempt < $attempts) {
+                    usleep($this->retryDelayMs * pow(2, $attempt - 1) * 1000);
+                    continue;
+                }
+
+                if ($this->onError !== null) {
+                    ($this->onError)($lastException);
+                }
+                throw $lastException;
+            }
+
+            $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            throw new \RuntimeException("cURL request failed (errno {$errno}): {$error}");
+
+            $decoded = json_decode($response, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException(
+                    "Failed to decode response (HTTP {$statusCode}): " . json_last_error_msg()
+                );
+            }
+
+            if ($statusCode >= 500 && $attempt < $attempts) {
+                usleep($this->retryDelayMs * pow(2, $attempt - 1) * 1000);
+                continue;
+            }
+
+            if ($statusCode >= 400) {
+                $ex = new \RuntimeException(
+                    "HTTP {$statusCode} error for {$method} {$path}: "
+                    . (is_array($decoded) ? json_encode($decoded) : $response)
+                );
+                if ($this->onError !== null) {
+                    ($this->onError)($ex);
+                }
+                throw $ex;
+            }
+
+            if ($this->onResponse !== null) {
+                $result = ($this->onResponse)($decoded ?? [], $statusCode);
+                return is_array($result) ? $result : ($decoded ?? []);
+            }
+
+            return $decoded ?? [];
         }
 
-        $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        $decoded = json_decode($response, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException(
-                "Failed to decode response (HTTP {$statusCode}): " . json_last_error_msg()
-            );
+        if ($lastException !== null) {
+            if ($this->onError !== null) {
+                ($this->onError)($lastException);
+            }
+            throw $lastException;
         }
 
-        if ($statusCode >= 400) {
-            throw new \RuntimeException(
-                "HTTP {$statusCode} error for {$method} {$path}: "
-                . (is_array($decoded) ? json_encode($decoded) : $response)
-            );
-        }
-
-        return $decoded ?? [];
+        throw new \RuntimeException("Request failed after {$attempts} attempts for {$method} {$path}");
     }
 }
