@@ -4,14 +4,18 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Shipzy.Sdk</RootNamespace>
     <AssemblyName>Shipzy.Sdk</AssemblyName>
-    <Version>1.1.1</Version>
+    <Version>2.0.0</Version>
     <Authors>Shipzy</Authors>
     <Description>Official Shipzy logistics platform SDK for .NET</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>shipzy;logistics;epod;sdk</PackageTags>
+    <PackageTags>shipzy;logistics;epod;ecmr;order;tracking;sdk</PackageTags>
     <RepositoryUrl>https://github.com/alaikis/shipzy-sdks</RepositoryUrl>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**" />
+  </ItemGroup>
 
 </Project>
