@@ -101,6 +101,16 @@ class ZymeupClient
         $this->retryDelayMs = $ms;
     }
 
+    public function getApiKey(): string
+    {
+        return $this->apiKey;
+    }
+
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
+    }
+
     /**
      * @throws \RuntimeException
      */

@@ -54,23 +54,37 @@ module Shipzy
       end
     end
 
-    def request(path, method: :get, body: nil)
+    def request(path, method: :get, body: nil, file: nil)
       uri = URI.join(@config.base_url, path)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme == 'https'
       http.read_timeout = @config.timeout_seconds
 
-      request_class = case method
-                      when :post then Net::HTTP::Post
-                      when :put then Net::HTTP::Put
-                      when :delete then Net::HTTP::Delete
-                      else Net::HTTP::Get
-                      end
-
-      request = request_class.new(uri.request_uri)
-      request['Authorization'] = auth_header if @config.token
-      request['Content-Type'] = 'application/json'
-      request.body = body.to_json if body
+      if file
+        # Multipart file upload
+        boundary = "----RubySDKBoundary#{SecureRandom.uuid}"
+        request = Net::HTTP::Post.new(uri)
+        request['Authorization'] = auth_header if @config.token
+        request['Content-Type'] = "multipart/form-data; boundary=#{boundary}"
+        form_data = [
+          "Content-Disposition: form-data; name=\"file\"; filename=\"#{File.basename(file_path)}\"",
+          "Content-Type: application/octet-stream",
+          "",
+          File.binread(file)
+        ].join("\r\n")
+        request.body = form_data
+      else
+        request_class = case method
+                        when :post then Net::HTTP::Post
+                        when :put then Net::HTTP::Put
+                        when :delete then Net::HTTP::Delete
+                        else Net::HTTP::Get
+                        end
+        request = request_class.new(uri.request_uri)
+        request['Authorization'] = auth_header if @config.token
+        request['Content-Type'] = 'application/json'
+        request.body = body.to_json if body
+      end
 
       response = http.request(request)
 
@@ -133,6 +147,35 @@ module Shipzy
 
     def verify(id)
       request("/api/v1/shipment/epod/#{id}/verify", method: :post)
+    end
+
+    def capture_proof(id, data)
+      request("/api/v1/shipment/epod/#{id}/capture-proof", method: :post, body: data)
+    end
+
+    def upload_photo(id, file_path)
+      uri = URI.join(@config.base_url, "/api/v1/shipment/epod/#{id}/upload-photo")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      http.read_timeout = @config.timeout_seconds
+      boundary = "----RubySDKBoundary#{SecureRandom.uuid}"
+      request = Net::HTTP::Post.new(uri)
+      request['Authorization'] = auth_header if @config.token
+      request['Content-Type'] = "multipart/form-data; boundary=#{boundary}"
+      file_content = File.binread(file_path)
+      form_body = [
+        "--#{boundary}",
+        "Content-Disposition: form-data; name=\"file\"; filename=\"#{File.basename(file_path)}\"",
+        "Content-Type: application/octet-stream",
+        "",
+        file_content,
+        "--#{boundary}--"
+      ].join("\r\n")
+      request.body = form_body
+      response = http.request(request)
+      JSON.parse(response.body)
+    rescue JSON::ParserError
+      {}
     end
   end
 

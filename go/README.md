@@ -9,7 +9,7 @@ Go client library for the [Shipzy](https://shipzy.com) API. Provides typed acces
 - **Client** — API key authentication with configurable HTTP client
 - **OrderClient** — List, Get, Create, Update, Cancel orders
 - **EcmrClient** — European Consignment Note operations
-- **EpodClient** — Electronic Proof of Delivery operations
+- **EpodClient** — Electronic Proof of Delivery operations (list, get, create, generate_from_order, update, generate_sign_url, deliver, fail, generate_pdf, verify, capture_proof)
 - **AddressClient** — Address book management
 - **ActivationClient** — Carrier activation workflows
 - **AgeVerificationClient** — Age verification checks
@@ -107,6 +107,61 @@ updated, err := client.Order.Update("order-123", &zymeup.OrderUpdateRequest{
 
 // Cancel order
 err = client.Order.Cancel("order-123")
+```
+
+### EPOD Operations
+
+```go
+// List EPODs
+epods, err := client.Epod.List(1, 25, "pending")
+
+// Get EPOD detail
+epod, err := client.Epod.Get("epod-123")
+
+// Create EPOD
+epod, err := client.Epod.Create(map[string]interface{}{"order_id": "ord-123"})
+
+// Generate from order
+epod, err := client.Epod.GenerateFromOrder("ord-123", map[string]interface{}{"delivery_mode": "carrier"})
+
+// Generate signing URL
+signURL, err := client.Epod.GenerateSignURL("epod-123")
+
+// Mark as delivered
+_, err = client.Epod.Deliver("epod-123", map[string]interface{}{
+    "delivery_date": "2026-08-01",
+    "remark":        "Left at front desk",
+})
+
+// Mark as failed
+_, err = client.Epod.Fail("epod-123", map[string]interface{}{"remark": "Not home"})
+
+// Generate PDF (async)
+pdfData, err := client.Epod.GeneratePdf("epod-123")
+
+// Verify signature
+verified, err := client.Epod.Verify("epod-123")
+
+// Capture delivery proof
+proofData, err := client.Epod.CaptureProof("epod-123", map[string]interface{}{
+    "signature_data": "...",
+})
+```
+
+### ECMR Operations
+
+```go
+// List ECMRs
+ecmrs, err := client.Ecmr.List(1, 25)
+
+// Get ECMR detail
+ecmr, err := client.Ecmr.Get("ecmr-123")
+
+// Generate signing URL
+signURL, err := client.Ecmr.Sign("ecmr-123")
+
+// Generate PDF
+pdfResult, err := client.Ecmr.Pdf("ecmr-123")
 ```
 
 ## License

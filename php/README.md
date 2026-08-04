@@ -6,7 +6,7 @@ Official PHP SDK for the [Zymeup](https://zymeup.com) logistics platform.
 
 - **ZymeupClient** — API key authentication, configurable base URL and timeout
 - **OrderClient** — list, get, create, createWithDocuments, update, cancel orders
-- **EpodClient** — list, get, generateSignUrl, deliver, fail electronic proof of delivery
+- **EpodClient** — list, get, generateSignUrl, deliver, fail, generatePdf, verify, captureProof, uploadPhoto electronic proof of delivery
 - **EcmrClient** — list, get, create, generateFromOrder, sign, generate PDF for European Consignment Notes
 - **AddressClient** — list, create, update, delete, setDefault merchant addresses
 - **ActivationClient** — list, create, get, activate, deactivate carrier activations
@@ -101,6 +101,10 @@ $client = new ZymeupClient('your-api-key', 'https://api.zymeup.com', 60);
 | `generateSignUrl($id)` | EPOD ID | Generate signing URL |
 | `deliver($id, $data)` | EPOD ID, delivery data | Mark EPOD as delivered |
 | `fail($id, $data)` | EPOD ID, failure data | Mark EPOD as failed |
+| `generatePdf($id)` | EPOD ID | Generate PDF (async) |
+| `verify($id)` | EPOD ID | Verify signature |
+| `captureProof($id, $data)` | EPOD ID, proof data | Capture delivery proof |
+| `uploadPhoto($id, $file)` | EPOD ID, file | Upload photo (multipart) |
 
 ### EcmrClient
 

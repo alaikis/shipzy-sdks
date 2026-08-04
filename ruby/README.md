@@ -125,6 +125,8 @@ client.carrier_epod.upload_photo('epod-id', 'https://example.com/photo.jpg')
 | `generate_sign_url(id)` | Get signing URL |
 | `generate_pdf(id)` | Generate PDF |
 | `verify(id)` | Verify EPOD integrity |
+| `capture_proof(id, data)` | Capture delivery proof |
+| `upload_photo(id, file_path)` | Upload photo (multipart) |
 
 ### `client.ecmr` — EcmrClient
 

@@ -7,7 +7,7 @@ Official Python SDK for the [Zymeup](https://api.zymeup.com) logistics platform.
 - **ZymeupClient** — Unified entry point with API key authentication and configurable base URL
 - **OrderClient** — List, get, create, create with documents, update, and cancel orders
 - **EcmrClient** — Manage European Consignment Notes (create, sign, generate PDF, derive from orders)
-- **EpodClient** — Manage Electronic Proof of Delivery (list, get, deliver, fail, sign)
+- **EpodClient** — Manage Electronic Proof of Delivery (list, get, generate_sign_url, deliver, fail, generate_pdf, verify, capture_proof, upload_photo)
 - **MerchantAddressClient** — Address book CRUD with default address management
 - **ActivationClient** — Provider marketplace: list providers, activate, pause, resume, revoke
 - **AgeVerificationClient** — Create and query age verification events by parcel or order
@@ -118,6 +118,10 @@ All sub-clients are accessed as attributes: `client.order`, `client.ecmr`, `clie
 | `generate_sign_url` | `(epod_id)` | Generate signing URL |
 | `deliver` | `(epod_id, data=None)` | Mark as delivered |
 | `fail` | `(epod_id, data=None)` | Mark as failed |
+| `generate_pdf` | `(epod_id)` | Generate PDF (async) |
+| `verify` | `(epod_id)` | Verify signature |
+| `capture_proof` | `(epod_id, data)` | Capture delivery proof |
+| `upload_photo` | `(epod_id, file)` | Upload photo (multipart) |
 
 ### MerchantAddressClient
 

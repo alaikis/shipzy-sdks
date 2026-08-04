@@ -19,6 +19,21 @@ class EpodClient:
         """Get EPOD detail"""
         return self._client.request("GET", f"/api/v1/shipment/epod/{epod_id}")
 
+    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create EPOD from order"""
+        return self._client.request("POST", "/api/v1/shipment/epod/create", json=data)
+
+    def generate_from_order(self, order_id: str, options: Optional[Dict] = None) -> Dict[str, Any]:
+        """Generate EPOD from an order"""
+        body = {"order_id": order_id}
+        if options:
+            body.update(options)
+        return self._client.request("POST", "/api/v1/shipment/epod/generate-from-order", json=body)
+
+    def update(self, epod_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update EPOD (whitelist fields only)"""
+        return self._client.request("PUT", f"/api/v1/shipment/epod/{epod_id}/update", json=data)
+
     def generate_sign_url(self, epod_id: str) -> Dict[str, Any]:
         """Generate signing URL"""
         return self._client.request("POST", f"/api/v1/shipment/epod/{epod_id}/sign")
@@ -30,3 +45,19 @@ class EpodClient:
     def fail(self, epod_id: str, data: Optional[Dict] = None) -> Dict[str, Any]:
         """Mark as failed"""
         return self._client.request("POST", f"/api/v1/shipment/epod/{epod_id}/fail", json=data or {})
+
+    def generate_pdf(self, epod_id: str) -> Dict[str, Any]:
+        """Generate PDF (async)"""
+        return self._client.request("POST", f"/api/v1/shipment/epod/{epod_id}/pdf")
+
+    def verify(self, epod_id: str) -> Dict[str, Any]:
+        """Verify signature"""
+        return self._client.request("POST", f"/api/v1/shipment/epod/{epod_id}/verify")
+
+    def capture_proof(self, epod_id: str, data: Optional[Dict] = None) -> Dict[str, Any]:
+        """Capture delivery proof"""
+        return self._client.request("POST", f"/api/v1/shipment/epod/{epod_id}/capture-proof", json=data or {})
+
+    def upload_photo(self, epod_id: str, file) -> Dict[str, Any]:
+        """Upload photo (multipart)"""
+        return self._client.request("POST", f"/api/v1/shipment/epod/{epod_id}/upload-photo", files={"file": file})

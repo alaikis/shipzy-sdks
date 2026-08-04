@@ -88,4 +88,10 @@ export class EpodClient extends HttpClient {
     async generatePdf(id: string): Promise<ApiResult<{ pdf_url?: string }>> {
         return this.request(`/api/v1/shipment/epod/${id}/pdf`, 'POST', {});
     }
+
+    async uploadPhoto(id: string, file: File): Promise<ApiResult<{ photo_url: string }>> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.request(`/api/v1/shipment/epod/${id}/upload-photo`, 'POST', formData, true) as Promise<ApiResult<{ photo_url: string }>>;
+    }
 }

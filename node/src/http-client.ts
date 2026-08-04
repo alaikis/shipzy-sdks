@@ -84,7 +84,7 @@ export class HttpClient {
         return `Bearer ${this.config.token || ''}`;
     }
 
-    protected async request<T>(path: string, method: string = 'GET', body?: unknown): Promise<T> {
+    protected async request<T>(path: string, method: string = 'GET', body?: unknown, isFormData?: boolean): Promise<T> {
         const maxRetries = this.config.maxRetries ?? 3;
         const retryDelayMs = this.config.retryDelayMs ?? 1000;
         const interceptor = this.config.interceptors;
@@ -93,7 +93,10 @@ export class HttpClient {
         let lastError: Error | undefined;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
-            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            const headers: Record<string, string> = {};
+            if (!isFormData) {
+                headers['Content-Type'] = 'application/json';
+            }
             if (this.config.token) {
                 headers['Authorization'] = this.getAuthHeader();
             }
@@ -101,7 +104,7 @@ export class HttpClient {
             let options: RequestInit = {
                 method,
                 headers,
-                body: body ? JSON.stringify(body) : undefined,
+                body: isFormData ? (body as FormData) : (body ? JSON.stringify(body) : undefined),
             };
 
             if (interceptor?.onRequest) {

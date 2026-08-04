@@ -97,11 +97,145 @@ func (e *EpodClient) GenerateSignURL(id string) (*SignURLResponse, error) {
 	}
 	defer resp.Body.Close()
 	var result struct {
-		Code int            `json:"code"`
+		Code int             `json:"code"`
 		Data SignURLResponse `json:"data"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 	return &result.Data, nil
+}
+
+func (e *EpodClient) GeneratePdf(id string) (map[string]interface{}, error) {
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/"+id+"/pdf", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (e *EpodClient) Verify(id string) (bool, error) {
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/"+id+"/verify", nil)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int  `json:"code"`
+		Data struct {
+			Verified bool `json:"verified"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, err
+	}
+	return result.Data.Verified, nil
+}
+
+func (e *EpodClient) CaptureProof(id string, data map[string]interface{}) (map[string]interface{}, error) {
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/"+id+"/capture-proof", data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (e *EpodClient) Create(data map[string]interface{}) (map[string]interface{}, error) {
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/create", data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (e *EpodClient) GenerateFromOrder(orderID string, options map[string]interface{}) (map[string]interface{}, error) {
+	body := map[string]interface{}{"order_id": orderID}
+	for k, v := range options {
+		body[k] = v
+	}
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/generate-from-order", body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (e *EpodClient) Update(id string, data map[string]interface{}) (map[string]interface{}, error) {
+	resp, err := e.client.doRequest("PUT", "/api/v1/shipment/epod/"+id+"/update", data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (e *EpodClient) Deliver(id string, data map[string]interface{}) (map[string]interface{}, error) {
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/"+id+"/delivery", data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (e *EpodClient) Fail(id string, data map[string]interface{}) (map[string]interface{}, error) {
+	resp, err := e.client.doRequest("POST", "/api/v1/shipment/epod/"+id+"/fail", data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
 }
