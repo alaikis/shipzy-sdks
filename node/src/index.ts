@@ -17,367 +17,15 @@ export interface ApiResult<T> {
     message?: string;
 }
 
-// ============ EPOD Client ============
-
-export interface EpodListItem {
-    id: string;
-    tracking_no: string;
-    status: string;
-    recipient_name?: string;
-    created_at: string;
-}
-
-export interface EpodListResponse {
-    data: EpodListItem[];
-    total: number;
-    page: number;
-    page_size: number;
-}
-
-export interface EpodDetail {
-    id: string;
-    tracking_no: string;
-    status: string;
-    recipient_name?: string;
-    recipient_phone?: string;
-    delivery_address?: Record<string, any>;
-    sender_address?: Record<string, any>;
-    proof_type?: string;
-    created_at: string;
-    updated_at: string;
-    sign_url?: string;
-    evidence_hash?: string;
-    document_hash?: string;
-    signature_data?: string;
-    photo_url?: string;
-}
-
-export interface SignUrlResponse {
-    sign_url: string;
-}
-
-export class EpodClient extends HttpClient {
-    async list(params: { page?: number; pageSize?: number; status?: string; trackingNo?: string } = {}): Promise<ApiResult<EpodListResponse>> {
-        const q = this.buildQuery({ page: params.page, page_size: params.pageSize, status: params.status, tracking_no: params.trackingNo });
-        return this.request(`/api/v1/shipment/epod/list${q}`);
-    }
-
-    async get(id: string): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/shipment/epod/${id}`);
-    }
-
-    async create(data: Record<string, unknown>): Promise<ApiResult<EpodDetail>> {
-        return this.request('/api/v1/shipment/epod/create', 'POST', data);
-    }
-
-    async generateFromOrder(orderId: string, options: Record<string, unknown> = {}): Promise<ApiResult<EpodDetail>> {
-        return this.request('/api/v1/shipment/epod/generate-from-order', 'POST', { order_id: orderId, ...options });
-    }
-
-    async update(id: string, data: Record<string, unknown>): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/shipment/epod/${id}/update`, 'PUT', data);
-    }
-
-    async deliver(id: string, data: Record<string, unknown> = {}): Promise<ApiResult<SignUrlResponse & { sign_token_expires_at?: string }>> {
-        return this.request(`/api/v1/shipment/epod/${id}/delivery`, 'POST', data);
-    }
-
-    async fail(id: string, data: { remark: string }): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/shipment/epod/${id}/fail`, 'POST', data);
-    }
-
-    async captureProof(id: string, data: Record<string, unknown>): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/shipment/epod/${id}/capture-proof`, 'POST', data);
-    }
-
-    async verify(id: string): Promise<ApiResult<{ verified: boolean; error?: string }>> {
-        return this.request(`/api/v1/shipment/epod/${id}/verify`, 'POST', {});
-    }
-
-    async generateSignUrl(id: string): Promise<ApiResult<SignUrlResponse>> {
-        return this.request(`/api/v1/shipment/epod/${id}/sign`, 'POST', {});
-    }
-
-    async generatePdf(id: string): Promise<ApiResult<{ pdf_url?: string }>> {
-        return this.request(`/api/v1/shipment/epod/${id}/pdf`, 'POST', {});
-    }
-}
-
-// ============ Public EPOD Client (no auth) ============
-
-export interface PublicSignDetail {
-    tracking_no: string;
-    recipient_name: string;
-    delivery_address_summary: string;
-    destination_country_code: string;
-    policy_url: string;
-    policy_version_hash: string;
-    signature_level_required: string;
-    allowed_proof_types: string[];
-    signature_waived: boolean;
-    expires_at: string;
-}
-
-export interface PublicConsentResponse {
-    consent_id: string;
-    policy_version_hash: string;
-}
-
-export interface PublicCaptureResponse {
-    evidence_hash: string;
-    status: string;
-    hash_locked: boolean;
-}
-
-/**
- * PublicEpodClient provides access to public EPOD signing endpoints.
- * These endpoints use token-based auth (sign_token) and do not require API keys.
- */
-export class PublicEpodClient {
-    private baseUrl: string;
-
-    constructor(baseUrl: string = DEFAULT_CONFIG.baseUrl!) {
-        this.baseUrl = baseUrl.replace(/\/$/, '');
-    }
-
-    async getSignDetail(signToken: string): Promise<PublicSignDetail> {
-        const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-    }
-
-    async getPolicy(signToken: string, lang = 'en'): Promise<any> {
-        const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/policy?lang=${lang}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-    }
-
-    async recordConsent(signToken: string, consentTypes: string[], policyVersionHash: string): Promise<PublicConsentResponse> {
-        const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/consent`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ consent_types: consentTypes, policy_version_hash: policyVersionHash }),
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-    }
-
-    async captureSignature(signToken: string, consentId: string, signatureData: string, proofType = 'signature'): Promise<PublicCaptureResponse> {
-        const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/capture`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ consent_id: consentId, signature_data: signatureData, proof_type: proofType }),
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-    }
-}
-
-// ============ Order Client ============
-
-export interface OrderListItem {
-    id: string;
-    order_no: string;
-    status: string;
-    customer_name?: string;
-    total_amount?: number;
-    currency?: string;
-    created_at: string;
-}
-
-export interface OrderListResponse {
-    data: OrderListItem[];
-    total: number;
-    page: number;
-    page_size: number;
-}
-
-export interface OrderDetail {
-    id: string;
-    order_no: string;
-    status: string;
-    customer_name?: string;
-    customer_email?: string;
-    customer_phone?: string;
-    total_amount?: number;
-    currency?: string;
-    notes?: string;
-    created_at: string;
-    updated_at: string;
-}
-
-export class OrderClient extends HttpClient {
-    async list(params: { page?: number; pageSize?: number; status?: string } = {}): Promise<ApiResult<OrderListResponse>> {
-        const q = this.buildQuery({ page: params.page, page_size: params.pageSize, status: params.status });
-        return this.request(`/api/v1/order/list${q}`);
-    }
-
-    async get(id: string): Promise<ApiResult<OrderDetail>> {
-        return this.request(`/api/v1/order/${id}`);
-    }
-
-    async create(data: Record<string, unknown>): Promise<ApiResult<OrderDetail>> {
-        return this.request('/api/v1/order/create', 'POST', data);
-    }
-
-    async createWithDocuments(data: Record<string, unknown>): Promise<ApiResult<OrderDetail & { epod_id?: string; ecmr_id?: string }>> {
-        return this.request('/api/v1/order/create-with-documents', 'POST', data);
-    }
-
-    async update(id: string, data: Record<string, unknown>): Promise<ApiResult<OrderDetail>> {
-        return this.request(`/api/v1/order/${id}/update`, 'POST', data);
-    }
-
-    async cancel(id: string): Promise<ApiResult<OrderDetail>> {
-        return this.request(`/api/v1/order/${id}/cancel`, 'POST', {});
-    }
-}
-
-// ============ ECMR Client ============
-
-export interface EcmrListItem {
-    id: string;
-    document_no: string;
-    status: string;
-    created_at: string;
-}
-
-export interface EcmrListResponse {
-    data: EcmrListItem[];
-    total: number;
-    page: number;
-    page_size: number;
-}
-
-export class EcmrClient extends HttpClient {
-    async list(params: { page?: number; pageSize?: number } = {}): Promise<ApiResult<EcmrListResponse>> {
-        const q = this.buildQuery({ page: params.page, page_size: params.pageSize });
-        return this.request(`/api/v1/shipment/ecmr/list${q}`);
-    }
-
-    async get(id: string): Promise<ApiResult<Record<string, any>>> {
-        return this.request(`/api/v1/shipment/ecmr/${id}`);
-    }
-
-    async create(data: Record<string, unknown>): Promise<ApiResult<Record<string, any>>> {
-        return this.request('/api/v1/shipment/ecmr/create', 'POST', data);
-    }
-
-    async generateFromOrder(orderId: string): Promise<ApiResult<Record<string, any>>> {
-        return this.request('/api/v1/shipment/ecmr/generate-from-order', 'POST', { order_id: orderId });
-    }
-
-    async sign(id: string): Promise<ApiResult<Record<string, any>>> {
-        return this.request(`/api/v1/shipment/ecmr/${id}/sign`, 'POST', {});
-    }
-
-    async pdf(id: string): Promise<ApiResult<{ status: string; pdf_url?: string }>> {
-        return this.request(`/api/v1/shipment/ecmr/${id}/pdf`, 'POST', {});
-    }
-}
-
-// ============ Address Client (Merchant) ============
-
-export interface Address {
-    id: string;
-    full_name?: string;
-    company_name?: string;
-    street?: string;
-    house_number?: string;
-    postal_code?: string;
-    city?: string;
-    country_code?: string;
-    phone?: string;
-    email?: string;
-    is_default?: boolean;
-}
-
-export interface AddressListResponse {
-    data: Address[];
-    total: number;
-}
-
-export class AddressClient extends HttpClient {
-    async list(params: Record<string, unknown> = {}): Promise<ApiResult<AddressListResponse>> {
-        return this.request('/api/v1/merchant/addresses/list', 'POST', params);
-    }
-
-    async create(data: Record<string, unknown>): Promise<ApiResult<Address>> {
-        return this.request('/api/v1/merchant/addresses/create', 'POST', data);
-    }
-
-    async update(id: string, data: Record<string, unknown>): Promise<ApiResult<Address>> {
-        return this.request(`/api/v1/merchant/addresses/${id}/update`, 'POST', data);
-    }
-
-    async delete(id: string): Promise<ApiResult<{ deleted: boolean }>> {
-        return this.request(`/api/v1/merchant/addresses/${id}/delete`, 'POST', {});
-    }
-
-    async setDefault(id: string): Promise<ApiResult<Address>> {
-        return this.request(`/api/v1/merchant/addresses/${id}/set-default`, 'POST', {});
-    }
-}
-
-// ============ Carrier EPOD Client ============
-
-export class CarrierEpodClient extends HttpClient {
-    async list(params: { page?: number; pageSize?: number; status?: string } = {}): Promise<ApiResult<EpodListResponse>> {
-        const q = this.buildQuery({ page: params.page, page_size: params.pageSize, status: params.status });
-        return this.request(`/api/v1/carrier/epod/list${q}`);
-    }
-
-    async get(id: string): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/carrier/epod/${id}`);
-    }
-
-    async deliver(id: string, data: Record<string, unknown> = {}): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/carrier/epod/${id}/delivery`, 'POST', data);
-    }
-
-    async fail(id: string, data: { remark: string }): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/carrier/epod/${id}/fail`, 'POST', data);
-    }
-
-    async captureProof(id: string, data: Record<string, unknown>): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/carrier/epod/${id}/capture-proof`, 'POST', data);
-    }
-
-    async uploadPhoto(id: string, data: { photo_url: string }): Promise<ApiResult<EpodDetail>> {
-        return this.request(`/api/v1/carrier/epod/${id}/photo`, 'POST', data);
-    }
-}
-
-// ============ Carrier Address Client ============
-
-export class CarrierAddressClient extends HttpClient {
-    async list(params: Record<string, unknown> = {}): Promise<ApiResult<AddressListResponse>> {
-        return this.request('/api/v1/carrier/sdk/addresses/list', 'POST', params);
-    }
-
-    async create(data: Record<string, unknown>): Promise<ApiResult<Address>> {
-        return this.request('/api/v1/carrier/sdk/addresses/create', 'POST', data);
-    }
-
-    async update(id: string, data: Record<string, unknown>): Promise<ApiResult<Address>> {
-        return this.request(`/api/v1/carrier/sdk/addresses/${id}/update`, 'POST', data);
-    }
-
-    async delete(id: string): Promise<ApiResult<{ deleted: boolean }>> {
-        return this.request(`/api/v1/carrier/sdk/addresses/${id}/delete`, 'POST', {});
-    }
-
-    async setDefault(id: string): Promise<ApiResult<Address>> {
-        return this.request(`/api/v1/carrier/sdk/addresses/${id}/set-default`, 'POST', {});
-    }
-}
-
-// ============ VERSION ============
-
-export const VERSION = '2.0.0';
-
 // ============ Module Imports ============
 
+import { EpodClient } from './epod';
+import { PublicEpodClient } from './public-epod';
+import { OrderClient } from './order';
+import { EcmrClient } from './ecmr';
+import { AddressClient } from './address';
+import { CarrierEpodClient } from './carrier-epod';
+import { CarrierAddressClient } from './carrier-address';
 import { PickupPointClient } from './pickup-points';
 import { ShipmentClient } from './shipment';
 import { ParcelClient } from './parcel';
@@ -394,6 +42,30 @@ import type { DeliveryMode, ChannelType, NotificationResult } from './notificati
 import { CarrierClient } from './carrier';
 import { PlatformConfigClient } from './platform';
 import { UploadClient } from './upload';
+
+// ============ Re-exports from new modules ============
+
+export { EpodClient } from './epod';
+export type { EpodListItem, EpodListResponse, EpodDetail, SignUrlResponse } from './epod';
+
+export { PublicEpodClient } from './public-epod';
+export type { PublicSignDetail, PublicConsentResponse, PublicCaptureResponse } from './public-epod';
+
+export { OrderClient } from './order';
+export type { OrderListItem, OrderListResponse, OrderDetail } from './order';
+
+export { EcmrClient } from './ecmr';
+export type { EcmrListItem, EcmrListResponse } from './ecmr';
+
+export { AddressClient } from './address';
+export type { Address, AddressListResponse } from './address';
+
+export { CarrierEpodClient } from './carrier-epod';
+export { CarrierAddressClient } from './carrier-address';
+
+// ============ VERSION ============
+
+export const VERSION = '2.0.0';
 
 // ============ Main SDK ============
 
