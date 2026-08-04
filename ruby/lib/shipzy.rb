@@ -261,8 +261,186 @@ module Shipzy
     end
   end
 
+  class ActivationClient < HttpClient
+    def list_providers(capability: nil)
+      q = build_query({ capability: capability })
+      request("/api/v1/marketplace/providers#{q}")
+    end
+
+    def get_provider(slug)
+      request("/api/v1/marketplace/providers/#{slug}")
+    end
+
+    def list(page: 1, page_size: 25)
+      q = build_query({ page: page, page_size: page_size })
+      request("/api/v1/marketplace/activations#{q}")
+    end
+
+    def get(id)
+      request("/api/v1/marketplace/activations/#{id}")
+    end
+
+    def activate(data)
+      request('/api/v1/marketplace/activations', method: :post, body: data)
+    end
+
+    def pause(id)
+      request("/api/v1/marketplace/activations/#{id}/pause", method: :post)
+    end
+
+    def resume(id)
+      request("/api/v1/marketplace/activations/#{id}/resume", method: :post)
+    end
+
+    def revoke(id, reason: nil)
+      request("/api/v1/marketplace/activations/#{id}/revoke", method: :post, body: { reason: reason }.compact)
+    end
+  end
+
+  class AgeVerificationClient < HttpClient
+    def create(data)
+      request('/api/v1/age-verifications', method: :post, body: data)
+    end
+
+    def list_by_parcel(parcel_id)
+      q = build_query({ parcel_id: parcel_id })
+      request("/api/v1/age-verifications#{q}")
+    end
+
+    def list_by_order(order_id)
+      q = build_query({ order_id: order_id })
+      request("/api/v1/age-verifications#{q}")
+    end
+  end
+
+  class PickupPointClient < HttpClient
+    def list(active_only: nil)
+      q = build_query({ active_only: active_only })
+      request("/api/v1/admin/pickup-points#{q}")
+    end
+
+    def get(id)
+      request("/api/v1/admin/pickup-points/#{id}")
+    end
+
+    def create(data)
+      request('/api/v1/admin/pickup-points', method: :post, body: data)
+    end
+
+    def update(id, data)
+      request("/api/v1/admin/pickup-points/#{id}", method: :put, body: data)
+    end
+
+    def deactivate(id)
+      request("/api/v1/admin/pickup-points/#{id}/deactivate", method: :post)
+    end
+  end
+
+  class ProductClient < HttpClient
+    def list(status: nil, category: nil, search: nil, active_only: nil)
+      q = build_query({ status: status, category: category, search: search, active_only: active_only })
+      request("/api/v1/products#{q}")
+    end
+
+    def get(id)
+      request("/api/v1/products/#{id}")
+    end
+
+    def create(data)
+      request('/api/v1/products', method: :post, body: data)
+    end
+
+    def update(id, data)
+      request("/api/v1/products/#{id}", method: :put, body: data)
+    end
+
+    def retire(id)
+      request("/api/v1/products/#{id}/retire", method: :post)
+    end
+  end
+
+  class FinanceClient < HttpClient
+    def invoices
+      request('/api/finance/invoices')
+    end
+
+    def list_subscriptions
+      request('/api/finance/subscriptions')
+    end
+
+    def cancel_subscription(id)
+      request("/api/finance/subscriptions/#{id}/cancel", method: :post)
+    end
+
+    def restore_subscription(id)
+      request("/api/finance/subscriptions/#{id}/restore", method: :post)
+    end
+
+    def download_invoice(id)
+      request("/api/v1/merchant/invoices/#{id}/download")
+    end
+  end
+
+  class NotificationClient < HttpClient
+    DELIVERY_MODES = %w[carrier self-delivery self-pickup].freeze
+    NOTIFICATION_CHANNELS = %w[email copy_url sms whatsapp].freeze
+
+    def self.validate_channel_requirements(channel, data)
+      case channel
+      when 'email'
+        data[:recipient_email] && !data[:recipient_email].empty?
+      when 'sms'
+        data[:recipient_phone] && !data[:recipient_phone].empty?
+      when 'whatsapp'
+        data[:recipient_phone] && !data[:recipient_phone].empty?
+      when 'copy_url'
+        true
+      else
+        false
+      end
+    end
+  end
+
+  class SupportTicketClient < HttpClient
+    def create(data)
+      request('/shipment/support/tickets', method: :post, body: data)
+    end
+
+    def list(status: nil)
+      q = build_query({ status: status })
+      request("/shipment/support/tickets#{q}")
+    end
+
+    def get(id)
+      request("/shipment/support/tickets/#{id}")
+    end
+
+    def add_message(id, content)
+      request("/shipment/support/tickets/#{id}/messages", method: :post, body: { content: content })
+    end
+
+    def admin_list(status: nil, priority: nil)
+      q = build_query({ status: status, priority: priority })
+      request("/api/v1/admin/support/tickets#{q}")
+    end
+
+    def admin_update(id, data)
+      request("/api/v1/admin/support/tickets/#{id}", method: :patch, body: data)
+    end
+
+    def admin_reply(id, content)
+      request("/api/v1/admin/support/tickets/#{id}/messages", method: :post, body: { content: content })
+    end
+
+    def admin_stats
+      request('/api/v1/admin/support/stats')
+    end
+  end
+
   class ShipzyClient
-    attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address, :role
+    attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address,
+                :activation, :age_verification, :pickup_point, :product,
+                :finance, :notification, :support_ticket, :role
 
     def initialize(config = Config.new)
       @role = config.role
@@ -272,6 +450,13 @@ module Shipzy
       @address = AddressClient.new(config)
       @carrier_epod = CarrierEpodClient.new(config)
       @carrier_address = CarrierAddressClient.new(config)
+      @activation = ActivationClient.new(config)
+      @age_verification = AgeVerificationClient.new(config)
+      @pickup_point = PickupPointClient.new(config)
+      @product = ProductClient.new(config)
+      @finance = FinanceClient.new(config)
+      @notification = NotificationClient.new(config)
+      @support_ticket = SupportTicketClient.new(config)
     end
 
     def update_token(token)
@@ -281,6 +466,13 @@ module Shipzy
       @address.set_token(token)
       @carrier_epod.set_token(token)
       @carrier_address.set_token(token)
+      @activation.set_token(token)
+      @age_verification.set_token(token)
+      @pickup_point.set_token(token)
+      @product.set_token(token)
+      @finance.set_token(token)
+      @notification.set_token(token)
+      @support_ticket.set_token(token)
     end
 
     def merchant?
@@ -292,5 +484,5 @@ module Shipzy
     end
   end
 
-  VERSION = '1.0.0'
+  VERSION = '2.0.0'
 end

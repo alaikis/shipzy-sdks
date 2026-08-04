@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = 'shipzy-sdk'
-  spec.version       = '1.1.1'
+  spec.version       = '2.0.0'
   spec.authors       = ['Shipzy']
   spec.email         = ['support@shipzy.me']
   spec.summary       = 'Official Shipzy logistics platform SDK for Ruby'
