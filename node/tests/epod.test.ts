@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
     ShipzyClient, EpodClient, OrderClient, EcmrClient, AddressClient,
     CarrierEpodClient, CarrierAddressClient,
-    ShipzyConfig, ShipzyError, ShipzyAuthError, VERSION
+    ShipzyConfig, ZymeupError, ZymeupAuthError, VERSION
 } from '../src/index';
 
 describe('VERSION', () => {
     it('should have a version', () => {
-        expect(VERSION).toBe('2.0.1');
+        expect(VERSION).toBe('2.1.1');
     });
 });
 
@@ -60,15 +60,15 @@ describe('Sub-clients', () => {
 });
 
 describe('Errors', () => {
-    it('ShipzyError should have status code', () => {
-        const err = new ShipzyError('bad request', 400);
+    it('ZymeupError should have status code', () => {
+        const err = new ZymeupError('bad request', 400);
         expect(err.statusCode).toBe(400);
-        expect(err.name).toBe('ShipzyError');
+        expect(err.name).toBe('ZymeupError');
     });
 
-    it('ShipzyAuthError should be 401', () => {
-        const err = new ShipzyAuthError('unauthorized');
+    it('ZymeupAuthError should be 401', () => {
+        const err = new ZymeupAuthError('unauthorized');
         expect(err.statusCode).toBe(401);
-        expect(err.name).toBe('ShipzyAuthError');
+        expect(err.name).toBe('ZymeupAuthError');
     });
 });

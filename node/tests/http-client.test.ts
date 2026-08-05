@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HttpClient, ShipzyError, ShipzyAuthError, DEFAULT_CONFIG } from '../src/http-client';
+import { HttpClient, ZymeupError, ZymeupAuthError, DEFAULT_CONFIG } from '../src/http-client';
 
 class TestHttpClient extends HttpClient {
     public async testRequest<T>(path: string, method?: string, body?: unknown): Promise<T> {
@@ -13,7 +13,7 @@ class TestHttpClient extends HttpClient {
 
 describe('DEFAULT_CONFIG', () => {
     it('has correct default values', () => {
-        expect(DEFAULT_CONFIG.baseUrl).toBe('https://api.shipzy.me');
+        expect(DEFAULT_CONFIG.baseUrl).toBe('https://api.zymeup.com');
         expect(DEFAULT_CONFIG.timeout).toBe(30000);
         expect(DEFAULT_CONFIG.role).toBe('merchant');
         expect(DEFAULT_CONFIG.maxRetries).toBe(3);
@@ -21,27 +21,27 @@ describe('DEFAULT_CONFIG', () => {
     });
 });
 
-describe('ShipzyError', () => {
+describe('ZymeupError', () => {
     it('stores message and statusCode', () => {
-        const err = new ShipzyError('not found', 404);
+        const err = new ZymeupError('not found', 404);
         expect(err.message).toBe('not found');
         expect(err.statusCode).toBe(404);
-        expect(err.name).toBe('ShipzyError');
+        expect(err.name).toBe('ZymeupError');
         expect(err).toBeInstanceOf(Error);
     });
 
     it('is not an AuthError', () => {
-        const err = new ShipzyError('forbidden', 403);
-        expect(err).not.toBeInstanceOf(ShipzyAuthError);
+        const err = new ZymeupError('forbidden', 403);
+        expect(err).not.toBeInstanceOf(ZymeupAuthError);
     });
 });
 
-describe('ShipzyAuthError', () => {
+describe('ZymeupAuthError', () => {
     it('defaults to 401', () => {
-        const err = new ShipzyAuthError('token expired');
+        const err = new ZymeupAuthError('token expired');
         expect(err.statusCode).toBe(401);
-        expect(err.name).toBe('ShipzyAuthError');
-        expect(err).toBeInstanceOf(ShipzyError);
+        expect(err.name).toBe('ZymeupAuthError');
+        expect(err).toBeInstanceOf(ZymeupError);
         expect(err).toBeInstanceOf(Error);
     });
 });
@@ -96,7 +96,7 @@ describe('HttpClient request (mocked fetch)', () => {
         expect(result).toEqual({ code: 0, data: 'ok' });
     });
 
-    it('throws ShipzyAuthError on 401', async () => {
+    it('throws ZymeupAuthError on 401', async () => {
         mockFetch.mockResolvedValue({
             ok: false,
             status: 401,
@@ -104,10 +104,10 @@ describe('HttpClient request (mocked fetch)', () => {
         });
 
         const client = new TestHttpClient({ token: 'bad-token' });
-        await expect(client.testRequest('/secure')).rejects.toThrow(ShipzyAuthError);
+        await expect(client.testRequest('/secure')).rejects.toThrow(ZymeupAuthError);
     });
 
-    it('throws ShipzyError on non-401 error', async () => {
+    it('throws ZymeupError on non-401 error', async () => {
         mockFetch.mockResolvedValue({
             ok: false,
             status: 500,
@@ -119,9 +119,9 @@ describe('HttpClient request (mocked fetch)', () => {
             await client.testRequest('/crash');
             expect.fail('should have thrown');
         } catch (e) {
-            expect(e).toBeInstanceOf(ShipzyError);
-            expect((e as ShipzyError).statusCode).toBe(500);
-            expect((e as ShipzyError).message).toBe('Internal Server Error');
+            expect(e).toBeInstanceOf(ZymeupError);
+            expect((e as ZymeupError).statusCode).toBe(500);
+            expect((e as ZymeupError).message).toBe('Internal Server Error');
         }
     }, 10000);
 

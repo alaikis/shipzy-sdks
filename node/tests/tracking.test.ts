@@ -15,7 +15,7 @@ describe('TrackingClient', () => {
         await client.detail('3SABC123456789');
 
         const [url] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.shipzy.me/api/v1/tracking/3SABC123456789');
+        expect(url).toBe('https://api.zymeup.com/api/v1/tracking/3SABC123456789');
     });
 
     it('detail() encodes tracking number', async () => {
