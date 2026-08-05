@@ -484,7 +484,7 @@ module Shipzy
   class ShipzyClient
     attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address,
                 :activation, :age_verification, :pickup_point, :product,
-                :finance, :notification, :support_ticket, :role
+                :finance, :notification, :support_ticket, :validation, :role
 
     def initialize(config = Config.new)
       @role = config.role
@@ -501,6 +501,7 @@ module Shipzy
       @finance = FinanceClient.new(config)
       @notification = NotificationClient.new(config)
       @support_ticket = SupportTicketClient.new(config)
+      @validation = ValidationClient.new(config)
     end
 
     def update_token(token)
@@ -517,6 +518,7 @@ module Shipzy
       @finance.set_token(token)
       @notification.set_token(token)
       @support_ticket.set_token(token)
+      @validation.set_token(token)
     end
 
     def merchant?

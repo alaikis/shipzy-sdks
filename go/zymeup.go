@@ -13,6 +13,7 @@ type ZymeupClient struct {
 	Finance         *FinanceClient
 	Notification    *NotificationClient
 	SupportTicket   *SupportTicketClient
+	Validation      *ValidationClient
 }
 
 // NewZymeupClient creates a new ZymeupClient with the given API key
@@ -30,5 +31,6 @@ func NewZymeupClient(apiKey string) *ZymeupClient {
 		Finance:         NewFinanceClient(c),
 		Notification:    NewNotificationClient(c),
 		SupportTicket:   NewSupportTicketClient(c),
+		Validation:      NewValidationClient(c),
 	}
 }

@@ -13,6 +13,7 @@ from .product import ProductClient
 from .finance import FinanceClient
 from .notification import DELIVERY_MODES, NOTIFICATION_CHANNELS, validate_channel_requirements
 from .support_ticket import SupportTicketClient
+from .validation import ValidationClient
 
 __all__ = [
     "ZymeupClient",
@@ -30,4 +31,5 @@ __all__ = [
     "NOTIFICATION_CHANNELS",
     "validate_channel_requirements",
     "SupportTicketClient",
+    "ValidationClient",
 ]

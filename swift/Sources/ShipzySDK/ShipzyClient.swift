@@ -14,6 +14,7 @@ public class ShipzyClient: @unchecked Sendable {
     public let finance: FinanceClient
     public let notification: NotificationClient
     public let supportTicket: SupportTicketClient
+    public let validation: ValidationClient
     public let role: UserRole
     private var config: ShipzyConfig
 
@@ -31,6 +32,7 @@ public class ShipzyClient: @unchecked Sendable {
         self.finance = FinanceClient(config: config)
         self.notification = NotificationClient(config: config)
         self.supportTicket = SupportTicketClient(config: config)
+        self.validation = ValidationClient(config: config)
     }
 
     public func updateToken(_ token: String) {
@@ -52,6 +54,7 @@ public class ShipzyClient: @unchecked Sendable {
         self.finance.setToken(token)
         self.notification.setToken(token)
         self.supportTicket.setToken(token)
+        self.validation.setToken(token)
     }
 
     public func isMerchant() -> Bool {

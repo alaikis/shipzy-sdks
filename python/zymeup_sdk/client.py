@@ -12,6 +12,7 @@ from .pickup_points import PickupPointClient
 from .product import ProductClient
 from .finance import FinanceClient
 from .support_ticket import SupportTicketClient
+from .validation import ValidationClient
 
 VERSION = "2.0.0"
 BASE_URL = "https://api.zymeup.com"
@@ -40,6 +41,7 @@ class ZymeupClient:
         self.product = ProductClient(self)
         self.finance = FinanceClient(self)
         self.support_ticket = SupportTicketClient(self)
+        self.validation = ValidationClient(self)
 
     def request(self, method: str, path: str, **kwargs) -> Dict[str, Any]:
         url = f"{self.base_url}{path}"

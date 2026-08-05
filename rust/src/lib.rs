@@ -11,6 +11,7 @@ pub mod pickup_points;
 pub mod product;
 pub mod support_ticket;
 pub mod types;
+pub mod validation;
 
 pub use activation::*;
 pub use age_verification::*;
@@ -25,6 +26,7 @@ pub use pickup_points::*;
 pub use product::*;
 pub use support_ticket::*;
 pub use types::*;
+pub use validation::*;
 
 pub struct ShipzyClient {
     pub order: OrderClient,
@@ -36,6 +38,7 @@ pub struct ShipzyClient {
     pub product: ProductClient,
     pub finance: FinanceClient,
     pub support_ticket: SupportTicketClient,
+    pub validation: ValidationClient,
     pub role: UserRole,
 }
 
@@ -52,6 +55,7 @@ impl ShipzyClient {
             product: ProductClient::new(http_client::HttpClient::new(config.clone())?),
             finance: FinanceClient::new(http_client::HttpClient::new(config.clone())?),
             support_ticket: SupportTicketClient::new(http_client::HttpClient::new(config)?),
+            validation: ValidationClient::new(http_client::HttpClient::new(config.clone())?),
             role,
         })
     }
@@ -66,6 +70,7 @@ impl ShipzyClient {
         self.product.inner.set_token(token);
         self.finance.inner.set_token(token);
         self.support_ticket.inner.set_token(token);
+        self.validation.inner.set_token(token);
     }
 
     pub fn is_merchant(&self) -> bool {

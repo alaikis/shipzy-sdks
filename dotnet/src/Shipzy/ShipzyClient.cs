@@ -20,6 +20,7 @@ namespace Shipzy.Sdk
         public CarrierClient Carrier { get; }
         public PlatformConfigClient PlatformConfig { get; }
         public TrackingClient Tracking { get; }
+        public ValidationClient Validation { get; }
 
         public ShipzyClient(ShipzyConfig config)
         {
@@ -39,6 +40,7 @@ namespace Shipzy.Sdk
             Carrier = new CarrierClient(config);
             PlatformConfig = new PlatformConfigClient(config);
             Tracking = new TrackingClient(config);
+            Validation = new ValidationClient(config);
         }
 
         public void UpdateToken(string token)
@@ -59,6 +61,7 @@ namespace Shipzy.Sdk
             Carrier.SetToken(token);
             PlatformConfig.SetToken(token);
             Tracking.SetToken(token);
+            Validation.SetToken(token);
         }
     }
 }

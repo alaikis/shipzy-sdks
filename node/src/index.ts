@@ -42,6 +42,7 @@ import type { DeliveryMode, ChannelType, NotificationResult } from './notificati
 import { CarrierClient } from './carrier';
 import { PlatformConfigClient } from './platform';
 import { UploadClient } from './upload';
+import { ValidationClient } from './validation';
 
 // ============ Re-exports from new modules ============
 
@@ -92,6 +93,7 @@ export class ShipzyClient {
     public carrier: CarrierClient;
     public platformConfig: PlatformConfigClient;
     public upload: UploadClient;
+    public validation: ValidationClient;
     private config: ShipzyConfig;
 
     constructor(config: Partial<ShipzyConfig> = {}) {
@@ -118,6 +120,7 @@ export class ShipzyClient {
         this.carrier = new CarrierClient(this.config);
         this.platformConfig = new PlatformConfigClient(this.config);
         this.upload = new UploadClient(this.config);
+        this.validation = new ValidationClient(this.config);
     }
 
     updateToken(token: string): void {
@@ -142,6 +145,7 @@ export class ShipzyClient {
         this.carrier.setToken(token);
         this.platformConfig.setToken(token);
         this.upload.setToken(token);
+        this.validation.setToken(token);
     }
 
     updateConfig(config: Partial<ShipzyConfig>): void {
@@ -175,6 +179,7 @@ export class ShipzyClient {
         if (this.carrier) this.carrier.setConfig(config);
         if (this.platformConfig) this.platformConfig.setConfig(config);
         if (this.upload) this.upload.setConfig(config);
+        if (this.validation) this.validation.setConfig(config);
     }
 
     isMerchant(): boolean {
@@ -228,6 +233,8 @@ export type {
 export { CPSCClient } from './lib/cpsc/client';
 export type { Carrier } from './carrier';
 export type { PlatformConfig } from './platform';
+export { ValidationClient } from './validation';
+export type { PhoneVerifyResult, PhoneFormatResult, PostalCodeResult, EmailValidationResult, TaxIdValidationResult } from './validation';
 
 // ============ RN (React Native / Expo) ============
 // Note: RN module is not re-exported from the main entry point to avoid

@@ -44,6 +44,7 @@ class ZymeupClient
     public UploadClient $upload;
     public TrackingClient $tracking;
     public CpscClient $cpsc;
+    public ValidationClient $validation;
 
     public function __construct(string $apiKey, string $baseUrl = self::BASE_URL, int $timeout = 30)
     {
@@ -74,6 +75,7 @@ class ZymeupClient
         $this->upload = new UploadClient($this);
         $this->tracking = new TrackingClient($this);
         $this->cpsc = new CpscClient($this);
+        $this->validation = new ValidationClient($this);
     }
 
     public function setOnRequest(?callable $fn): void
