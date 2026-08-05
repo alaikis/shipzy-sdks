@@ -36,7 +36,7 @@ import (
 )
 
 func main() {
-    client := zymeup.NewClient("your-api-key")
+    client := zymeup.NewZymeupClient("your-api-key")
 
     orders, err := client.Order.List(nil)
     if err != nil {
@@ -52,10 +52,10 @@ func main() {
 ### Client
 
 ```go
-client := zymeup.NewClient("your-api-key")
+client := zymeup.NewZymeupClient("your-api-key")
 ```
 
-All service clients are accessed through the top-level `Client`:
+All service clients are accessed through the top-level `ZymeupClient`:
 
 | Field | Type | Description |
 |-------|------|-------------|

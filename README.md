@@ -2,20 +2,20 @@
 
 Official multi-language SDK for the [Shipzy](https://shipzy.me) logistics platform.
 
-**Current version:** `2.0.1`
+**Current version:** `2.0.2`
 
 ## Install
 
 | Language | Package | Install |
 |----------|---------|---------|
-| Node.js / TypeScript | [`@zymeup/sdk`](https://www.npmjs.com/package/@zymeup/sdk) | `npm i @zymeup/sdk@2.0.1` |
+| Node.js / TypeScript | [`@zymeup/sdk`](https://www.npmjs.com/package/@zymeup/sdk) | `npm i @zymeup/sdk@2.0.2` |
 | PHP | [`alaikas/zymeup-sdk`](https://packagist.org/packages/alaikas/zymeup-sdk) | `composer require alaikas/zymeup-sdk:^2.0.1` |
-| Go | [`github.com/alaikis/shipzy-sdks/go`](https://pkg.go.dev/github.com/alaikis/shipzy-sdks/go) | `go get github.com/alaikis/shipzy-sdks/go@v2.0.1` |
-| Python | [`zymeup-sdk`](https://pypi.org/project/zymeup-sdk/) | `pip install zymeup-sdk==2.0.1` |
-| Rust | [`shipzy-sdk`](https://crates.io/crates/shipzy-sdk) | `cargo add shipzy-sdk@2.0.1` |
-| Ruby | [`shipzy-sdk`](https://rubygems.org/gems/shipzy-sdk) | `gem install shipzy-sdk -v 2.0.1` |
-| .NET | [`Shipzy.Sdk`](https://www.nuget.org/packages/Shipzy.Sdk) | `dotnet add package Shipzy.Sdk --version 2.0.1` |
-| Swift | [`ShipzySDK`](https://swiftpackageindex.com/alaikis/shipzy-sdks) | Package.swift dependency |
+| Go | [`github.com/alaikis/shipzy-sdks/go`](https://pkg.go.dev/github.com/alaikis/shipzy-sdks/go) | `go get github.com/alaikis/shipzy-sdks/go@v2.0.0` |
+| Python | [`zymeup-sdk`](https://pypi.org/project/zymeup-sdk/) | `pip install zymeup-sdk==2.0.0` |
+| Rust | [`shipzy-sdk`](https://crates.io/crates/shipzy-sdk) | `cargo add shipzy-sdk@2.0.0` |
+| Ruby | [`shipzy-sdk`](https://rubygems.org/gems/shipzy-sdk) | `gem install shipzy-sdk -v 2.0.0` |
+| .NET | [`Shipzy.Sdk`](https://www.nuget.org/packages/Shipzy.Sdk) | `dotnet add package Shipzy.Sdk --version 2.0.0` |
+| Swift | [`ShipzySDK`](https://swiftpackageindex.com/alaikis/shipzy-sdks) | `2.0.0` |
 
 ## Structure
 
@@ -29,30 +29,31 @@ Official multi-language SDK for the [Shipzy](https://shipzy.me) logistics platfo
 | `ruby/` | Ruby 3.0+ | Net::HTTP based client |
 | `dotnet/` | .NET 8+ | HttpClient based client |
 | `swift/` | Swift 5.9+ | URLSession based client |
-| `java/` | Java | Early stage |
-| `kotlin/` | Kotlin | Early stage |
-| `zig/` | Zig | Early stage |
+| `java/` | Java | ShipzyClient (order, epod, validation) |
+| `kotlin/` | Kotlin | ShipzyClient (order, epod, address, carrierEpod, validation) |
+| `zig/` | Zig | ShipzyClient (order, epod, address, carrierEpod, validation) |
 | `epod-elements/` | TypeScript | Web Components for EPOD workflows |
 
 ## Features
 
-| Feature | Node | PHP | Go | Python | Rust | Ruby | .NET | Swift |
-|---------|:----:|:---:|:--:|:------:|:----:|:----:|:----:|:-----:|
-| Order Management | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| EPOD (Electronic Proof of Delivery) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ECMR (Electronic Consignment Note) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Tracking | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Address Book | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Pickup Points | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Activation | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Age Verification | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Product | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Finance | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Notification | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Support Ticket | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Compliance | ✅ | ✅ | — | — | — | — | — | — |
-| CPSC | ✅ | ✅ | — | — | — | — | — | — |
-| Web Components | ✅ | — | — | — | — | — | — | — |
+| Feature | Node | PHP | Go | Python | Rust | Ruby | .NET | Swift | Java | Kotlin | Zig |
+|---------|:----:|:---:|:--:|:------:|:----:|:----:|:----:|:-----:|:----:|:------:|:---:|
+| Order Management | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| EPOD (Electronic Proof of Delivery) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ECMR (Electronic Consignment Note) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Tracking | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Address Book | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | ✅ | ✅ |
+| Pickup Points | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Activation | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Age Verification | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Product | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Finance | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Notification | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Support Ticket | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | — |
+| Compliance | ✅ | ✅ | — | — | — | — | — | — | — | — | — |
+| CPSC | ✅ | ✅ | — | — | — | — | — | — | — | — | — |
+| Validation | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Web Components | ✅ | — | — | — | — | — | — | — | — | — | — |
 
 ## Quick Start
 
@@ -79,7 +80,7 @@ $epod = $client->epod->get('epod-id-123');
 ### Go
 
 ```go
-client := zymeup.NewClient("your-api-key")
+client := zymeup.NewZymeupClient("your-api-key")
 orders, _ := client.Order.List(nil)
 epod, _ := client.Epod.Get("epod-id-123")
 ```
@@ -92,6 +93,50 @@ from zymeup_sdk import ZymeupClient
 client = ZymeupClient(api_key="your-api-key")
 orders = client.order.list(page=1, page_size=20)
 epod = client.epod.get("epod-id-123")
+```
+
+### Ruby
+
+```ruby
+require 'shipzy'
+
+client = Shipzy::ShipzyClient.new(Shipzy::Config.new.tap { |c| c.token = 'your-api-key' })
+orders = client.order.list
+epod = client.epod.get('epod-id-123')
+```
+
+### Rust
+
+```rust
+use shipzy_sdk::{ShipzyClient, ShipzyConfig};
+
+let config = ShipzyConfig {
+    token: Some("your-api-key".into()),
+    ..Default::default()
+};
+let client = ShipzyClient::new(config)?;
+let orders = client.order.list(1, 25, None).await?;
+let epod = client.epod.get("epod-id-123").await?;
+```
+
+### .NET
+
+```csharp
+using Shipzy.Sdk;
+
+var client = new ShipzyClient(new ShipzyConfig { Token = "your-api-key" });
+var orders = await client.Order.ListAsync(page: 1, pageSize: 20);
+var epod = await client.Epod.GetAsync("epod-id-123");
+```
+
+### Swift
+
+```swift
+import ShipzySDK
+
+let client = ShipzyClient(config: ShipzyConfig(token: "your-api-key"))
+let orders = try await client.order.list(page: 1, pageSize: 20)
+let epod = try await client.epod.get("epod-id-123")
 ```
 
 ## Web Components
