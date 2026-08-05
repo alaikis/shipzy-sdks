@@ -14,6 +14,7 @@ public class ZymeupClient {
     private final HttpClient httpClient;
 
     public EpodClient epod;
+    public ValidationClient validation;
 
     public ZymeupClient(String apiKey) {
         this(apiKey, BASE_URL);
@@ -26,6 +27,7 @@ public class ZymeupClient {
                 .connectTimeout(Duration.ofSeconds(30))
                 .build();
         this.epod = new EpodClient(this);
+        this.validation = new ValidationClient(this);
     }
 
     public HttpRequest.Builder newRequest(String path) {

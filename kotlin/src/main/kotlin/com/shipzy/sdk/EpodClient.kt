@@ -112,9 +112,42 @@ class CarrierEpodClient(private val config: ShipzyConfig) {
 }
 
 class ShipzyClient(config: ShipzyConfig) {
-    val epod = EpodClient(config); val order = OrderClient(config); val address = AddressClient(config); val carrierEpod = CarrierEpodClient(config)
+    val epod = EpodClient(config)
+    val order = OrderClient(config)
+    val address = AddressClient(config)
+    val carrierEpod = CarrierEpodClient(config)
+    val validation = ValidationClient(config)
     val role = config.role
-    fun updateToken(token: String) { epod.setToken(token); order.setToken(token); address.setToken(token); carrierEpod.setToken(token) }
+    fun updateToken(token: String) {
+        epod.setToken(token); order.setToken(token); address.setToken(token)
+        carrierEpod.setToken(token); validation.setToken(token)
+    }
     fun isMerchant() = role == UserRole.MERCHANT
     fun isCarrier() = role == UserRole.CARRIER
+}
+
+class ValidationClient(private val config: ShipzyConfig) {
+    private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
+    fun setToken(token: String) { config.token = token }
+    private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Post, body: Any? = null): T {
+        val response = client.request(config.baseUrl.trimEnd('/') + path) {
+            this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json)
+            if (body != null) setBody(body)
+        }
+        if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
+        if (!response.status.isSuccess()) throw ShipzyException("HTTP ${response.status.value}", response.status.value)
+        return response.body()
+    }
+    suspend fun verifyPhone(countryCode: String, phone: String): Map<String, Any> =
+        request("/api/v1/validation/phone", HttpMethod.Post, mapOf("country_code" to countryCode, "phone" to phone))
+    suspend fun formatPhone(countryCode: String, phone: String): Map<String, Any> =
+        request("/api/v1/validation/phone/format", HttpMethod.Post, mapOf("country_code" to countryCode, "phone" to phone))
+    suspend fun validatePostalCode(countryCode: String, code: String): Map<String, Any> =
+        request("/api/v1/validation/postal-code", HttpMethod.Post, mapOf("country_code" to countryCode, "code" to code))
+    suspend fun validateEmail(email: String): Map<String, Any> =
+        request("/api/v1/validation/email", HttpMethod.Post, mapOf("email" to email))
+    suspend fun validateTaxId(countryCode: String, taxId: String): Map<String, Any> =
+        request("/api/v1/validation/tax-id", HttpMethod.Post, mapOf("country_code" to countryCode, "tax_id" to taxId))
+    suspend fun health(): Map<String, Any> =
+        request("/api/v1/validation/health", HttpMethod.Get)
 }

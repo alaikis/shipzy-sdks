@@ -59,11 +59,21 @@ pub const CarrierEpodClient = struct {
     pub fn setToken(self: *CarrierEpodClient, token: []const u8) { self.config.token = token; }
 };
 
+pub const ValidationClient = struct {
+    allocator: Allocator,
+    config: ShipzyConfig,
+    http_client: std.http.Client,
+    pub fn init(allocator: Allocator, config: ShipzyConfig) ValidationClient { return .{ .allocator = allocator, .config = config, .http_client = std.http.Client{ .allocator = allocator } }; }
+    pub fn deinit(self: *ValidationClient) void { self.http_client.deinit(); }
+    pub fn setToken(self: *ValidationClient, token: []const u8) { self.config.token = token; }
+};
+
 pub const ShipzyClient = struct {
     epod: EpodClient,
     order: OrderClient,
     address: AddressClient,
     carrier_epod: CarrierEpodClient,
+    validation: ValidationClient,
     role: UserRole,
 
     pub fn init(allocator: Allocator, config: ShipzyConfig) ShipzyClient {
@@ -72,14 +82,15 @@ pub const ShipzyClient = struct {
             .order = OrderClient.init(allocator, config),
             .address = AddressClient.init(allocator, config),
             .carrier_epod = CarrierEpodClient.init(allocator, config),
+            .validation = ValidationClient.init(allocator, config),
             .role = config.role,
         };
     }
     pub fn deinit(self: *ShipzyClient) void {
-        self.epod.deinit(); self.order.deinit(); self.address.deinit(); self.carrier_epod.deinit();
+        self.epod.deinit(); self.order.deinit(); self.address.deinit(); self.carrier_epod.deinit(); self.validation.deinit();
     }
     pub fn updateToken(self: *ShipzyClient, token: []const u8) {
-        self.epod.setToken(token); self.order.setToken(token); self.address.setToken(token); self.carrier_epod.setToken(token);
+        self.epod.setToken(token); self.order.setToken(token); self.address.setToken(token); self.carrier_epod.setToken(token); self.validation.setToken(token);
     }
 };
 
