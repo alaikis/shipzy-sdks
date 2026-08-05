@@ -236,6 +236,13 @@ export type { PlatformConfig } from './platform';
 export { ValidationClient } from './validation';
 export type { PhoneVerifyResult, PhoneFormatResult, PostalCodeResult, EmailValidationResult, TaxIdValidationResult } from './validation';
 
+// ============ Backward compatibility aliases ============
+
+/** @deprecated Use `ZymeupClient` instead. Alias for backward compatibility. */
+export const ShipzyClient = ZymeupClient;
+export type { ZymeupConfig as ShipzyConfig } from './http-client';
+export { ZymeupError as ShipzyError, ZymeupAuthError as ShipzyAuthError } from './http-client';
+
 // ============ RN (React Native / Expo) ============
 // Note: RN module is not re-exported from the main entry point to avoid
 // requiring react-native as a dependency. Import directly from '@zymeup/sdk/rn'.

@@ -17,6 +17,9 @@ export interface ZymeupConfig {
     interceptors?: RequestInterceptor;
 }
 
+// Backward compatibility alias
+export type ShipzyConfig = ZymeupConfig;
+
 export const DEFAULT_CONFIG: Partial<ZymeupConfig> = {
     baseUrl: 'https://api.zymeup.com',
     timeout: 30000,
