@@ -28,7 +28,7 @@ pub use support_ticket::*;
 pub use types::*;
 pub use validation::*;
 
-pub struct ShipzyClient {
+pub struct ZymeupClient {
     pub order: OrderClient,
     pub ecmr: EcmrClient,
     pub address: MerchantAddressClient,
@@ -42,8 +42,8 @@ pub struct ShipzyClient {
     pub role: UserRole,
 }
 
-impl ShipzyClient {
-    pub fn new(config: ShipzyConfig) -> error::Result<Self> {
+impl ZymeupClient {
+    pub fn new(config: ZymeupConfig) -> error::Result<Self> {
         let role = config.role;
         Ok(Self {
             order: OrderClient::new(http_client::HttpClient::new(config.clone())?),
@@ -88,24 +88,24 @@ mod tests {
 
     #[test]
     fn new_with_default_config() {
-        let c = ShipzyConfig::default();
-        let cl = ShipzyClient::new(c);
+        let c = ZymeupConfig::default();
+        let cl = ZymeupClient::new(c);
         assert!(cl.is_ok());
     }
 
     #[test]
     fn config_default_values() {
-        let c = ShipzyConfig::default();
+        let c = ZymeupConfig::default();
         assert_eq!(c.base_url, "https://api.zymeup.com");
         assert_eq!(c.token, None);
         assert_eq!(c.timeout_seconds, 30);
     }
 
     #[test]
-    fn shipzy_error_display() {
-        let e = error::ShipzyError::Auth;
+    fn zymeup_error_display() {
+        let e = error::ZymeupError::Auth;
         assert_eq!(e.to_string(), "Unauthorized");
-        let e = error::ShipzyError::Http {
+        let e = error::ZymeupError::Http {
             status: 404,
             message: "Not found".to_string(),
         };

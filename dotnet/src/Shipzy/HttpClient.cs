@@ -11,14 +11,14 @@ namespace Shipzy.Sdk
     public class ShipzyHttpClient
     {
         protected readonly HttpClient _http;
-        protected readonly ShipzyConfig _config;
+        protected readonly ZymeupConfig _config;
 
         private static readonly JsonSerializerOptions s_jsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public ShipzyHttpClient(ShipzyConfig config)
+        public ShipzyHttpClient(ZymeupConfig config)
         {
             _config = config;
             _http = new HttpClient
@@ -33,7 +33,7 @@ namespace Shipzy.Sdk
             _config.Token = token;
         }
 
-        public void SetConfig(ShipzyConfig config)
+        public void SetConfig(ZymeupConfig config)
         {
             _config.BaseUrl = config.BaseUrl;
             _config.Token = config.Token;

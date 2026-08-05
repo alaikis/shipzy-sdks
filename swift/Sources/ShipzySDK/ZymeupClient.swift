@@ -2,7 +2,7 @@ import Foundation
 
 // ============ Main SDK ============
 
-public class ShipzyClient: @unchecked Sendable {
+public class ZymeupClient: @unchecked Sendable {
     public let epod: EpodClient
     public let order: OrderClient
     public let ecmr: EcmrClient
@@ -16,9 +16,9 @@ public class ShipzyClient: @unchecked Sendable {
     public let supportTicket: SupportTicketClient
     public let validation: ValidationClient
     public let role: UserRole
-    private var config: ShipzyConfig
+    private var config: ZymeupConfig
 
-    public init(config: ShipzyConfig = ShipzyConfig()) {
+    public init(config: ZymeupConfig = ZymeupConfig()) {
         self.config = config
         self.role = config.role
         self.epod = EpodClient(config: config)
@@ -36,7 +36,7 @@ public class ShipzyClient: @unchecked Sendable {
     }
 
     public func updateToken(_ token: String) {
-        self.config = ShipzyConfig(
+        self.config = ZymeupConfig(
             baseUrl: config.baseUrl,
             token: token,
             timeout: config.timeout,

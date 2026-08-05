@@ -2,7 +2,7 @@ using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
-    public class ShipzyClient
+    public class ZymeupClient
     {
         public EpodClient Epod { get; }
         public EcmrClient Ecmr { get; }
@@ -22,7 +22,7 @@ namespace Shipzy.Sdk
         public TrackingClient Tracking { get; }
         public ValidationClient Validation { get; }
 
-        public ShipzyClient(ShipzyConfig config)
+        public ZymeupClient(ZymeupConfig config)
         {
             Epod = new EpodClient(config);
             Ecmr = new EcmrClient(config);

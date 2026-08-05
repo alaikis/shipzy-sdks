@@ -2,7 +2,7 @@ namespace Shipzy.Sdk.Models
 {
     public enum UserRole { Merchant, Carrier }
 
-    public class ShipzyConfig
+    public class ZymeupConfig
     {
         public string BaseUrl { get; set; } = "https://api.zymeup.com";
         public string Token { get; set; }

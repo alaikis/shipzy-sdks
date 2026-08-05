@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class TrackingClient : ShipzyHttpClient
     {
-        public TrackingClient(ShipzyConfig config) : base(config) { }
+        public TrackingClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<TrackingDetail>> DetailAsync(string trackingNo)
             => await RequestAsync<ApiResult<TrackingDetail>>($"/api/v1/tracking/{Uri.EscapeDataString(trackingNo)}");

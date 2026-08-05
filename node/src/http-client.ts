@@ -6,7 +6,7 @@ export interface RequestInterceptor {
     onError?: (error: Error) => void;
 }
 
-export interface ShipzyConfig {
+export interface ZymeupConfig {
     baseUrl: string;
     token?: string;
     timeout: number;
@@ -17,40 +17,40 @@ export interface ShipzyConfig {
     interceptors?: RequestInterceptor;
 }
 
-export const DEFAULT_CONFIG: Partial<ShipzyConfig> = {
-    baseUrl: 'https://api.shipzy.me',
+export const DEFAULT_CONFIG: Partial<ZymeupConfig> = {
+    baseUrl: 'https://api.zymeup.com',
     timeout: 30000,
     role: 'merchant',
     maxRetries: 3,
     retryDelayMs: 1000,
 };
 
-export class ShipzyError extends Error {
+export class ZymeupError extends Error {
     constructor(message: string, public statusCode: number) {
         super(message);
-        this.name = 'ShipzyError';
+        this.name = 'ZymeupError';
     }
 }
 
-export class ShipzyAuthError extends ShipzyError {
+export class ZymeupAuthError extends ZymeupError {
     constructor(message: string) {
         super(message, 401);
-        this.name = 'ShipzyAuthError';
+        this.name = 'ZymeupAuthError';
     }
 }
 
 export class HttpClient {
-    protected config: ShipzyConfig;
+    protected config: ZymeupConfig;
 
-    constructor(config: Partial<ShipzyConfig> = {}) {
-        this.config = { ...DEFAULT_CONFIG, ...config } as ShipzyConfig;
+    constructor(config: Partial<ZymeupConfig> = {}) {
+        this.config = { ...DEFAULT_CONFIG, ...config } as ZymeupConfig;
     }
 
     setToken(token: string): void {
         this.config.token = token;
     }
 
-    setConfig(config: Partial<ShipzyConfig>): void {
+    setConfig(config: Partial<ZymeupConfig>): void {
         if (config.baseUrl) {
             this.config.baseUrl = config.baseUrl;
         }
@@ -124,7 +124,7 @@ export class HttpClient {
                     response = await interceptor.onResponse(response);
                 }
 
-                if (response.status === 401) throw new ShipzyAuthError('Unauthorized');
+                if (response.status === 401) throw new ZymeupAuthError('Unauthorized');
 
                 if (response.status >= 500 && attempt < maxRetries) {
                     await this.sleep(retryDelayMs * 2 ** attempt);
@@ -133,7 +133,7 @@ export class HttpClient {
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new ShipzyError(errorData.message || `HTTP ${response.status}`, response.status);
+                    throw new ZymeupError(errorData.message || `HTTP ${response.status}`, response.status);
                 }
 
                 return response.json();
@@ -141,7 +141,7 @@ export class HttpClient {
                 lastError = error instanceof Error ? error : new Error(String(error));
 
                 const isNetworkError = lastError.name === 'AbortError' || lastError.message.includes('fetch');
-                const isServerError = lastError instanceof ShipzyError && lastError.statusCode >= 500;
+                const isServerError = lastError instanceof ZymeupError && lastError.statusCode >= 500;
 
                 if ((isNetworkError || isServerError) && attempt < maxRetries) {
                     await this.sleep(retryDelayMs * 2 ** attempt);

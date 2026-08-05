@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class EcmrClient : ShipzyHttpClient
     {
-        public EcmrClient(ShipzyConfig config) : base(config) { }
+        public EcmrClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<EcmrListResponse>> ListAsync(int page = 1, int pageSize = 25)
         {

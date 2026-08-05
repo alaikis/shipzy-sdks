@@ -2,11 +2,11 @@ import Foundation
 
 // ============ Version ============
 
-public let VERSION = "2.0.0"
+public let VERSION = "2.0.2"
 
 // ============ Config ============
 
-public struct ShipzyConfig: Sendable {
+public struct ZymeupConfig: Sendable {
     public let baseUrl: String
     public let token: String?
     public let timeout: TimeInterval
@@ -14,7 +14,7 @@ public struct ShipzyConfig: Sendable {
     public let carrierCode: String?
 
     public init(
-        baseUrl: String = "https://api.shipzy.me",
+        baseUrl: String = "https://api.zymeup.com",
         token: String? = nil,
         timeout: TimeInterval = 30,
         role: UserRole = .merchant,
@@ -37,7 +37,7 @@ public enum UserRole: String, Sendable {
 
 // ============ Errors ============
 
-public struct ShipzyError: Error, Sendable, CustomStringConvertible {
+public struct ZymeupError: Error, Sendable, CustomStringConvertible {
     public let message: String
     public let statusCode: Int
 
@@ -46,7 +46,7 @@ public struct ShipzyError: Error, Sendable, CustomStringConvertible {
     }
 }
 
-public struct ShipzyAuthError: Error, Sendable, CustomStringConvertible {
+public struct ZymeupAuthError: Error, Sendable, CustomStringConvertible {
     public let message: String
 
     public var description: String {

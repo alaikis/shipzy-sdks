@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class SupportTicketClient : ShipzyHttpClient
     {
-        public SupportTicketClient(ShipzyConfig config) : base(config) { }
+        public SupportTicketClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<SupportTicket>> CreateAsync(object data)
             => await RequestAsync<ApiResult<SupportTicket>>("/api/v1/shipment/support/tickets", "POST", data);

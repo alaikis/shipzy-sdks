@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class OrderClient : ShipzyHttpClient
     {
-        public OrderClient(ShipzyConfig config) : base(config) { }
+        public OrderClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<OrderListResponse>> ListAsync(int page = 1, int pageSize = 25, string status = null)
         {

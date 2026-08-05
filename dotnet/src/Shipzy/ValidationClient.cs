@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class ValidationClient : ShipzyHttpClient
     {
-        public ValidationClient(ShipzyConfig config) : base(config) { }
+        public ValidationClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<PhoneVerifyResult>> VerifyPhoneAsync(string countryCode, string phone)
             => await RequestAsync<ApiResult<PhoneVerifyResult>>("/api/v1/validation/phone", "POST", new { country_code = countryCode, phone });

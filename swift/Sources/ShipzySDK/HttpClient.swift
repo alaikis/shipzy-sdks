@@ -3,16 +3,16 @@ import Foundation
 // ============ HTTP Client Base ============
 
 public class HttpClient: @unchecked Sendable {
-    protected var config: ShipzyConfig
+    protected var config: ZymeupConfig
     private let session: URLSession
 
-    public init(config: ShipzyConfig = ShipzyConfig()) {
+    public init(config: ZymeupConfig = ZymeupConfig()) {
         self.config = config
         self.session = URLSession(configuration: .default)
     }
 
     public func setToken(_ token: String) {
-        self.config = ShipzyConfig(
+        self.config = ZymeupConfig(
             baseUrl: config.baseUrl,
             token: token,
             timeout: config.timeout,
@@ -34,7 +34,7 @@ public class HttpClient: @unchecked Sendable {
         body: Data? = nil
     ) async throws -> T {
         guard let url = URL(string: config.baseUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/")) + path) else {
-            throw ShipzyError(message: "Invalid URL", statusCode: 0)
+            throw ZymeupError(message: "Invalid URL", statusCode: 0)
         }
 
         var urlRequest = URLRequest(url: url)
@@ -53,16 +53,16 @@ public class HttpClient: @unchecked Sendable {
         let (data, response) = try await session.data(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw ShipzyError(message: "Invalid response", statusCode: 0)
+            throw ZymeupError(message: "Invalid response", statusCode: 0)
         }
 
         if httpResponse.statusCode == 401 {
-            throw ShipzyAuthError(message: "Unauthorized")
+            throw ZymeupAuthError(message: "Unauthorized")
         }
 
         guard (200...299).contains(httpResponse.statusCode) else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"
-            throw ShipzyError(message: errorMessage, statusCode: httpResponse.statusCode)
+            throw ZymeupError(message: errorMessage, statusCode: httpResponse.statusCode)
         }
 
         return try JSONDecoder().decode(T.self, from: data)

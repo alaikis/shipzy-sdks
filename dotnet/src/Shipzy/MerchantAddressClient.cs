@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class MerchantAddressClient : ShipzyHttpClient
     {
-        public MerchantAddressClient(ShipzyConfig config) : base(config) { }
+        public MerchantAddressClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<AddressListResponse>> ListAsync(object filter = null)
             => await RequestAsync<ApiResult<AddressListResponse>>("/api/v1/merchant/addresses/list", "POST", filter);

@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class CarrierClient : ShipzyHttpClient
     {
-        public CarrierClient(ShipzyConfig config) : base(config) { }
+        public CarrierClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<Carrier[]>> ListAsync(int page = 1, int pageSize = 25, string state = null)
         {

@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class FinanceClient : ShipzyHttpClient
     {
-        public FinanceClient(ShipzyConfig config) : base(config) { }
+        public FinanceClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<Invoice[]>> GetInvoicesAsync()
             => await RequestAsync<ApiResult<Invoice[]>>("/api/finance/invoices");

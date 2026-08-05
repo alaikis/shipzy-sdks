@@ -5,7 +5,7 @@ require 'json'
 require 'uri'
 require 'securerandom'
 
-module Shipzy
+module Zymeup
   class Error < StandardError; end
   class AuthError < Error; end
   class ApiError < Error
@@ -20,7 +20,7 @@ module Shipzy
     attr_accessor :base_url, :token, :timeout_seconds, :role, :carrier_code
 
     def initialize
-      @base_url = 'https://api.shipzy.me'
+      @base_url = 'https://api.zymeup.com'
       @token = nil
       @timeout_seconds = 30
       @role = :merchant
@@ -62,7 +62,6 @@ module Shipzy
       http.read_timeout = @config.timeout_seconds
 
       if file
-        # Multipart file upload
         boundary = "----RubySDKBoundary#{SecureRandom.uuid}"
         request = Net::HTTP::Post.new(uri)
         request['Authorization'] = auth_header if @config.token
@@ -481,7 +480,29 @@ module Shipzy
     end
   end
 
-  class ShipzyClient
+  class ValidationClient < HttpClient
+    def verify_phone(country_code, phone)
+      request('/api/v1/validation/phone', method: :post, body: { country_code: country_code, phone: phone })
+    end
+
+    def format_phone(country_code, phone)
+      request('/api/v1/validation/phone/format', method: :post, body: { country_code: country_code, phone: phone })
+    end
+
+    def validate_postal_code(country_code, code)
+      request('/api/v1/validation/postal-code', method: :post, body: { country_code: country_code, code: code })
+    end
+
+    def validate_email(email)
+      request('/api/v1/validation/email', method: :post, body: { email: email })
+    end
+
+    def validate_tax_id(country_code, tax_id)
+      request('/api/v1/validation/tax-id', method: :post, body: { country_code: country_code, tax_id: tax_id })
+    end
+  end
+
+  class ZymeupClient
     attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address,
                 :activation, :age_verification, :pickup_point, :product,
                 :finance, :notification, :support_ticket, :validation, :role
@@ -530,5 +551,5 @@ module Shipzy
     end
   end
 
-  VERSION = '2.0.0'
+  VERSION = '2.0.2'
 end

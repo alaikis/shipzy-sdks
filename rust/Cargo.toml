@@ -1,11 +1,11 @@
 [package]
-name = "shipzy-sdk"
-version = "2.0.0"
+name = "zymeup-sdk"
+version = "2.0.2"
 edition = "2021"
-description = "Official Shipzy logistics platform SDK for Rust"
+description = "Official Zymeup logistics platform SDK for Rust"
 license = "MIT"
 repository = "https://github.com/alaikis/shipzy-sdks"
-keywords = ["shipzy", "logistics", "epod", "sdk"]
+keywords = ["zymeup", "logistics", "epod", "sdk"]
 categories = ["api-bindings"]
 
 [dependencies]

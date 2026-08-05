@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 Gem::Specification.new do |spec|
-  spec.name          = 'shipzy-sdk'
-  spec.version       = '2.0.0'
-  spec.authors       = ['Shipzy']
-  spec.email         = ['support@shipzy.me']
-  spec.summary       = 'Official Shipzy logistics platform SDK for Ruby'
-  spec.description   = 'Ruby SDK for Shipzy logistics platform - EPOD management, tracking, and more'
+  spec.name          = 'zymeup-sdk'
+  spec.version       = '2.0.2'
+  spec.authors       = ['Zymeup']
+  spec.email         = ['support@zymeup.com']
+  spec.summary       = 'Official Zymeup logistics platform SDK for Ruby'
+  spec.description   = 'Ruby SDK for Zymeup logistics platform - EPOD management, tracking, and more'
   spec.homepage      = 'https://github.com/alaikis/shipzy-sdks'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 3.0'

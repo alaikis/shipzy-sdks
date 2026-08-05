@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class ActivationClient : ShipzyHttpClient
     {
-        public ActivationClient(ShipzyConfig config) : base(config) { }
+        public ActivationClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<ProviderListResponse>> ListProvidersAsync(string capability = null)
         {

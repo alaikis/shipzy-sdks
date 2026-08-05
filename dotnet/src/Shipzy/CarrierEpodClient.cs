@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class CarrierEpodClient : ShipzyHttpClient
     {
-        public CarrierEpodClient(ShipzyConfig config) : base(config) { }
+        public CarrierEpodClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<EpodListResponse>> ListAsync(int page = 1, int pageSize = 25, string status = null)
         {

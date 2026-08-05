@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class PickupPointClient : ShipzyHttpClient
     {
-        public PickupPointClient(ShipzyConfig config) : base(config) { }
+        public PickupPointClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<PickupPointListResponse>> ListAsync(bool activeOnly = true)
         {

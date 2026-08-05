@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class PlatformConfigClient : ShipzyHttpClient
     {
-        public PlatformConfigClient(ShipzyConfig config) : base(config) { }
+        public PlatformConfigClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<PlatformConfigListResponse>> ListAsync()
             => await RequestAsync<ApiResult<PlatformConfigListResponse>>("/api/v1/admin/configs");

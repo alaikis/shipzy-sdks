@@ -1,11 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shipzy.Sdk.Models;
 
 namespace Shipzy.Sdk
 {
     public class AgeVerificationClient : ShipzyHttpClient
     {
-        public AgeVerificationClient(ShipzyConfig config) : base(config) { }
+        public AgeVerificationClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<AgeVerificationEvent>> CreateAsync(object data)
             => await RequestAsync<ApiResult<AgeVerificationEvent>>("/api/v1/age-verifications", "POST", data);

@@ -1,13 +1,13 @@
 // ============ Core imports ============
 
-import { HttpClient, ShipzyError, ShipzyAuthError } from './http-client';
-import type { ShipzyConfig, UserRole } from './http-client';
+import { HttpClient, ZymeupError, ZymeupAuthError } from './http-client';
+import type { ZymeupConfig, UserRole } from './http-client';
 import { DEFAULT_CONFIG } from './http-client';
 
 // ============ Public exports ============
 
-export { HttpClient, ShipzyError, ShipzyAuthError, DEFAULT_CONFIG };
-export type { ShipzyConfig, UserRole };
+export { HttpClient, ZymeupError, ZymeupAuthError, DEFAULT_CONFIG };
+export type { ZymeupConfig, UserRole };
 
 // ============ API Result ============
 
@@ -66,11 +66,11 @@ export { CarrierAddressClient } from './carrier-address';
 
 // ============ VERSION ============
 
-export const VERSION = '2.0.1';
+export const VERSION = '2.0.2';
 
 // ============ Main SDK ============
 
-export class ShipzyClient {
+export class ZymeupClient {
     public epod: EpodClient;
     public order: OrderClient;
     public ecmr: EcmrClient;
@@ -94,10 +94,10 @@ export class ShipzyClient {
     public platformConfig: PlatformConfigClient;
     public upload: UploadClient;
     public validation: ValidationClient;
-    private config: ShipzyConfig;
+    private config: ZymeupConfig;
 
-    constructor(config: Partial<ShipzyConfig> = {}) {
-        this.config = { ...DEFAULT_CONFIG, ...config } as ShipzyConfig;
+    constructor(config: Partial<ZymeupConfig> = {}) {
+        this.config = { ...DEFAULT_CONFIG, ...config } as ZymeupConfig;
         this.role = this.config.role || 'merchant';
         this.epod = new EpodClient(this.config);
         this.order = new OrderClient(this.config);
@@ -148,7 +148,7 @@ export class ShipzyClient {
         this.validation.setToken(token);
     }
 
-    updateConfig(config: Partial<ShipzyConfig>): void {
+    updateConfig(config: Partial<ZymeupConfig>): void {
         if (config.baseUrl) {
             this.config.baseUrl = config.baseUrl;
         }
@@ -238,6 +238,6 @@ export type { PhoneVerifyResult, PhoneFormatResult, PostalCodeResult, EmailValid
 
 // ============ RN (React Native / Expo) ============
 // Note: RN module is not re-exported from the main entry point to avoid
-// requiring react-native as a dependency. Import directly from '@shipzy/sdk/rn'.
-// export { ShipzyProvider, useShipzy, EpodList, EpodDetail, EpodCreate, EpodSignature } from './rn';
+// requiring react-native as a dependency. Import directly from '@zymeup/sdk/rn'.
+// export { ZymeupProvider, useZymeup, EpodList, EpodDetail, EpodCreate, EpodSignature } from './rn';
 // export type { EpodListProps, EpodDetailProps, EpodCreateProps, EpodSignatureProps } from './rn';
