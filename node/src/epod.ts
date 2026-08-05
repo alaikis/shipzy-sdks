@@ -57,7 +57,7 @@ export class EpodClient extends HttpClient {
         return this.request('/api/v1/shipment/epod/create', 'POST', data);
     }
 
-    async generateFromOrder(orderId: string, options: Record<string, unknown> = {}): Promise<ApiResult<EpodDetail>> {
+    async generateFromOrder(orderId: string, options: Record<string, unknown> = {}): Promise<ApiResult<{ epod: EpodDetail; sign_url: string; sign_token_expires_at?: string }>> {
         return this.request('/api/v1/shipment/epod/generate-from-order', 'POST', { order_id: orderId, ...options });
     }
 
@@ -85,7 +85,7 @@ export class EpodClient extends HttpClient {
         return this.request(`/api/v1/shipment/epod/${id}/sign`, 'POST', {});
     }
 
-    async generatePdf(id: string): Promise<ApiResult<{ pdf_url?: string }>> {
+    async generatePdf(id: string): Promise<ApiResult<{ status?: string; pdf_url?: string; pdf_render_status?: string }>> {
         return this.request(`/api/v1/shipment/epod/${id}/pdf`, 'POST', {});
     }
 
