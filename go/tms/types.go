@@ -1,4 +1,4 @@
-﻿package tms
+package tms
 
 import "github.com/alaikis/shipzy-sdks/go/shared"
 

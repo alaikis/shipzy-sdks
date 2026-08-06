@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Version   = "2.0.0"
+	Version   = "2.0.2"
 	BaseURL   = "https://api.zymeup.com"
 	UserAgent = "zymeup-sdk-go/" + Version
 )

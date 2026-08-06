@@ -1,7 +1,9 @@
 package shared
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 )
@@ -43,10 +45,39 @@ func (c *Client) Get(ctx context.Context, path string) (*http.Response, error) {
 }
 
 func (c *Client) Post(ctx context.Context, path string, body interface{}) (*http.Response, error) {
-	// TODO: implement JSON body encoding
-	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+path, nil)
+	var bodyReader *bytes.Reader
+	if body != nil {
+		jsonBytes, err := json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		bodyReader = bytes.NewReader(jsonBytes)
+	}
+	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+path, bodyReader)
 	if err != nil {
 		return nil, err
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	return c.Do(ctx, req)
+}
+
+func (c *Client) Put(ctx context.Context, path string, body interface{}) (*http.Response, error) {
+	var bodyReader *bytes.Reader
+	if body != nil {
+		jsonBytes, err := json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		bodyReader = bytes.NewReader(jsonBytes)
+	}
+	req, err := http.NewRequestWithContext(ctx, "PUT", c.baseURL+path, bodyReader)
+	if err != nil {
+		return nil, err
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
 	}
 	return c.Do(ctx, req)
 }
