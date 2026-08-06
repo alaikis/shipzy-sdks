@@ -38,13 +38,13 @@ pub struct DeliveryModeItem {
     pub description: &'static str,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct NotificationChannelItem {
     pub key: ChannelType,
     pub label: &'static str,
     pub icon: &'static str,
     pub description: &'static str,
-    pub requires: Vec<&'static str>,
+    pub requires: &'static [&'static str],
 }
 
 pub const DELIVERY_MODES: &[DeliveryModeItem] = &[
@@ -65,34 +65,38 @@ pub const DELIVERY_MODES: &[DeliveryModeItem] = &[
     },
 ];
 
+const EMAIL_REQUIRES: &[&str] = &["email"];
+const PHONE_REQUIRES: &[&str] = &["phone"];
+const NO_REQUIRES: &[&str] = &[];
+
 pub const NOTIFICATION_CHANNELS: &[NotificationChannelItem] = &[
     NotificationChannelItem {
         key: ChannelType::Email,
         label: "Email",
         icon: "mail",
         description: "Send notification via email",
-        requires: vec!["email"],
+        requires: EMAIL_REQUIRES,
     },
     NotificationChannelItem {
         key: ChannelType::CopyUrl,
         label: "Copy URL",
         icon: "link",
         description: "Generate a shareable URL",
-        requires: vec![],
+        requires: NO_REQUIRES,
     },
     NotificationChannelItem {
         key: ChannelType::Sms,
         label: "SMS",
         icon: "message-square",
         description: "Send notification via SMS",
-        requires: vec!["phone"],
+        requires: PHONE_REQUIRES,
     },
     NotificationChannelItem {
         key: ChannelType::WhatsApp,
         label: "WhatsApp",
         icon: "phone",
         description: "Send notification via WhatsApp",
-        requires: vec!["phone"],
+        requires: PHONE_REQUIRES,
     },
 ];
 
@@ -105,8 +109,8 @@ pub fn validate_channel_requirements(
     for ch in channels {
         for item in NOTIFICATION_CHANNELS {
             if item.key == *ch {
-                for req_field in &item.requires {
-                    match *req_field {
+                for &req_field in item.requires {
+                    match req_field {
                         "email" if recipient_email.is_none() || recipient_email.unwrap().is_empty() => {
                             missing.push("email".to_string());
                         }

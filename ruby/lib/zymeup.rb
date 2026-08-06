@@ -502,10 +502,167 @@ module Zymeup
     end
   end
 
+  class TrackingClient < HttpClient
+    def detail(tracking_no)
+      request("/api/v1/tracking/#{URI.encode_www_form_component(tracking_no)}")
+    end
+
+    def list(page: 1, page_size: 25, status: nil, tracking_no: nil)
+      q = build_query({ page: page, page_size: page_size, status: status, tracking_no: tracking_no }.compact)
+      base_path = @config.carrier? ? '/api/v1/carrier/tracking/list' : '/api/v1/merchant/tracking/list'
+      request("#{base_path}#{q}")
+    end
+  end
+
+  class UploadClient < HttpClient
+    def upload_file(endpoint, file_path)
+      request(endpoint, method: :post, file: file_path)
+    end
+
+    def branding_upload_logo(file_path)
+      upload_file('/api/v1/merchant/branding/logo', file_path)
+    end
+  end
+
+  class PublicEpodClient
+    def initialize(base_url = 'https://api.zymeup.com')
+      @base_url = base_url.chomp('/')
+    end
+
+    def sign_detail(sign_token)
+      resp = Net::HTTP.get(URI("#{@base_url}/api/v1/open/epod/sign/#{sign_token}"))
+      JSON.parse(resp)
+    end
+
+    def consent(sign_token, consent_types, policy_version_hash)
+      uri = URI("#{@base_url}/api/v1/open/epod/sign/#{sign_token}/consent")
+      req = Net::HTTP::Post.new(uri)
+      req['Content-Type'] = 'application/json'
+      req.body = JSON.generate({ consent_types: consent_types, policy_version_hash: policy_version_hash })
+      resp = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') { |http| http.request(req) }
+      JSON.parse(resp.body)
+    end
+
+    def capture(sign_token, consent_id, signature_data, proof_type: 'signature')
+      uri = URI("#{@base_url}/api/v1/open/epod/sign/#{sign_token}/capture")
+      req = Net::HTTP::Post.new(uri)
+      req['Content-Type'] = 'application/json'
+      req.body = JSON.generate({ consent_id: consent_id, signature_data: signature_data, proof_type: proof_type })
+      resp = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') { |http| http.request(req) }
+      JSON.parse(resp.body)
+    end
+  end
+
+  class CarrierClient < HttpClient
+    def list(page: 1, page_size: 25, state: nil)
+      q = build_query({ page: page, page_size: page_size, state: state }.compact)
+      request("/api/v1/carrier/list#{q}")
+    end
+
+    def get(id)
+      request("/api/v1/carrier/#{URI.encode_www_form_component(id)}")
+    end
+
+    def create(data)
+      request('/api/v1/carrier', method: :post, body: data)
+    end
+
+    def update(id, data)
+      request("/api/v1/carrier/#{URI.encode_www_form_component(id)}", method: :put, body: data)
+    end
+
+    def delete(id)
+      request("/api/v1/carrier/#{URI.encode_www_form_component(id)}", method: :delete)
+    end
+  end
+
+  class PlatformConfigClient < HttpClient
+    def list
+      request('/api/v1/admin/platform-configs')
+    end
+
+    def update(id, data)
+      request("/api/v1/admin/platform-configs/#{URI.encode_www_form_component(id)}", method: :put, body: data)
+    end
+  end
+
+  class ComplianceClient < HttpClient
+    def check(data)
+      request('/api/v1/compliance/check', method: :post, body: data)
+    end
+
+    def country_requirements(country_code)
+      request("/api/v1/compliance/requirements/#{URI.encode_www_form_component(country_code)}")
+    end
+
+    def customs_create(data)
+      request('/api/v1/compliance/customs', method: :post, body: data)
+    end
+
+    def customs_get(id)
+      request("/api/v1/compliance/customs/#{URI.encode_www_form_component(id)}")
+    end
+
+    def hscode_validate(hs_code)
+      request("/api/v1/compliance/hscode/#{URI.encode_www_form_component(hs_code)}/validate")
+    end
+
+    def prohibited_items
+      request('/api/v1/compliance/prohibited')
+    end
+  end
+
+  class CpscClient < HttpClient
+    def settings
+      request('/api/v1/cpsc/collections')
+    end
+
+    def import_data(data)
+      request('/api/v1/cpsc/import', method: :post, body: data)
+    end
+
+    def import_status(import_id)
+      request("/api/v1/cpsc/import/#{URI.encode_www_form_component(import_id)}/status")
+    end
+
+    def export_data(filter = {})
+      q = build_query(filter)
+      request("/api/v1/cpsc/export#{q}")
+    end
+
+    def export_async(filter = {})
+      q = build_query(filter)
+      request("/api/v1/cpsc/export-async#{q}")
+    end
+
+    def export_async_status(export_id)
+      request("/api/v1/cpsc/export-async/#{URI.encode_www_form_component(export_id)}/status")
+    end
+
+    def export_async_data(export_id)
+      request("/api/v1/cpsc/export-async/#{URI.encode_www_form_component(export_id)}/data")
+    end
+
+    def certificates(data)
+      request('/api/v1/cpsc/certificates', method: :post, body: data)
+    end
+
+    def trade_parties(party_type: nil)
+      q = party_type ? "?tradePartyType=#{URI.encode_www_form_component(party_type)}" : ""
+      request("/api/v1/cpsc/trade-parties#{q}")
+    end
+
+    def token_expiration
+      request('/api/v1/cpsc/token-expiration')
+    end
+  end
+
   class ZymeupClient
     attr_reader :epod, :order, :ecmr, :address, :carrier_epod, :carrier_address,
                 :activation, :age_verification, :pickup_point, :product,
-                :finance, :notification, :support_ticket, :validation, :role
+                :finance, :notification, :support_ticket, :validation, :role,
+                :tracking, :upload, :public_epod, :carrier, :platform_config,
+                :compliance, :cpsc
 
     def initialize(config = Config.new)
       @role = config.role
@@ -523,6 +680,13 @@ module Zymeup
       @notification = NotificationClient.new(config)
       @support_ticket = SupportTicketClient.new(config)
       @validation = ValidationClient.new(config)
+      @tracking = TrackingClient.new(config)
+      @upload = UploadClient.new(config)
+      @public_epod = PublicEpodClient.new(config.base_url)
+      @carrier = CarrierClient.new(config)
+      @platform_config = PlatformConfigClient.new(config)
+      @compliance = ComplianceClient.new(config)
+      @cpsc = CpscClient.new(config)
     end
 
     def update_token(token)
@@ -540,6 +704,12 @@ module Zymeup
       @notification.set_token(token)
       @support_ticket.set_token(token)
       @validation.set_token(token)
+      @tracking.set_token(token)
+      @upload.set_token(token)
+      @carrier.set_token(token)
+      @platform_config.set_token(token)
+      @compliance.set_token(token)
+      @cpsc.set_token(token)
     end
 
     def merchant?

@@ -13,6 +13,15 @@ from .product import ProductClient
 from .finance import FinanceClient
 from .support_ticket import SupportTicketClient
 from .validation import ValidationClient
+from .tracking import TrackingClient
+from .upload import UploadClient
+from .public_epod import PublicEpodClient
+from .carrier import CarrierClient
+from .carrier_epod import CarrierEpodClient
+from .carrier_address import CarrierAddressClient
+from .platform_config import PlatformConfigClient
+from .compliance import ComplianceClient
+from .cpsc import CpscClient
 
 VERSION = "2.0.0"
 BASE_URL = "https://api.zymeup.com"
@@ -42,6 +51,15 @@ class ZymeupClient:
         self.finance = FinanceClient(self)
         self.support_ticket = SupportTicketClient(self)
         self.validation = ValidationClient(self)
+        self.tracking = TrackingClient(self)
+        self.upload = UploadClient(self)
+        self.public_epod = PublicEpodClient(self)
+        self.carrier = CarrierClient(self)
+        self.carrier_epod = CarrierEpodClient(self)
+        self.carrier_address = CarrierAddressClient(self)
+        self.platform_config = PlatformConfigClient(self)
+        self.compliance = ComplianceClient(self)
+        self.cpsc = CpscClient(self)
 
     def request(self, method: str, path: str, **kwargs) -> Dict[str, Any]:
         url = f"{self.base_url}{path}"

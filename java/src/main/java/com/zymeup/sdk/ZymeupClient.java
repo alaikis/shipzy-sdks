@@ -15,6 +15,10 @@ public class ZymeupClient {
 
     public EpodClient epod;
     public ValidationClient validation;
+    public OrderClient order;
+    public EcmrClient ecmr;
+    public ProductClient product;
+    public ActivationClient activation;
 
     public ZymeupClient(String apiKey) {
         this(apiKey, BASE_URL);
@@ -28,6 +32,10 @@ public class ZymeupClient {
                 .build();
         this.epod = new EpodClient(this);
         this.validation = new ValidationClient(this);
+        this.order = new OrderClient(this);
+        this.ecmr = new EcmrClient(this);
+        this.product = new ProductClient(this);
+        this.activation = new ActivationClient(this);
     }
 
     public HttpRequest.Builder newRequest(String path) {

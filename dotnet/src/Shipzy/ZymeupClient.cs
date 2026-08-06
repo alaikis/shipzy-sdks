@@ -21,6 +21,10 @@ namespace Shipzy.Sdk
         public PlatformConfigClient PlatformConfig { get; }
         public TrackingClient Tracking { get; }
         public ValidationClient Validation { get; }
+        public UploadClient Upload { get; }
+        public PublicEpodClient PublicEpod { get; }
+        public ComplianceClient Compliance { get; }
+        public CpscClient Cpsc { get; }
 
         public ZymeupClient(ZymeupConfig config)
         {
@@ -41,6 +45,10 @@ namespace Shipzy.Sdk
             PlatformConfig = new PlatformConfigClient(config);
             Tracking = new TrackingClient(config);
             Validation = new ValidationClient(config);
+            Upload = new UploadClient(config);
+            PublicEpod = new PublicEpodClient(config.BaseUrl);
+            Compliance = new ComplianceClient(config);
+            Cpsc = new CpscClient(config);
         }
 
         public void UpdateToken(string token)
@@ -62,6 +70,9 @@ namespace Shipzy.Sdk
             PlatformConfig.SetToken(token);
             Tracking.SetToken(token);
             Validation.SetToken(token);
+            Upload.SetToken(token);
+            Compliance.SetToken(token);
+            Cpsc.SetToken(token);
         }
     }
 }

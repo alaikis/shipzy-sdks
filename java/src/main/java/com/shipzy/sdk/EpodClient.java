@@ -10,145 +10,375 @@ import java.nio.charset.StandardCharsets;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
+import java.util.Map;
 
-public class EpodClient {
-    public enum UserRole { MERCHANT, CARRIER }
-
+public class EcmrClient {
     private final HttpClient httpClient;
-    private final ShipzyConfig config;
+    private final EpodClient.ShipzyConfig config;
     private static final Gson gson = new Gson();
 
-    public EpodClient(ShipzyConfig config) {
-        this.config = config;
-        this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(config.getTimeoutSeconds()))
-            .build();
+    public EcmrClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
     }
+    public void setToken(String t) { config.setToken(t); }
 
-    public void setToken(String token) { this.config.setToken(token); }
-    public ShipzyConfig getConfig() { return config; }
-
-    private String getAuthHeader() {
-        if (config.getRole() == UserRole.CARRIER && config.getCarrierCode() != null && !config.getCarrierCode().isEmpty())
-            return "Bearer " + config.getCarrierCode() + ":" + config.getToken();
-        return "Bearer " + config.getToken();
-    }
-
-    private <T> T request(String path, String method, Class<T> responseType, Object body) throws Exception {
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
         var builder = HttpRequest.newBuilder()
             .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
-            .header("Authorization", getAuthHeader())
+            .header("Authorization", new EpodClient(config).getAuthHeader())
             .header("Content-Type", "application/json");
-        if ("POST".equals(method)) builder.POST(HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
-        else if ("PUT".equals(method)) builder.PUT(HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
         else builder.GET();
-        HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() == 401) throw new ShipzyAuthException("Unauthorized");
-        if (response.statusCode() >= 400) throw new ShipzyException("HTTP " + response.statusCode() + ": " + response.body(), response.statusCode());
-        return gson.fromJson(response.body(), responseType);
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
+        if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
+        return gson.fromJson(resp.body(), t);
     }
 
-    public EpodListResponse list(int page, int pageSize, String status, String trackingNo) throws Exception {
+    public Object list(int page, int pageSize) throws Exception {
+        return request("/api/v1/shipment/ecmr/list?page=" + page + "&page_size=" + pageSize, "GET", Object.class, null);
+    }
+    public Object get(String id) throws Exception { return request("/api/v1/shipment/ecmr/" + id, "GET", Object.class, null); }
+    public Object create(Object data) throws Exception { return request("/api/v1/shipment/ecmr/create", "POST", Object.class, data); }
+    public Object generateFromOrder(String orderId) throws Exception { return request("/api/v1/shipment/ecmr/generate-from-order", "POST", Object.class, Map.of("order_id", orderId)); }
+    public Object sign(String id) throws Exception { return request("/api/v1/shipment/ecmr/" + id + "/sign", "POST", Object.class, null); }
+    public Object pdf(String id) throws Exception { return request("/api/v1/shipment/ecmr/" + id + "/pdf", "POST", Object.class, null); }
+}
+
+class ProductClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
+    private static final Gson gson = new Gson();
+
+    public ProductClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
+        if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
+        return gson.fromJson(resp.body(), t);
+    }
+
+    public Object list(String status, String category, String search, Boolean activeOnly) throws Exception {
+        StringBuilder q = new StringBuilder("?active_only=true");
+        if (status != null) q.append("&status=").append(URLEncoder.encode(status, StandardCharsets.UTF_8));
+        if (category != null) q.append("&category=").append(URLEncoder.encode(category, StandardCharsets.UTF_8));
+        if (search != null) q.append("&search=").append(URLEncoder.encode(search, StandardCharsets.UTF_8));
+        if (activeOnly != null) q.append("&active_only=").append(activeOnly);
+        return request("/api/v1/products" + q, "GET", Object.class, null);
+    }
+    public Object get(String id) throws Exception { return request("/api/v1/products/" + id, "GET", Object.class, null); }
+    public Object create(Object data) throws Exception { return request("/api/v1/products", "POST", Object.class, data); }
+    public Object update(String id, Object data) throws Exception { return request("/api/v1/products/" + id, "PUT", Object.class, data); }
+    public Object retire(String id) throws Exception { return request("/api/v1/products/" + id + "/retire", "POST", Object.class, null); }
+}
+
+class ActivationClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
+    private static final Gson gson = new Gson();
+
+    public ActivationClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
+        if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
+        return gson.fromJson(resp.body(), t);
+    }
+
+    public Object listProviders(String capability) throws Exception {
+        String q = capability != null ? "?capability=" + URLEncoder.encode(capability, StandardCharsets.UTF_8) : "";
+        return request("/api/v1/marketplace/providers" + q, "GET", Object.class, null);
+    }
+    public Object getProvider(String slug) throws Exception { return request("/api/v1/marketplace/providers/" + slug, "GET", Object.class, null); }
+    public Object listActivations(int page, int pageSize) throws Exception {
+        return request("/api/v1/marketplace/activations?page=" + page + "&page_size=" + pageSize, "GET", Object.class, null);
+    }
+    public Object getActivation(String id) throws Exception { return request("/api/v1/marketplace/activations/" + id, "GET", Object.class, null); }
+    public Object activate(Object data) throws Exception { return request("/api/v1/marketplace/activations", "POST", Object.class, data); }
+    public Object pause(String id) throws Exception { return request("/api/v1/marketplace/activations/" + id + "/pause", "POST", Object.class, null); }
+    public Object resume(String id) throws Exception { return request("/api/v1/marketplace/activations/" + id + "/resume", "POST", Object.class, null); }
+    public Object revoke(String id, String reason) throws Exception { return request("/api/v1/marketplace/activations/" + id + "/revoke", "POST", Object.class, reason != null ? Map.of("reason", reason) : null); }
+}
+
+class TrackingClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
+    private static final Gson gson = new Gson();
+
+    public TrackingClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
+        if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
+        return gson.fromJson(resp.body(), t);
+    }
+
+    public Object detail(String trackingNo) throws Exception { return request("/api/v1/tracking/" + trackingNo, "GET", Object.class, null); }
+    public Object list(int page, int pageSize, String status, String trackingNo) throws Exception {
+        String basePath = EpodClient.UserRole.CARRIER.equals(config.getRole()) ? "/api/v1/carrier/tracking/list" : "/api/v1/merchant/tracking/list";
         StringBuilder q = new StringBuilder("?page=" + page + "&page_size=" + pageSize);
         if (status != null) q.append("&status=").append(URLEncoder.encode(status, StandardCharsets.UTF_8));
         if (trackingNo != null) q.append("&tracking_no=").append(URLEncoder.encode(trackingNo, StandardCharsets.UTF_8));
-        return request("/api/v1/shipment/epod/list" + q, "GET", EpodListResponse.class, null);
+        return request(basePath + q, "GET", Object.class, null);
     }
-
-    public EpodDetail get(String epodId) throws Exception { return request("/api/v1/shipment/epod/" + epodId, "GET", EpodDetail.class, null); }
-    public EpodDetail create(Object data) throws Exception { return request("/api/v1/shipment/epod/create", "POST", EpodDetail.class, data); }
-    public EpodDetail generateFromOrder(String orderId) throws Exception { return request("/api/v1/shipment/epod/generate-from-order", "POST", EpodDetail.class, new java.util.Map.of("order_id", orderId)); }
-    public EpodDetail update(String id, Object data) throws Exception { return request("/api/v1/shipment/epod/" + id + "/update", "PUT", EpodDetail.class, data); }
-    public EpodDetail deliver(String id) throws Exception { return request("/api/v1/shipment/epod/" + id + "/delivery", "POST", EpodDetail.class, null); }
-    public EpodDetail fail(String id, String remark) throws Exception { return request("/api/v1/shipment/epod/" + id + "/fail", "POST", EpodDetail.class, new java.util.Map.of("remark", remark)); }
-    public SignUrlResponse generateSignUrl(String id) throws Exception { return request("/api/v1/shipment/epod/" + id + "/sign", "POST", SignUrlResponse.class, null); }
-
-    public static class ShipzyConfig {
-        private String baseUrl = "https://api.shipzy.me";
-        private String token;
-        private int timeoutSeconds = 30;
-        private UserRole role = UserRole.MERCHANT;
-        private String carrierCode;
-        public String getBaseUrl() { return baseUrl; } public void setBaseUrl(String v) { this.baseUrl = v; }
-        public String getToken() { return token; } public void setToken(String v) { this.token = v; }
-        public int getTimeoutSeconds() { return timeoutSeconds; } public void setTimeoutSeconds(int v) { this.timeoutSeconds = v; }
-        public UserRole getRole() { return role; } public void setRole(UserRole v) { this.role = v; }
-        public String getCarrierCode() { return carrierCode; } public void setCarrierCode(String v) { this.carrierCode = v; }
-    }
-
-    public static class EpodListResponse { public List<EpodListItem> data; public int total; public int page; @SerializedName("page_size") public int pageSize; }
-    public static class EpodListItem { public String id; @SerializedName("tracking_no") public String trackingNo; public String status; @SerializedName("recipient_name") public String recipientName; @SerializedName("created_at") public String createdAt; }
-    public static class EpodDetail { public String id; @SerializedName("tracking_no") public String trackingNo; public String status; @SerializedName("recipient_name") public String recipientName; @SerializedName("recipient_phone") public String recipientPhone; @SerializedName("created_at") public String createdAt; @SerializedName("updated_at") public String updatedAt; @SerializedName("sign_url") public String signUrl; @SerializedName("evidence_hash") public String evidenceHash; }
-    public static class SignUrlResponse { @SerializedName("sign_url") public String signUrl; }
-    public static class ShipzyException extends Exception { public final int statusCode; public ShipzyException(String m, int s) { super(m); this.statusCode = s; } }
-    public static class ShipzyAuthException extends ShipzyException { public ShipzyAuthException(String m) { super(m, 401); } }
 }
 
-class OrderClient {
-    private final HttpClient httpClient; private final EpodClient.ShipzyConfig config;
-    public OrderClient(EpodClient.ShipzyConfig c) { this.config = c; this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build(); }
-    public void setToken(String t) { this.config.setToken(t); }
+class UploadClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
     private static final Gson gson = new Gson();
-    private <T> T req(String p, String m, Class<T> t, Object b) throws Exception {
-        var builder = HttpRequest.newBuilder().uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + p)).header("Authorization", "Bearer " + config.getToken()).header("Content-Type", "application/json");
-        if ("POST".equals(m)) builder.POST(HttpRequest.BodyPublishers.ofString(b != null ? gson.toJson(b) : "{}")); else builder.GET();
-        var resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+
+    public UploadClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
         if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
         return gson.fromJson(resp.body(), t);
     }
-    public Object list(int p, int ps, String s) throws Exception { return req("/api/v1/order/list?page=" + p + "&page_size=" + ps + (s != null ? "&status=" + URLEncoder.encode(s, StandardCharsets.UTF_8) : ""), "GET", Object.class, null); }
-    public Object get(String id) throws Exception { return req("/api/v1/order/" + id, "GET", Object.class, null); }
-    public Object create(Object d) throws Exception { return req("/api/v1/order/create", "POST", Object.class, d); }
-    public Object update(String id, Object d) throws Exception { return req("/api/v1/order/" + id + "/update", "POST", Object.class, d); }
-    public Object cancel(String id) throws Exception { return req("/api/v1/order/" + id + "/cancel", "POST", Object.class, null); }
+
+    public Object uploadFile(String endpoint, Object body) throws Exception { return request(endpoint, "POST", Object.class, body); }
+    public Object brandingUploadLogo(Object body) throws Exception { return request("/api/v1/merchant/branding/logo", "POST", Object.class, body); }
 }
 
-class AddressClient {
-    private final HttpClient httpClient; private final EpodClient.ShipzyConfig config;
-    public AddressClient(EpodClient.ShipzyConfig c) { this.config = c; this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build(); }
-    public void setToken(String t) { this.config.setToken(t); }
+class CarrierClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
     private static final Gson gson = new Gson();
-    private <T> T req(String p, Class<T> t, Object b) throws Exception {
-        var builder = HttpRequest.newBuilder().uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + p)).header("Authorization", "Bearer " + config.getToken()).header("Content-Type", "application/json");
-        builder.POST(HttpRequest.BodyPublishers.ofString(b != null ? gson.toJson(b) : "{}"));
-        var resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+
+    public CarrierClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
         if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
         return gson.fromJson(resp.body(), t);
     }
-    public Object list(Object p) throws Exception { return req("/api/v1/merchant/addresses/list", Object.class, p); }
-    public Object create(Object d) throws Exception { return req("/api/v1/merchant/addresses/create", Object.class, d); }
-    public Object update(String id, Object d) throws Exception { return req("/api/v1/merchant/addresses/" + id + "/update", Object.class, d); }
-    public Object delete(String id) throws Exception { return req("/api/v1/merchant/addresses/" + id + "/delete", Object.class, null); }
+
+    public Object list(int page, int pageSize, String state) throws Exception {
+        StringBuilder q = new StringBuilder("?page=" + page + "&page_size=" + pageSize);
+        if (state != null) q.append("&state=").append(URLEncoder.encode(state, StandardCharsets.UTF_8));
+        return request("/api/v1/carrier/list" + q, "GET", Object.class, null);
+    }
+    public Object get(String id) throws Exception { return request("/api/v1/carrier/" + id, "GET", Object.class, null); }
+    public Object create(Object data) throws Exception { return request("/api/v1/carrier", "POST", Object.class, data); }
+    public Object update(String id, Object data) throws Exception { return request("/api/v1/carrier/" + id, "PUT", Object.class, data); }
+    public Object delete(String id) throws Exception { return request("/api/v1/carrier/" + id, "DELETE", Object.class, null); }
 }
 
-class CarrierEpodClient {
-    private final HttpClient httpClient; private final EpodClient.ShipzyConfig config;
-    public CarrierEpodClient(EpodClient.ShipzyConfig c) { this.config = c; this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build(); }
-    public void setToken(String t) { this.config.setToken(t); }
+class PlatformConfigClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
     private static final Gson gson = new Gson();
-    private <T> T req(String p, String m, Class<T> t, Object b) throws Exception {
-        var builder = HttpRequest.newBuilder().uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + p)).header("Authorization", "Bearer " + config.getToken()).header("Content-Type", "application/json");
-        if ("POST".equals(m)) builder.POST(HttpRequest.BodyPublishers.ofString(b != null ? gson.toJson(b) : "{}")); else builder.GET();
-        var resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+
+    public PlatformConfigClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
         if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
         return gson.fromJson(resp.body(), t);
     }
-    public EpodClient.EpodListResponse list(int p, int ps, String s) throws Exception {
-        return req("/api/v1/carrier/epod/list?page=" + p + "&page_size=" + ps + (s != null ? "&status=" + URLEncoder.encode(s, StandardCharsets.UTF_8) : ""), "GET", EpodClient.EpodListResponse.class, null);
+
+    public Object list() throws Exception { return request("/api/v1/admin/platform-configs", "GET", Object.class, null); }
+    public Object update(String id, Object data) throws Exception { return request("/api/v1/admin/platform-configs/" + id, "PUT", Object.class, data); }
+}
+
+class ComplianceClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
+    private static final Gson gson = new Gson();
+
+    public ComplianceClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
     }
-    public EpodClient.EpodDetail get(String id) throws Exception { return req("/api/v1/carrier/epod/" + id, "GET", EpodClient.EpodDetail.class, null); }
-    public EpodClient.EpodDetail deliver(String id) throws Exception { return req("/api/v1/carrier/epod/" + id + "/delivery", "POST", EpodClient.EpodDetail.class, null); }
-    public EpodClient.EpodDetail fail(String id, String remark) throws Exception { return req("/api/v1/carrier/epod/" + id + "/fail", "POST", EpodClient.EpodDetail.class, new java.util.Map.of("remark", remark)); }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
+        if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
+        return gson.fromJson(resp.body(), t);
+    }
+
+    public Object check(Object data) throws Exception { return request("/api/v1/compliance/check", "POST", Object.class, data); }
+    public Object countryRequirements(String countryCode) throws Exception { return request("/api/v1/compliance/requirements/" + countryCode, "GET", Object.class, null); }
+    public Object createCustoms(Object data) throws Exception { return request("/api/v1/compliance/customs", "POST", Object.class, data); }
+    public Object getCustoms(String id) throws Exception { return request("/api/v1/compliance/customs/" + id, "GET", Object.class, null); }
+    public Object validateHsCode(String hsCode) throws Exception { return request("/api/v1/compliance/hscode/" + hsCode + "/validate", "GET", Object.class, null); }
+    public Object prohibitedItems() throws Exception { return request("/api/v1/compliance/prohibited", "GET", Object.class, null); }
+}
+
+class CpscClient {
+    private final HttpClient httpClient;
+    private final EpodClient.ShipzyConfig config;
+    private static final Gson gson = new Gson();
+
+    public CpscClient(EpodClient.ShipzyConfig c) {
+        this.config = c;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(c.getTimeoutSeconds())).build();
+    }
+    public void setToken(String t) { config.setToken(t); }
+
+    private <T> T request(String path, String method, Class<T> t, Object body) throws Exception {
+        var builder = HttpRequest.newBuilder()
+            .uri(URI.create(config.getBaseUrl().replaceAll("/$", "") + path))
+            .header("Authorization", new EpodClient(config).getAuthHeader())
+            .header("Content-Type", "application/json");
+        if ("POST".equals(method) || "PUT".equals(method))
+            builder.method(method, HttpRequest.BodyPublishers.ofString(body != null ? gson.toJson(body) : "{}"));
+        else builder.GET();
+        HttpResponse<String> resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 401) throw new EpodClient.ShipzyAuthException("Unauthorized");
+        if (resp.statusCode() >= 400) throw new EpodClient.ShipzyException("HTTP " + resp.statusCode(), resp.statusCode());
+        return gson.fromJson(resp.body(), t);
+    }
+
+    public Object getCollections() throws Exception { return request("/api/v1/cpsc/collections", "GET", Object.class, null); }
+    public Object getCredential() throws Exception { return request("/api/v1/cpsc/credential", "GET", Object.class, null); }
+    public Object saveCredential(Object data) throws Exception { return request("/api/v1/cpsc/credential", "POST", Object.class, data); }
+    public Object importData(Object data) throws Exception { return request("/api/v1/cpsc/import", "POST", Object.class, data); }
+    public Object getImportStatus(String importId) throws Exception { return request("/api/v1/cpsc/import/" + importId + "/status", "GET", Object.class, null); }
+    public Object getImportLog(String importId, boolean errorsOnly) throws Exception { return request("/api/v1/cpsc/import/" + importId + "/log?errorsOnly=" + errorsOnly, "GET", Object.class, null); }
+    public Object exportData(Map<String, Object> filter) throws Exception {
+        StringBuilder q = new StringBuilder();
+        if (filter != null) filter.forEach((k, v) -> q.append("&").append(k).append("=").append(v));
+        return request("/api/v1/cpsc/export" + q, "GET", Object.class, null);
+    }
+    public Object exportAsync(Map<String, Object> filter) throws Exception {
+        StringBuilder q = new StringBuilder();
+        if (filter != null) filter.forEach((k, v) -> q.append("&").append(k).append("=").append(v));
+        return request("/api/v1/cpsc/export-async" + q, "GET", Object.class, null);
+    }
+    public Object getExportAsyncStatus(String exportId) throws Exception { return request("/api/v1/cpsc/export-async/" + exportId + "/status", "GET", Object.class, null); }
+    public Object getExportAsyncData(String exportId) throws Exception { return request("/api/v1/cpsc/export-async/" + exportId + "/data", "GET", Object.class, null); }
+    public Object getCertificates(Object data) throws Exception { return request("/api/v1/cpsc/certificates", "POST", Object.class, data); }
+    public Object getTradeParties(String partyType) throws Exception {
+        String q = partyType != null ? "?tradePartyType=" + URLEncoder.encode(partyType, StandardCharsets.UTF_8) : "";
+        return request("/api/v1/cpsc/trade-parties" + q, "GET", Object.class, null);
+    }
+    public Object getTokenExpiration() throws Exception { return request("/api/v1/cpsc/token-expiration", "GET", Object.class, null); }
 }
 
 class ShipzyClient {
-    public final EpodClient epod; public final OrderClient order; public final AddressClient address; public final CarrierEpodClient carrierEpod;
-    public final UserRole role;
-    public ShipzyClient(EpodClient.ShipzyConfig c) { epod = new EpodClient(c); order = new OrderClient(c); address = new AddressClient(c); carrierEpod = new CarrierEpodClient(c); role = c.getRole(); }
-    public void updateToken(String t) { epod.setToken(t); order.setToken(t); address.setToken(t); carrierEpod.setToken(t); }
-    public boolean isMerchant() { return role == UserRole.MERCHANT; }
-    public boolean isCarrier() { return role == UserRole.CARRIER; }
+    public final EpodClient epod;
+    public final OrderClient order;
+    public final AddressClient address;
+    public final CarrierEpodClient carrierEpod;
+    public final EcmrClient ecmr;
+    public final ProductClient product;
+    public final ActivationClient activation;
+    public final TrackingClient tracking;
+    public final UploadClient upload;
+    public final CarrierClient carrier;
+    public final PlatformConfigClient platformConfig;
+    public final ComplianceClient compliance;
+    public final CpscClient cpsc;
+    public final EpodClient.UserRole role;
+
+    public ShipzyClient(EpodClient.ShipzyConfig c) {
+        epod = new EpodClient(c);
+        order = new OrderClient(c);
+        address = new AddressClient(c);
+        carrierEpod = new CarrierEpodClient(c);
+        ecmr = new EcmrClient(c);
+        product = new ProductClient(c);
+        activation = new ActivationClient(c);
+        tracking = new TrackingClient(c);
+        upload = new UploadClient(c);
+        carrier = new CarrierClient(c);
+        platformConfig = new PlatformConfigClient(c);
+        compliance = new ComplianceClient(c);
+        cpsc = new CpscClient(c);
+        role = c.getRole();
+    }
+
+    public void updateToken(String t) {
+        epod.setToken(t); order.setToken(t); address.setToken(t);
+        carrierEpod.setToken(t); ecmr.setToken(t); product.setToken(t);
+        activation.setToken(t); tracking.setToken(t); upload.setToken(t);
+        carrier.setToken(t); platformConfig.setToken(t); compliance.setToken(t); cpsc.setToken(t);
+    }
+
+    public boolean isMerchant() { return role == EpodClient.UserRole.MERCHANT; }
+    public boolean isCarrier() { return role == EpodClient.UserRole.CARRIER; }
 }

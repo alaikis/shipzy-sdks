@@ -14,6 +14,15 @@ from .finance import FinanceClient
 from .notification import DELIVERY_MODES, NOTIFICATION_CHANNELS, validate_channel_requirements
 from .support_ticket import SupportTicketClient
 from .validation import ValidationClient
+from .tracking import TrackingClient
+from .upload import UploadClient
+from .public_epod import PublicEpodClient
+from .carrier import CarrierClient
+from .carrier_epod import CarrierEpodClient
+from .carrier_address import CarrierAddressClient
+from .platform_config import PlatformConfigClient
+from .compliance import ComplianceClient
+from .cpsc import CpscClient
 
 __all__ = [
     "ZymeupClient",
@@ -32,4 +41,13 @@ __all__ = [
     "validate_channel_requirements",
     "SupportTicketClient",
     "ValidationClient",
+    "TrackingClient",
+    "UploadClient",
+    "PublicEpodClient",
+    "CarrierClient",
+    "CarrierEpodClient",
+    "CarrierAddressClient",
+    "PlatformConfigClient",
+    "ComplianceClient",
+    "CpscClient",
 ]

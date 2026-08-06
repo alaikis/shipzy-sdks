@@ -15,6 +15,15 @@ public class ZymeupClient: @unchecked Sendable {
     public let notification: NotificationClient
     public let supportTicket: SupportTicketClient
     public let validation: ValidationClient
+    public let tracking: TrackingClient
+    public let upload: UploadClient
+    public let publicEpod: PublicEpodClient
+    public let carrier: CarrierClient
+    public let carrierEpod: CarrierEpodClient
+    public let carrierAddress: CarrierAddressClient
+    public let platformConfig: PlatformConfigClient
+    public let compliance: ComplianceClient
+    public let cpsc: CpscClient
     public let role: UserRole
     private var config: ZymeupConfig
 
@@ -33,6 +42,15 @@ public class ZymeupClient: @unchecked Sendable {
         self.notification = NotificationClient(config: config)
         self.supportTicket = SupportTicketClient(config: config)
         self.validation = ValidationClient(config: config)
+        self.tracking = TrackingClient(config: config)
+        self.upload = UploadClient(config: config)
+        self.publicEpod = PublicEpodClient(baseUrl: config.baseUrl)
+        self.carrier = CarrierClient(config: config)
+        self.carrierEpod = CarrierEpodClient(config: config)
+        self.carrierAddress = CarrierAddressClient(config: config)
+        self.platformConfig = PlatformConfigClient(config: config)
+        self.compliance = ComplianceClient(config: config)
+        self.cpsc = CpscClient(config: config)
     }
 
     public func updateToken(_ token: String) {
@@ -55,6 +73,14 @@ public class ZymeupClient: @unchecked Sendable {
         self.notification.setToken(token)
         self.supportTicket.setToken(token)
         self.validation.setToken(token)
+        self.tracking.setToken(token)
+        self.upload.setToken(token)
+        self.carrier.setToken(token)
+        self.carrierEpod.setToken(token)
+        self.carrierAddress.setToken(token)
+        self.platformConfig.setToken(token)
+        self.compliance.setToken(token)
+        self.cpsc.setToken(token)
     }
 
     public func isMerchant() -> Bool {

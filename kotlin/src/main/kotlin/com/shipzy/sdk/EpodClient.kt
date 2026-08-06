@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 enum class UserRole { MERCHANT, CARRIER }
 
 data class ShipzyConfig(
-    val baseUrl: String = "https://api.shipzy.me",
+    val baseUrl: String = "https://api.zymeup.com",
     var token: String = "",
     val timeoutSeconds: Int = 30,
     var role: UserRole = UserRole.MERCHANT,
@@ -111,21 +111,6 @@ class CarrierEpodClient(private val config: ShipzyConfig) {
     suspend fun fail(id: String, remark: String): EpodDetail = request("/api/v1/carrier/epod/$id/fail", HttpMethod.Post, mapOf("remark" to remark))
 }
 
-class ShipzyClient(config: ShipzyConfig) {
-    val epod = EpodClient(config)
-    val order = OrderClient(config)
-    val address = AddressClient(config)
-    val carrierEpod = CarrierEpodClient(config)
-    val validation = ValidationClient(config)
-    val role = config.role
-    fun updateToken(token: String) {
-        epod.setToken(token); order.setToken(token); address.setToken(token)
-        carrierEpod.setToken(token); validation.setToken(token)
-    }
-    fun isMerchant() = role == UserRole.MERCHANT
-    fun isCarrier() = role == UserRole.CARRIER
-}
-
 class ValidationClient(private val config: ShipzyConfig) {
     private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
     fun setToken(token: String) { config.token = token }
@@ -150,4 +135,32 @@ class ValidationClient(private val config: ShipzyConfig) {
         request("/api/v1/validation/tax-id", HttpMethod.Post, mapOf("country_code" to countryCode, "tax_id" to taxId))
     suspend fun health(): Map<String, Any> =
         request("/api/v1/validation/health", HttpMethod.Get)
+}
+
+class ShipzyClient(config: ShipzyConfig) {
+    val epod = EpodClient(config)
+    val order = OrderClient(config)
+    val address = AddressClient(config)
+    val carrierEpod = CarrierEpodClient(config)
+    val validation = ValidationClient(config)
+    val ecmr = EcmrClient(config)
+    val product = ProductClient(config)
+    val activation = ActivationClient(config)
+    val tracking = TrackingClient(config)
+    val upload = UploadClient(config)
+    val carrier = CarrierClient(config)
+    val platformConfig = PlatformConfigClient(config)
+    val compliance = ComplianceClient(config)
+    val cpsc = CpscClient(config)
+    val role = config.role
+    fun updateToken(token: String) {
+        epod.setToken(token); order.setToken(token); address.setToken(token)
+        carrierEpod.setToken(token); validation.setToken(token)
+        ecmr.setToken(token); product.setToken(token); activation.setToken(token)
+        tracking.setToken(token); upload.setToken(token)
+        carrier.setToken(token); platformConfig.setToken(token)
+        compliance.setToken(token); cpsc.setToken(token)
+    }
+    fun isMerchant() = role == UserRole.MERCHANT
+    fun isCarrier() = role == UserRole.CARRIER
 }

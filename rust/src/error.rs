@@ -1,5 +1,3 @@
-use std::fmt;
-
 #[derive(Debug, thiserror::Error)]
 pub enum ShipzyError {
     #[error("HTTP error {status}: {message}")]

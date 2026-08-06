@@ -26,6 +26,16 @@
         "types": "./dist/epod-elements/index.d.cts",
         "default": "./dist/epod-elements/index.cjs"
       }
+    },
+    "./solid": {
+      "import": {
+        "types": "./dist/solid/index.d.ts",
+        "default": "./dist/solid/index.js"
+      },
+      "require": {
+        "types": "./dist/solid/index.d.cts",
+        "default": "./dist/solid/index.cjs"
+      }
     }
   },
   "files": [
@@ -51,9 +61,13 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "solid-js": "^1.8.0",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.8.0"
   },
   "directories": {
     "test": "tests"
