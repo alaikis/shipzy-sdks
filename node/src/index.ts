@@ -43,6 +43,7 @@ import { CarrierClient } from './carrier';
 import { PlatformConfigClient } from './platform';
 import { UploadClient } from './upload';
 import { ValidationClient } from './validation';
+import { SupportTicketClient } from './support_ticket';
 
 // ============ Re-exports from new modules ============
 
@@ -94,6 +95,7 @@ export class ZymeupClient {
     public platformConfig: PlatformConfigClient;
     public upload: UploadClient;
     public validation: ValidationClient;
+    public supportTicket: SupportTicketClient;
     private config: ZymeupConfig;
 
     constructor(config: Partial<ZymeupConfig> = {}) {
@@ -121,6 +123,7 @@ export class ZymeupClient {
         this.platformConfig = new PlatformConfigClient(this.config);
         this.upload = new UploadClient(this.config);
         this.validation = new ValidationClient(this.config);
+        this.supportTicket = new SupportTicketClient(this.config);
     }
 
     updateToken(token: string): void {
@@ -146,6 +149,7 @@ export class ZymeupClient {
         this.platformConfig.setToken(token);
         this.upload.setToken(token);
         this.validation.setToken(token);
+        this.supportTicket.setToken(token);
     }
 
     updateConfig(config: Partial<ZymeupConfig>): void {
@@ -235,6 +239,8 @@ export type { Carrier } from './carrier';
 export type { PlatformConfig } from './platform';
 export { ValidationClient } from './validation';
 export type { PhoneVerifyResult, PhoneFormatResult, PostalCodeResult, EmailValidationResult, TaxIdValidationResult } from './validation';
+export { SupportTicketClient } from './support_ticket';
+export type { SupportTicket, TicketListResponse } from './support_ticket';
 
 // ============ Backward compatibility aliases ============
 
