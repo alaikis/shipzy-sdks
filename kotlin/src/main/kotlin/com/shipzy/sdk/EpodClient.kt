@@ -29,6 +29,16 @@ data class EpodDetail(val id: String = "", @SerialName("tracking_no") val tracki
 @Serializable
 data class SignUrlResponse(@SerialName("sign_url") val signUrl: String = "")
 
+@Serializable
+data class Carrier(
+    val id: String = "",
+    val name: String = "",
+    val code: String = "",
+    @SerialName("tracking_provider") val trackingProvider: String? = null,
+    @SerialName("tracking_slug") val trackingSlug: String? = null,
+    val status: String = ""
+)
+
 open class ShipzyException(message: String, val statusCode: Int) : Exception(message)
 class ShipzyAuthException(message: String) : ShipzyException(message, 401)
 
@@ -57,6 +67,7 @@ class EpodClient(private val config: ShipzyConfig) {
     suspend fun deliver(id: String): EpodDetail = request("/api/v1/shipment/epod/$id/delivery", HttpMethod.Post)
     suspend fun fail(id: String, remark: String): EpodDetail = request("/api/v1/shipment/epod/$id/fail", HttpMethod.Post, mapOf("remark" to remark))
     suspend fun generateSignUrl(id: String): SignUrlResponse = request("/api/v1/shipment/epod/$id/sign", HttpMethod.Post)
+    suspend fun uploadPhoto(id: String, data: Any): Any = request("/api/v1/shipment/epod/$id/upload-photo", HttpMethod.Post, data)
 }
 
 class OrderClient(private val config: ShipzyConfig) {
@@ -152,6 +163,7 @@ class ShipzyClient(config: ShipzyConfig) {
     val platformConfig = PlatformConfigClient(config)
     val compliance = ComplianceClient(config)
     val cpsc = CpscClient(config)
+    val finance = FinanceClient(config)
     val role = config.role
     fun updateToken(token: String) {
         epod.setToken(token); order.setToken(token); address.setToken(token)
@@ -159,7 +171,7 @@ class ShipzyClient(config: ShipzyConfig) {
         ecmr.setToken(token); product.setToken(token); activation.setToken(token)
         tracking.setToken(token); upload.setToken(token)
         carrier.setToken(token); platformConfig.setToken(token)
-        compliance.setToken(token); cpsc.setToken(token)
+        compliance.setToken(token); cpsc.setToken(token); finance.setToken(token)
     }
     fun isMerchant() = role == UserRole.MERCHANT
     fun isCarrier() = role == UserRole.CARRIER

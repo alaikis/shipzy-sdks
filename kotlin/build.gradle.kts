@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.shipzy"
-version = "1.1.1"
+version = "2.0.2"
 
 repositories {
     mavenCentral()

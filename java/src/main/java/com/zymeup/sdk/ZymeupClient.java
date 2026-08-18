@@ -6,7 +6,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 public class ZymeupClient {
-    public static final String VERSION = "1.2.0";
+    public static final String VERSION = "2.0.2";
     public static final String BASE_URL = "https://api.zymeup.com";
 
     private final String baseUrl;
@@ -19,6 +19,7 @@ public class ZymeupClient {
     public EcmrClient ecmr;
     public ProductClient product;
     public ActivationClient activation;
+    public FinanceClient finance;
 
     public ZymeupClient(String apiKey) {
         this(apiKey, BASE_URL);
@@ -36,6 +37,7 @@ public class ZymeupClient {
         this.ecmr = new EcmrClient(this);
         this.product = new ProductClient(this);
         this.activation = new ActivationClient(this);
+        this.finance = new FinanceClient(this);
     }
 
     public HttpRequest.Builder newRequest(String path) {

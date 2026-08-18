@@ -54,6 +54,34 @@ public class EcmrClient {
         return parseResponse(response.body());
     }
 
+    public Map<String, Object> update(String id, Map<String, Object> data) throws Exception {
+        HttpRequest request = client.newRequest("/api/v1/shipment/ecmr/" + id + "/update")
+                .POST(HttpRequest.BodyPublishers.ofString(toJson(data))).build();
+        HttpResponse<String> response = client.send(request);
+        return parseResponse(response.body());
+    }
+
+    public Map<String, Object> cancel(String id) throws Exception {
+        HttpRequest request = client.newRequest("/api/v1/shipment/ecmr/" + id + "/cancel")
+                .POST(HttpRequest.BodyPublishers.noBody()).build();
+        HttpResponse<String> response = client.send(request);
+        return parseResponse(response.body());
+    }
+
+    public Map<String, Object> validate(String id) throws Exception {
+        HttpRequest request = client.newRequest("/api/v1/shipment/ecmr/" + id + "/validate")
+                .POST(HttpRequest.BodyPublishers.noBody()).build();
+        HttpResponse<String> response = client.send(request);
+        return parseResponse(response.body());
+    }
+
+    public Map<String, Object> submitToAuthority(String id) throws Exception {
+        HttpRequest request = client.newRequest("/api/v1/shipment/ecmr/" + id + "/submit-to-authority")
+                .POST(HttpRequest.BodyPublishers.noBody()).build();
+        HttpResponse<String> response = client.send(request);
+        return parseResponse(response.body());
+    }
+
     private Map<String, Object> parseResponse(String body) {
         if (body == null || body.isEmpty()) return new HashMap<>();
         return body.trim().startsWith("{") ? parseJsonObject(body) : new HashMap<>();

@@ -25,6 +25,10 @@ class EcmrClient(private val config: ShipzyConfig) {
     suspend fun generateFromOrder(orderId: String): Any = request("/api/v1/shipment/ecmr/generate-from-order", HttpMethod.Post, mapOf("order_id" to orderId))
     suspend fun sign(id: String): Any = request("/api/v1/shipment/ecmr/$id/sign", HttpMethod.Post)
     suspend fun pdf(id: String): Any = request("/api/v1/shipment/ecmr/$id/pdf", HttpMethod.Post)
+    suspend fun update(id: String, data: Any): Any = request("/api/v1/shipment/ecmr/$id/update", HttpMethod.Post, data)
+    suspend fun cancel(id: String): Any = request("/api/v1/shipment/ecmr/$id/cancel", HttpMethod.Post)
+    suspend fun validate(id: String): Any = request("/api/v1/shipment/ecmr/$id/validate", HttpMethod.Post)
+    suspend fun submitToAuthority(id: String): Any = request("/api/v1/shipment/ecmr/$id/submit-to-authority", HttpMethod.Post)
 }
 
 class ProductClient(private val config: ShipzyConfig) {
@@ -101,8 +105,7 @@ class UploadClient(private val config: ShipzyConfig) {
         return response.body()
     }
     suspend fun uploadFile(endpoint: String, body: Any): Any = request(endpoint, HttpMethod.Post, body)
-    suspend fun brandingUploadLogo(body: Any): Any = request("/api/v1/merchant/branding/logo", HttpMethod.Post, body)
-}
+    }
 
 class CarrierClient(private val config: ShipzyConfig) {
     private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
@@ -121,7 +124,7 @@ class CarrierClient(private val config: ShipzyConfig) {
         return request("/api/v1/carrier/list?$q")
     }
     suspend fun get(id: String): Any = request("/api/v1/carrier/$id")
-    suspend fun create(data: Any): Any = request("/api/v1/carrier", HttpMethod.Post, data)
+    suspend fun create(data: Any): Any = request("/api/v1/carrier/register", HttpMethod.Post, data)
     suspend fun update(id: String, data: Any): Any = request("/api/v1/carrier/$id", HttpMethod.Put, data)
     suspend fun delete(id: String): Any = request("/api/v1/carrier/$id", HttpMethod.Delete)
 }
@@ -157,9 +160,24 @@ class ComplianceClient(private val config: ShipzyConfig) {
     suspend fun check(data: Any): Any = request("/api/v1/compliance/check", HttpMethod.Post, data)
     suspend fun countryRequirements(countryCode: String): Any = request("/api/v1/compliance/requirements/$countryCode")
     suspend fun validateHsCode(hsCode: String): Any = request("/api/v1/compliance/hscode/$hsCode/validate")
-    suspend fun prohibitedItems(): Any = request("/api/v1/compliance/prohibited")
     suspend fun createCustoms(data: Any): Any = request("/api/v1/compliance/customs", HttpMethod.Post, data)
     suspend fun getCustoms(id: String): Any = request("/api/v1/compliance/customs/$id")
+}
+
+class FinanceClient(private val config: ShipzyConfig) {
+    private val client = HttpClient(CIO) { install(HttpTimeout) { requestTimeoutMillis = config.timeoutSeconds * 1000L } }
+    fun setToken(token: String) { config.token = token }
+    private suspend inline fun <reified T> request(path: String, method: HttpMethod = HttpMethod.Get, body: Any? = null): T {
+        val response = client.request(config.baseUrl.trimEnd('/') + path) {
+            this.method = method; header(HttpHeaders.Authorization, "Bearer ${config.token}"); header(HttpHeaders.ContentType, ContentType.Application.Json)
+            if (body != null) setBody(body)
+        }
+        if (response.status == HttpStatusCode.Unauthorized) throw ShipzyAuthException("Unauthorized")
+        if (!response.status.isSuccess()) throw ShipzyException("HTTP ${response.status.value}", response.status.value)
+        return response.body()
+    }
+    suspend fun listInvoices(page: Int = 1, pageSize: Int = 25): Any = request("/api/v1/invoices?page=$page&page_size=$pageSize")
+    suspend fun getInvoice(id: String): Any = request("/api/v1/invoices/$id")
 }
 
 class CpscClient(private val config: ShipzyConfig) {

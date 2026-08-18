@@ -1,104 +1,137 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-pub const VERSION = "1.1.1";
-
-pub const UserRole = enum { merchant, carrier };
+pub const VERSION = "2.0.2";
 
 pub const ShipzyConfig = struct {
-    base_url: []const u8 = "https://api.shipzy.me",
+    base_url: []const u8 = "https://api.zymeup.com/api/v1",
     token: ?[]const u8 = null,
     timeout_seconds: u64 = 30,
-    role: UserRole = .merchant,
-    carrier_code: ?[]const u8 = null,
 };
 
-pub const EpodListItem = struct { id: []const u8, tracking_no: []const u8, status: []const u8, recipient_name: ?[]const u8, created_at: []const u8 };
-pub const EpodListResponse = struct { data: []EpodListItem, total: i64, page: i32, page_size: i32 };
-pub const EpodDetail = struct { id: []const u8, tracking_no: []const u8, status: []const u8, recipient_name: ?[]const u8, recipient_phone: ?[]const u8, created_at: []const u8, updated_at: []const u8, sign_url: ?[]const u8, evidence_hash: ?[]const u8 };
-pub const SignUrlResponse = struct { sign_url: []const u8 };
-
-pub const ShipzyError = error{ Unauthorized, HttpError, OutOfMemory, InvalidJson };
-
-pub const EpodClient = struct {
-    allocator: Allocator,
-    config: ShipzyConfig,
-    http_client: std.http.Client,
-
-    pub fn init(allocator: Allocator, config: ShipzyConfig) EpodClient {
-        return .{ .allocator = allocator, .config = config, .http_client = std.http.Client{ .allocator = allocator } };
-    }
-    pub fn deinit(self: *EpodClient) void { self.http_client.deinit(); }
-    pub fn setToken(self: *EpodClient, token: []const u8) { self.config.token = token; }
-};
-
-pub const OrderClient = struct {
-    allocator: Allocator,
-    config: ShipzyConfig,
-    http_client: std.http.Client,
-    pub fn init(allocator: Allocator, config: ShipzyConfig) OrderClient { return .{ .allocator = allocator, .config = config, .http_client = std.http.Client{ .allocator = allocator } }; }
-    pub fn deinit(self: *OrderClient) void { self.http_client.deinit(); }
-    pub fn setToken(self: *OrderClient, token: []const u8) { self.config.token = token; }
-};
-
-pub const AddressClient = struct {
-    allocator: Allocator,
-    config: ShipzyConfig,
-    http_client: std.http.Client,
-    pub fn init(allocator: Allocator, config: ShipzyConfig) AddressClient { return .{ .allocator = allocator, .config = config, .http_client = std.http.Client{ .allocator = allocator } }; }
-    pub fn deinit(self: *AddressClient) void { self.http_client.deinit(); }
-    pub fn setToken(self: *AddressClient, token: []const u8) { self.config.token = token; }
-};
-
-pub const CarrierEpodClient = struct {
-    allocator: Allocator,
-    config: ShipzyConfig,
-    http_client: std.http.Client,
-    pub fn init(allocator: Allocator, config: ShipzyConfig) CarrierEpodClient { return .{ .allocator = allocator, .config = config, .http_client = std.http.Client{ .allocator = allocator } }; }
-    pub fn deinit(self: *CarrierEpodClient) void { self.http_client.deinit(); }
-    pub fn setToken(self: *CarrierEpodClient, token: []const u8) { self.config.token = token; }
-};
-
-pub const ValidationClient = struct {
-    allocator: Allocator,
-    config: ShipzyConfig,
-    http_client: std.http.Client,
-    pub fn init(allocator: Allocator, config: ShipzyConfig) ValidationClient { return .{ .allocator = allocator, .config = config, .http_client = std.http.Client{ .allocator = allocator } }; }
-    pub fn deinit(self: *ValidationClient) void { self.http_client.deinit(); }
-    pub fn setToken(self: *ValidationClient, token: []const u8) { self.config.token = token; }
+pub const ShipzyError = error{
+    Unauthorized,
+    HttpError,
+    OutOfMemory,
+    InvalidJson,
 };
 
 pub const ShipzyClient = struct {
-    epod: EpodClient,
-    order: OrderClient,
-    address: AddressClient,
-    carrier_epod: CarrierEpodClient,
-    validation: ValidationClient,
-    role: UserRole,
+    allocator: Allocator,
+    config: ShipzyConfig,
+    http_client: std.http.Client,
 
     pub fn init(allocator: Allocator, config: ShipzyConfig) ShipzyClient {
         return .{
-            .epod = EpodClient.init(allocator, config),
-            .order = OrderClient.init(allocator, config),
-            .address = AddressClient.init(allocator, config),
-            .carrier_epod = CarrierEpodClient.init(allocator, config),
-            .validation = ValidationClient.init(allocator, config),
-            .role = config.role,
+            .allocator = allocator,
+            .config = config,
+            .http_client = std.http.Client{ .allocator = allocator },
         };
     }
+
     pub fn deinit(self: *ShipzyClient) void {
-        self.epod.deinit(); self.order.deinit(); self.address.deinit(); self.carrier_epod.deinit(); self.validation.deinit();
+        self.http_client.deinit();
     }
-    pub fn updateToken(self: *ShipzyClient, token: []const u8) {
-        self.epod.setToken(token); self.order.setToken(token); self.address.setToken(token); self.carrier_epod.setToken(token); self.validation.setToken(token);
+
+    pub fn setToken(self: *ShipzyClient, token: []const u8) void {
+        self.config.token = token;
+    }
+
+    fn request(self: *ShipzyClient, method: std.http.Method, path: []const u8, body: ?[]const u8) !std.http.Client.FetchResult {
+        var url = std.ArrayList(u8).init(self.allocator);
+        defer url.deinit();
+        try url.appendSlice(self.config.base_url);
+        try url.appendSlice(path);
+
+        var headers = std.http.Headers{ .allocator = self.allocator };
+        defer headers.deinit();
+
+        if (self.config.token) |token| {
+            const auth = try std.fmt.allocPrint(self.allocator, "Bearer {s}", .{token});
+            defer self.allocator.free(auth);
+            try headers.append("Authorization", auth);
+        }
+        try headers.append("Content-Type", "application/json");
+        try headers.append("User-Agent", "zymeup-sdk-zig/" ++ VERSION);
+
+        const result = try self.http_client.fetch(.{
+            .method = method,
+            .location = .{ .url = url.items },
+            .headers = headers,
+            .payload = body,
+            .connect_timeout_ms = self.config.timeout_seconds * 1000,
+        });
+        if (result.status == .unauthorized) return ShipzyError.Unauthorized;
+        if (@intFromEnum(result.status) >= 400) return ShipzyError.HttpError;
+        return result;
+    }
+
+    fn get(self: *ShipzyClient, path: []const u8) ![]const u8 {
+        const result = try self.request(.GET, path, null);
+        defer result.deinit();
+        return try result.reader().readAllAlloc(self.allocator, std.math.maxInt(usize));
+    }
+
+    fn post(self: *ShipzyClient, path: []const u8, body: ?[]const u8) ![]const u8 {
+        const result = try self.request(.POST, path, body);
+        defer result.deinit();
+        return try result.reader().readAllAlloc(self.allocator, std.math.maxInt(usize));
+    }
+
+    fn put(self: *ShipzyClient, path: []const u8, body: ?[]const u8) ![]const u8 {
+        const result = try self.request(.PUT, path, body);
+        defer result.deinit();
+        return try result.reader().readAllAlloc(self.allocator, std.math.maxInt(usize));
+    }
+
+    fn del(self: *ShipzyClient, path: []const u8) ![]const u8 {
+        const result = try self.request(.DELETE, path, null);
+        defer result.deinit();
+        return try result.reader().readAllAlloc(self.allocator, std.math.maxInt(usize));
+    }
+
+    pub fn carrierList(self: *ShipzyClient, page: u32, page_size: u32) ![]const u8 {
+        const path = try std.fmt.allocPrint(self.allocator, "/carrier/list?page={d}&page_size={d}", .{ page, page_size });
+        defer self.allocator.free(path);
+        return self.get(path);
+    }
+
+    pub fn trackingList(self: *ShipzyClient, page: u32, page_size: u32) ![]const u8 {
+        const path = try std.fmt.allocPrint(self.allocator, "/merchant/tracking/list?page={d}&page_size={d}", .{ page, page_size });
+        defer self.allocator.free(path);
+        return self.get(path);
+    }
+
+    pub fn ecmrList(self: *ShipzyClient, page: u32, page_size: u32) ![]const u8 {
+        const path = try std.fmt.allocPrint(self.allocator, "/shipment/ecmr/list?page={d}&page_size={d}", .{ page, page_size });
+        defer self.allocator.free(path);
+        return self.get(path);
+    }
+
+    pub fn ecmrDetail(self: *ShipzyClient, id: []const u8) ![]const u8 {
+        const path = try std.fmt.allocPrint(self.allocator, "/shipment/ecmr/{s}", .{id});
+        defer self.allocator.free(path);
+        return self.get(path);
+    }
+
+    pub fn epodList(self: *ShipzyClient, page: u32, page_size: u32) ![]const u8 {
+        const path = try std.fmt.allocPrint(self.allocator, "/shipment/epod/list?page={d}&page_size={d}", .{ page, page_size });
+        defer self.allocator.free(path);
+        return self.get(path);
+    }
+
+    pub fn orderList(self: *ShipzyClient, page: u32, page_size: u32) ![]const u8 {
+        const path = try std.fmt.allocPrint(self.allocator, "/order/list?page={d}&page_size={d}", .{ page, page_size });
+        defer self.allocator.free(path);
+        return self.get(path);
     }
 };
 
 test "ShipzyConfig defaults" {
     const config = ShipzyConfig{};
-    try std.expectEqualStrings("https://api.shipzy.me", config.base_url);
-    try std.expectEqual(null, config.token);
-    try std.expectEqual(@as(u64, 30), config.timeout_seconds);
+    try std.testing.expectEqualStrings("https://api.zymeup.com/api/v1", config.base_url);
+    try std.testing.expectEqual(@as(?[]const u8, null), config.token);
+    try std.testing.expectEqual(@as(u64, 30), config.timeout_seconds);
 }
 
 test "ShipzyClient init" {
