@@ -22,11 +22,3 @@ class CarrierAddressClient:
     def update(self, address_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Update a carrier address"""
         return self._client.request("POST", f"/api/v1/carrier/sdk/addresses/{address_id}/update", json=data)
-
-    def delete(self, address_id: str) -> Dict[str, Any]:
-        """Delete a carrier address"""
-        return self._client.request("POST", f"/api/v1/carrier/sdk/addresses/{address_id}/delete")
-
-    def set_default(self, address_id: str, address_type: str) -> Dict[str, Any]:
-        """Set address as default"""
-        return self._client.request("POST", f"/api/v1/carrier/sdk/addresses/{address_id}/set-default", json={"type": address_type})

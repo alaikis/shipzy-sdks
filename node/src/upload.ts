@@ -38,9 +38,4 @@ export class UploadClient extends HttpClient {
         });
         return resp.json();
     }
-
-    async brandingUploadLogo(file: File): Promise<ApiResult<{ logo_url: string }>> {
-        const result = await this.uploadFile('/api/v1/merchant/branding/logo', file) as any;
-        return result as ApiResult<{ logo_url: string }>;
-    }
 }

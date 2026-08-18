@@ -9,6 +9,8 @@ export interface Carrier {
     code: string;
     carrier_type: string;
     tracking_type: string;
+    tracking_provider?: string;
+    tracking_slug?: string;
     business_type: string;
     state: 'active' | 'pending' | 'suspended';
     description: string;
@@ -34,7 +36,7 @@ export class CarrierClient extends HttpClient {
     }
 
     async create(data: { name: string; code: string; carrier_type?: string; tracking_type?: string; business_type?: string }): Promise<ApiResult<Carrier>> {
-        const result = await this.request('/api/v1/carrier', 'POST', data) as any;
+        const result = await this.request('/api/v1/carrier/register', 'POST', data) as any;
         return result as ApiResult<Carrier>;
     }
 

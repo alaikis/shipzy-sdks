@@ -15,7 +15,6 @@ from .notification import DELIVERY_MODES, NOTIFICATION_CHANNELS, validate_channe
 from .support_ticket import SupportTicketClient
 from .validation import ValidationClient
 from .tracking import TrackingClient
-from .upload import UploadClient
 from .public_epod import PublicEpodClient
 from .carrier import CarrierClient
 from .carrier_epod import CarrierEpodClient
@@ -42,7 +41,6 @@ __all__ = [
     "SupportTicketClient",
     "ValidationClient",
     "TrackingClient",
-    "UploadClient",
     "PublicEpodClient",
     "CarrierClient",
     "CarrierEpodClient",

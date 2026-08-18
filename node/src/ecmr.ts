@@ -42,6 +42,22 @@ export class EcmrClient extends HttpClient {
         return this.request(`/api/v1/shipment/ecmr/${id}/sign`, 'POST', {});
     }
 
+    async update(id: string, data: Record<string, unknown>): Promise<ApiResult<Record<string, any>>> {
+        return this.request(`/api/v1/shipment/ecmr/${id}/update`, 'POST', data);
+    }
+
+    async cancel(id: string): Promise<ApiResult<Record<string, any>>> {
+        return this.request(`/api/v1/shipment/ecmr/${id}/cancel`, 'POST', {});
+    }
+
+    async validate(id: string): Promise<ApiResult<Record<string, any>>> {
+        return this.request(`/api/v1/shipment/ecmr/${id}/validate`, 'POST', {});
+    }
+
+    async submitToAuthority(id: string): Promise<ApiResult<Record<string, any>>> {
+        return this.request(`/api/v1/shipment/ecmr/${id}/submit-to-authority`, 'POST', {});
+    }
+
     async pdf(id: string): Promise<ApiResult<{ status: string; pdf_url?: string }>> {
         return this.request(`/api/v1/shipment/ecmr/${id}/pdf`, 'POST', {});
     }

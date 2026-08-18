@@ -92,8 +92,4 @@ export class ComplianceClient extends HttpClient {
     async validateHsCode(hsCode: string): Promise<ApiResult<{ valid: boolean; description?: string }>> {
         return this.request(`/api/v1/compliance/hscode/${encodeURIComponent(hsCode)}/validate`);
     }
-
-    async getProhibitedItems(): Promise<ApiResult<{ items: string[] }>> {
-        return this.request('/api/v1/compliance/prohibited');
-    }
 }

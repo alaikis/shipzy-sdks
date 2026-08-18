@@ -29,6 +29,22 @@ class EcmrClient:
         """Generate signing URL for ECMR"""
         return self._client.request("POST", f"/api/v1/shipment/ecmr/{ecmr_id}/sign")
 
+    def update(self, ecmr_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update ECMR"""
+        return self._client.request("POST", f"/api/v1/shipment/ecmr/{ecmr_id}/update", json=data)
+
+    def cancel(self, ecmr_id: str) -> Dict[str, Any]:
+        """Cancel ECMR"""
+        return self._client.request("POST", f"/api/v1/shipment/ecmr/{ecmr_id}/cancel")
+
+    def validate(self, ecmr_id: str) -> Dict[str, Any]:
+        """Validate ECMR"""
+        return self._client.request("POST", f"/api/v1/shipment/ecmr/{ecmr_id}/validate")
+
+    def submit_to_authority(self, ecmr_id: str) -> Dict[str, Any]:
+        """Submit ECMR to authority"""
+        return self._client.request("POST", f"/api/v1/shipment/ecmr/{ecmr_id}/submit-to-authority")
+
     def pdf(self, ecmr_id: str) -> Dict[str, Any]:
         """Generate PDF for ECMR"""
         return self._client.request("POST", f"/api/v1/shipment/ecmr/{ecmr_id}/pdf")

@@ -1,5 +1,24 @@
 """Zymeup Python SDK - Carrier Client"""
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, TypedDict
+
+
+class Carrier(TypedDict, total=False):
+    """Carrier type definition"""
+    id: int
+    name: str
+    code: str
+    carrier_type: str
+    tracking_type: str
+    tracking_provider: str
+    tracking_slug: str
+    business_type: str
+    state: str
+    description: str
+    website: str
+    contact_email: str
+    contact_phone: str
+    created_at: str
+    updated_at: str
 
 
 class CarrierClient:
@@ -18,6 +37,10 @@ class CarrierClient:
     def get(self, carrier_id: str) -> Dict[str, Any]:
         """Get carrier detail"""
         return self._client.request("GET", f"/api/v1/carrier/{carrier_id}")
+
+    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Register a new carrier"""
+        return self._client.request("POST", "/api/v1/carrier/register", json=data)
 
     def detect(self, tracking_no: str) -> Dict[str, Any]:
         """Detect carrier from tracking number"""

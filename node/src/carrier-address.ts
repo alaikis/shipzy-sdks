@@ -17,12 +17,4 @@ export class CarrierAddressClient extends HttpClient {
     async update(id: string, data: Record<string, unknown>): Promise<ApiResult<Address>> {
         return this.request(`/api/v1/carrier/sdk/addresses/${id}/update`, 'POST', data);
     }
-
-    async delete(id: string): Promise<ApiResult<{ deleted: boolean }>> {
-        return this.request(`/api/v1/carrier/sdk/addresses/${id}/delete`, 'POST', {});
-    }
-
-    async setDefault(id: string): Promise<ApiResult<Address>> {
-        return this.request(`/api/v1/carrier/sdk/addresses/${id}/set-default`, 'POST', {});
-    }
 }

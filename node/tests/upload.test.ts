@@ -41,32 +41,9 @@ describe('UploadClient', () => {
         const client = makeClient();
         const file = new File(['data'], 'doc.pdf', { type: 'application/pdf' });
 
-        await client.uploadFile('/api/v1/upload', file);
+        await client.uploadFile('/uploads', file);
 
         const [url] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.test.com/api/v1/upload');
-    });
-
-    it('brandingUploadLogo() calls correct endpoint', async () => {
-        const client = makeClient();
-        const file = new File(['logo'], 'logo.png', { type: 'image/png' });
-
-        await client.brandingUploadLogo(file);
-
-        const [url] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.test.com/api/v1/merchant/branding/logo');
-    });
-
-    it('brandingUploadLogo() returns logo_url', async () => {
-        mockFetch.mockResolvedValue({
-            ok: true,
-            json: () => Promise.resolve({ code: 0, data: { logo_url: 'https://cdn.example.com/logo.png' } }),
-        });
-
-        const client = makeClient();
-        const file = new File(['logo'], 'logo.png', { type: 'image/png' });
-
-        const result = await client.brandingUploadLogo(file);
-        expect(result.data.logo_url).toBe('https://cdn.example.com/logo.png');
+        expect(url).toBe('https://api.test.com/uploads');
     });
 });

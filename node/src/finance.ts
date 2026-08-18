@@ -32,22 +32,22 @@ export interface Subscription {
 
 export class FinanceClient extends HttpClient {
     async getInvoices(): Promise<ApiResult<Invoice[]>> {
-        return this.request('/api/finance/invoices');
+        return this.request('/api/v1/invoices');
     }
 
     async listSubscriptions(): Promise<ApiResult<Subscription[]>> {
-        return this.request('/api/finance/subscriptions');
+        return this.request('/api/v1/subscriptions');
     }
 
     async cancelSubscription(id: string): Promise<ApiResult<{ status: string }>> {
-        return this.request(`/api/finance/subscriptions/${encodeURIComponent(id)}/cancel`, 'POST');
+        return this.request(`/api/v1/subscriptions/${encodeURIComponent(id)}/cancel`, 'POST');
     }
 
     async restoreSubscription(id: string): Promise<ApiResult<{ status: string }>> {
-        return this.request(`/api/finance/subscriptions/${encodeURIComponent(id)}/restore`, 'POST');
+        return this.request(`/api/v1/subscriptions/${encodeURIComponent(id)}/resume`, 'POST');
     }
 
     async downloadInvoice(id: string): Promise<ApiResult<{ url: string }>> {
-        return this.request(`/api/v1/merchant/invoices/${encodeURIComponent(id)}/download`);
+        return this.request(`/api/v1/invoices/${encodeURIComponent(id)}/download`);
     }
 }

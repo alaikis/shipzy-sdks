@@ -14,7 +14,6 @@ from .finance import FinanceClient
 from .support_ticket import SupportTicketClient
 from .validation import ValidationClient
 from .tracking import TrackingClient
-from .upload import UploadClient
 from .public_epod import PublicEpodClient
 from .carrier import CarrierClient
 from .carrier_epod import CarrierEpodClient
@@ -52,7 +51,6 @@ class ZymeupClient:
         self.support_ticket = SupportTicketClient(self)
         self.validation = ValidationClient(self)
         self.tracking = TrackingClient(self)
-        self.upload = UploadClient(self)
         self.public_epod = PublicEpodClient(self)
         self.carrier = CarrierClient(self)
         self.carrier_epod = CarrierEpodClient(self)
