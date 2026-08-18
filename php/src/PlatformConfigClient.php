@@ -17,11 +17,11 @@ class PlatformConfigClient
             'page' => $params['page'] ?? 1,
             'page_size' => $params['pageSize'] ?? 20,
         ]));
-        return $this->client->request('GET', '/api/v1/platform/list' . ($q ? '?' . $q : ''));
+        return $this->client->request('GET', '/api/v1/admin/platform-configs' . ($q ? '?' . $q : ''));
     }
 
     public function get(string $id): array
     {
-        return $this->client->request('GET', "/api/v1/platform/{$id}");
+        return $this->client->request('GET', "/api/v1/admin/platform-configs/{$id}");
     }
 }

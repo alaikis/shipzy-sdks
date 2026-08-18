@@ -13,30 +13,26 @@ class MerchantAddressClient
 
     public function list(array $params = []): array
     {
-        $q = http_build_query(array_filter([
-            'page' => $params['page'] ?? 1,
-            'page_size' => $params['pageSize'] ?? 20,
-        ]));
-        return $this->client->request('GET', '/api/v1/merchant/addresses' . ($q ? '?' . $q : ''));
-    }
-
-    public function get(string $id): array
-    {
-        return $this->client->request('GET', "/api/v1/merchant/addresses/{$id}");
+        return $this->client->request('POST', '/api/v1/merchant/addresses/list', $params);
     }
 
     public function create(array $data): array
     {
-        return $this->client->request('POST', '/api/v1/merchant/addresses', $data);
+        return $this->client->request('POST', '/api/v1/merchant/addresses/create', $data);
     }
 
     public function update(string $id, array $data): array
     {
-        return $this->client->request('PUT', "/api/v1/merchant/addresses/{$id}", $data);
+        return $this->client->request('POST', "/api/v1/merchant/addresses/{$id}/update", $data);
     }
 
     public function delete(string $id): array
     {
-        return $this->client->request('DELETE', "/api/v1/merchant/addresses/{$id}");
+        return $this->client->request('POST', "/api/v1/merchant/addresses/{$id}/delete", []);
+    }
+
+    public function setDefault(string $id): array
+    {
+        return $this->client->request('POST', "/api/v1/merchant/addresses/{$id}/set-default", []);
     }
 }

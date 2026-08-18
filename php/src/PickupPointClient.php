@@ -14,11 +14,11 @@ class PickupPointClient
     public function list(array $params = []): array
     {
         $q = http_build_query(array_filter($params));
-        return $this->client->request('GET', '/api/v1/pickup-points' . ($q ? '?' . $q : ''));
+        return $this->client->request('GET', '/api/v1/admin/pickup-points' . ($q ? '?' . $q : ''));
     }
 
     public function search(array $params): array
     {
-        return $this->client->request('POST', '/api/v1/pickup-points/search', $params);
+        return $this->client->request('POST', '/api/v1/admin/pickup-points/search', $params);
     }
 }

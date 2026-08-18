@@ -45,8 +45,4 @@ public class UploadClient: HttpClient {
 
         return try JSONSerialization.jsonObject(with: responseData, options: []) as? [String: Any] ?? [:]
     }
-
-    public func brandingUploadLogo(data: Data, filename: String = "logo.png") async throws -> [String: Any] {
-        return try await uploadFile(endpoint: "/api/v1/merchant/branding/logo", data: data, filename: filename)
-    }
 }

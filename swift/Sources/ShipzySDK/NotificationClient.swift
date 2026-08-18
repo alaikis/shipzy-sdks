@@ -73,22 +73,6 @@ public struct AnyCodable: Codable, Sendable {
 // ============ Notification Client ============
 
 public class NotificationClient: HttpClient {
-    public func send(_ data: [String: Any]) async throws -> NotificationSendResponse {
-        let body = try JSONSerialization.data(withJSONObject: data)
-        return try await request("/api/v1/notification/send", method: "POST", body: body)
-    }
-
-    public func sendToChannels(channels: [String], recipient: [String: Any], template: String? = nil, templateData: [String: Any]? = nil) async throws -> NotificationSendResponse {
-        var payload: [String: Any] = [
-            "channels": channels,
-            "recipient": recipient
-        ]
-        if let template = template { payload["template"] = template }
-        if let data = templateData { payload["data"] = data }
-        let body = try JSONSerialization.data(withJSONObject: payload)
-        return try await request("/api/v1/notification/send", method: "POST", body: body)
-    }
-
     public func list(page: Int? = nil, pageSize: Int? = nil, channel: String? = nil) async throws -> NotificationListResponse {
         let q = buildQuery(["page": page?.description, "page_size": pageSize?.description, "channel": channel])
         return try await request("/api/v1/notification/list\(q)")

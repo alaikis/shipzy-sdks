@@ -11,11 +11,6 @@ class NotificationClient
         $this->client = $client;
     }
 
-    public function send(array $data): array
-    {
-        return $this->client->request('POST', '/api/v1/notification/send', $data);
-    }
-
     public function list(array $params = []): array
     {
         $q = http_build_query(array_filter($params));

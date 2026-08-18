@@ -17,7 +17,7 @@ namespace Shipzy.Sdk
             => await RequestAsync<ApiResult<Carrier>>($"/api/v1/carrier/{Uri.EscapeDataString(id)}");
 
         public async Task<ApiResult<Carrier>> CreateAsync(object data)
-            => await RequestAsync<ApiResult<Carrier>>("/api/v1/carrier", "POST", data);
+            => await RequestAsync<ApiResult<Carrier>>("/api/v1/carrier/register", "POST", data);
 
         public async Task<ApiResult<Carrier>> UpdateAsync(string id, object data)
             => await RequestAsync<ApiResult<Carrier>>($"/api/v1/carrier/{Uri.EscapeDataString(id)}", "PUT", data);

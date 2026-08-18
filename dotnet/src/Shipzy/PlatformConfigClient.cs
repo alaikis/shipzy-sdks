@@ -8,12 +8,12 @@ namespace Shipzy.Sdk
         public PlatformConfigClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<PlatformConfigListResponse>> ListAsync()
-            => await RequestAsync<ApiResult<PlatformConfigListResponse>>("/api/v1/admin/configs");
+            => await RequestAsync<ApiResult<PlatformConfigListResponse>>("/api/v1/admin/platform-configs");
 
         public async Task<ApiResult<PlatformConfig>> GetAsync(string key)
-            => await RequestAsync<ApiResult<PlatformConfig>>($"/api/v1/admin/configs/{Uri.EscapeDataString(key)}");
+            => await RequestAsync<ApiResult<PlatformConfig>>($"/api/v1/admin/platform-configs/{Uri.EscapeDataString(key)}");
 
         public async Task<ApiResult<object>> UpdateAsync(string key, object data)
-            => await RequestAsync<ApiResult<object>>($"/api/v1/admin/configs/{Uri.EscapeDataString(key)}", "PUT", data);
+            => await RequestAsync<ApiResult<object>>($"/api/v1/admin/platform-configs/{Uri.EscapeDataString(key)}", "PUT", data);
     }
 }

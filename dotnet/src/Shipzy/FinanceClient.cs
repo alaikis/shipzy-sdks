@@ -8,18 +8,18 @@ namespace Shipzy.Sdk
         public FinanceClient(ZymeupConfig config) : base(config) { }
 
         public async Task<ApiResult<Invoice[]>> GetInvoicesAsync()
-            => await RequestAsync<ApiResult<Invoice[]>>("/api/finance/invoices");
+            => await RequestAsync<ApiResult<Invoice[]>>("/api/v1/invoices");
 
         public async Task<ApiResult<Subscription[]>> ListSubscriptionsAsync()
-            => await RequestAsync<ApiResult<Subscription[]>>("/api/finance/subscriptions");
+            => await RequestAsync<ApiResult<Subscription[]>>("/api/v1/subscriptions");
 
         public async Task<ApiResult<object>> CancelSubscriptionAsync(string id)
-            => await RequestAsync<ApiResult<object>>($"/api/finance/subscriptions/{Uri.EscapeDataString(id)}/cancel", "POST");
+            => await RequestAsync<ApiResult<object>>($"/api/v1/subscriptions/{Uri.EscapeDataString(id)}/cancel", "POST");
 
         public async Task<ApiResult<object>> RestoreSubscriptionAsync(string id)
-            => await RequestAsync<ApiResult<object>>($"/api/finance/subscriptions/{Uri.EscapeDataString(id)}/restore", "POST");
+            => await RequestAsync<ApiResult<object>>($"/api/v1/subscriptions/{Uri.EscapeDataString(id)}/restore", "POST");
 
         public async Task<ApiResult<object>> DownloadInvoiceAsync(string id)
-            => await RequestAsync<ApiResult<object>>($"/api/v1/merchant/invoices/{Uri.EscapeDataString(id)}/download");
+            => await RequestAsync<ApiResult<object>>($"/api/v1/invoices/{Uri.EscapeDataString(id)}/download");
     }
 }

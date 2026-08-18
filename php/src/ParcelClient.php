@@ -17,16 +17,16 @@ class ParcelClient
             'page' => $params['page'] ?? 1,
             'page_size' => $params['pageSize'] ?? 20,
         ]));
-        return $this->client->request('GET', '/api/v1/shipment/parcel/list' . ($q ? '?' . $q : ''));
+        return $this->client->request('GET', '/api/v1/parcels/list' . ($q ? '?' . $q : ''));
     }
 
     public function get(string $id): array
     {
-        return $this->client->request('GET', "/api/v1/shipment/parcel/{$id}");
+        return $this->client->request('GET', "/api/v1/parcels/{$id}");
     }
 
     public function create(array $data): array
     {
-        return $this->client->request('POST', '/api/v1/shipment/parcel', $data);
+        return $this->client->request('POST', '/api/v1/parcels', $data);
     }
 }

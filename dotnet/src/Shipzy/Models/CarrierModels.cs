@@ -14,6 +14,12 @@ namespace Shipzy.Sdk.Models
         [JsonPropertyName("tracking_type")]
         public string TrackingType { get; set; }
 
+        [JsonPropertyName("tracking_provider")]
+        public string TrackingProvider { get; set; }
+
+        [JsonPropertyName("tracking_slug")]
+        public string TrackingSlug { get; set; }
+
         [JsonPropertyName("business_type")]
         public string BusinessType { get; set; }
 

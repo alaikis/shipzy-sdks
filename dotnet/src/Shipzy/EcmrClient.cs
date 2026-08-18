@@ -22,6 +22,18 @@ namespace Shipzy.Sdk
         public async Task<ApiResult<EcmrDetail>> GenerateFromOrderAsync(string orderId)
             => await RequestAsync<ApiResult<EcmrDetail>>("/api/v1/shipment/ecmr/generate-from-order", "POST", new { order_id = orderId });
 
+        public async Task<ApiResult<EcmrDetail>> UpdateAsync(string id, object data)
+            => await RequestAsync<ApiResult<EcmrDetail>>($"/api/v1/shipment/ecmr/{id}/update", "POST", data);
+
+        public async Task<ApiResult<object>> CancelAsync(string id)
+            => await RequestAsync<ApiResult<object>>($"/api/v1/shipment/ecmr/{id}/cancel", "POST", new { });
+
+        public async Task<ApiResult<object>> ValidateAsync(string id)
+            => await RequestAsync<ApiResult<object>>($"/api/v1/shipment/ecmr/{id}/validate", "POST", new { });
+
+        public async Task<ApiResult<object>> SubmitToAuthorityAsync(string id)
+            => await RequestAsync<ApiResult<object>>($"/api/v1/shipment/ecmr/{id}/submit-to-authority", "POST", new { });
+
         public async Task<ApiResult<EcmrDetail>> SignAsync(string id)
             => await RequestAsync<ApiResult<EcmrDetail>>($"/api/v1/shipment/ecmr/{id}/sign", "POST", new { });
 

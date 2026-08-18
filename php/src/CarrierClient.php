@@ -24,4 +24,9 @@ class CarrierClient
     {
         return $this->client->request('GET', "/api/v1/carrier/{$id}");
     }
+
+    public function create(array $data): array
+    {
+        return $this->client->request('POST', '/api/v1/carrier/register', $data);
+    }
 }

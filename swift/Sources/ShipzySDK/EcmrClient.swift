@@ -99,6 +99,18 @@ public class EcmrClient: HttpClient {
         return try await request("/api/v1/shipment/ecmr/\(id)/update", method: "POST", body: body)
     }
 
+    public func cancel(_ id: String) async throws -> [String: String] {
+        return try await request("/api/v1/shipment/ecmr/\(id)/cancel", method: "POST", body: Data())
+    }
+
+    public func validate(_ id: String) async throws -> [String: Bool] {
+        return try await request("/api/v1/shipment/ecmr/\(id)/validate", method: "POST", body: Data())
+    }
+
+    public func submitToAuthority(_ id: String) async throws -> [String: String] {
+        return try await request("/api/v1/shipment/ecmr/\(id)/submit-to-authority", method: "POST", body: Data())
+    }
+
     public func sign(_ id: String) async throws -> SignUrlResponse {
         return try await request("/api/v1/shipment/ecmr/\(id)/sign", method: "POST", body: Data())
     }

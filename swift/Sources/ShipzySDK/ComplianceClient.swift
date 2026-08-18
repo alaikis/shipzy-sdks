@@ -44,10 +44,6 @@ public class ComplianceClient: HttpClient {
         return try await request("/api/v1/compliance/hscode/\(hsCode)/validate")
     }
 
-    public func prohibitedItems() async throws -> [String: Any] {
-        return try await request("/api/v1/compliance/prohibited")
-    }
-
     public func createCustoms(_ data: [String: Any]) async throws -> [String: Any] {
         let body = try JSONSerialization.data(withJSONObject: data)
         return try await request("/api/v1/compliance/customs", method: "POST", body: body)

@@ -57,22 +57,22 @@ public struct SubscriptionListResponse: Codable, Sendable {
 
 public class FinanceClient: HttpClient {
     public func getInvoices() async throws -> InvoiceListResponse {
-        return try await request("/api/finance/invoices")
+        return try await request("/api/v1/invoices")
     }
 
     public func listSubscriptions() async throws -> SubscriptionListResponse {
-        return try await request("/api/finance/subscriptions")
+        return try await request("/api/v1/subscriptions")
     }
 
     public func cancelSubscription(_ id: String) async throws -> Subscription {
-        return try await request("/api/finance/subscriptions/\(id)/cancel", method: "POST", body: Data())
+        return try await request("/api/v1/subscriptions/\(id)/cancel", method: "POST", body: Data())
     }
 
     public func restoreSubscription(_ id: String) async throws -> Subscription {
-        return try await request("/api/finance/subscriptions/\(id)/restore", method: "POST", body: Data())
+        return try await request("/api/v1/subscriptions/\(id)/restore", method: "POST", body: Data())
     }
 
     public func downloadInvoice(_ id: String) async throws -> Invoice {
-        return try await request("/api/v1/merchant/invoices/\(id)/download")
+        return try await request("/api/v1/invoices/\(id)/download")
     }
 }

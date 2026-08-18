@@ -17,21 +17,21 @@ class TrackingClient
             'page' => $params['page'] ?? 1,
             'page_size' => $params['pageSize'] ?? 20,
         ]));
-        return $this->client->request('GET', '/api/v1/shipment/tracking/list' . ($q ? '?' . $q : ''));
+        return $this->client->request('GET', '/api/v1/carrier/tracking/list' . ($q ? '?' . $q : ''));
     }
 
     public function get(string $id): array
     {
-        return $this->client->request('GET', "/api/v1/shipment/tracking/{$id}");
+        return $this->client->request('GET', "/api/v1/carrier/tracking/{$id}");
     }
 
     public function subscribe(array $data): array
     {
-        return $this->client->request('POST', '/api/v1/shipment/tracking/subscribe', $data);
+        return $this->client->request('POST', '/api/v1/shipment/user/tracking/subscribe', $data);
     }
 
     public function unsubscribe(string $id): array
     {
-        return $this->client->request('POST', "/api/v1/shipment/tracking/{$id}/unsubscribe", []);
+        return $this->client->request('POST', "/api/v1/shipment/user/tracking/{$id}/unsubscribe", []);
     }
 }

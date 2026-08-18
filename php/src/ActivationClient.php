@@ -13,26 +13,26 @@ class ActivationClient
 
     public function list(): array
     {
-        return $this->client->request('GET', '/api/v1/carrier/activations');
+        return $this->client->request('GET', '/api/v1/carrier-activations');
     }
 
     public function create(array $data): array
     {
-        return $this->client->request('POST', '/api/v1/carrier/activations', $data);
+        return $this->client->request('POST', '/api/v1/carrier-activations', $data);
     }
 
     public function get(string $id): array
     {
-        return $this->client->request('GET', "/api/v1/carrier/activations/{$id}");
+        return $this->client->request('GET', "/api/v1/carrier-activations/{$id}");
     }
 
     public function activate(string $id, array $credentials): array
     {
-        return $this->client->request('POST', "/api/v1/carrier/activations/{$id}/activate", $credentials);
+        return $this->client->request('POST', "/api/v1/carrier-activations/{$id}/activate", $credentials);
     }
 
     public function deactivate(string $id): array
     {
-        return $this->client->request('POST', "/api/v1/carrier/activations/{$id}/deactivate", []);
+        return $this->client->request('POST', "/api/v1/carrier-activations/{$id}/deactivate", []);
     }
 }

@@ -35,6 +35,26 @@ class EcmrClient
         return $this->client->request('POST', '/api/v1/shipment/ecmr/generate-from-order', ['order_id' => $orderId]);
     }
 
+    public function update(string $id, array $data): array
+    {
+        return $this->client->request('POST', "/api/v1/shipment/ecmr/{$id}/update", $data);
+    }
+
+    public function cancel(string $id): array
+    {
+        return $this->client->request('POST', "/api/v1/shipment/ecmr/{$id}/cancel", []);
+    }
+
+    public function validate(string $id): array
+    {
+        return $this->client->request('POST', "/api/v1/shipment/ecmr/{$id}/validate", []);
+    }
+
+    public function submitToAuthority(string $id): array
+    {
+        return $this->client->request('POST', "/api/v1/shipment/ecmr/{$id}/submit-to-authority", []);
+    }
+
     public function sign(string $id): array
     {
         return $this->client->request('POST', "/api/v1/shipment/ecmr/{$id}/sign", []);

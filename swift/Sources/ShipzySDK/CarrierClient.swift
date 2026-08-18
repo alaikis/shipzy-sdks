@@ -8,6 +8,8 @@ public struct Carrier: Codable, Sendable {
     public let code: String
     public let carrierType: String
     public let trackingType: String
+    public let trackingProvider: String?
+    public let trackingSlug: String?
     public let businessType: String
     public let state: String
     public let description: String
@@ -21,6 +23,8 @@ public struct Carrier: Codable, Sendable {
         case id, name, code
         case carrierType = "carrier_type"
         case trackingType = "tracking_type"
+        case trackingProvider = "tracking_provider"
+        case trackingSlug = "tracking_slug"
         case businessType = "business_type"
         case state, description, website
         case contactEmail = "contact_email"
@@ -44,7 +48,7 @@ public class CarrierClient: HttpClient {
 
     public func create(_ data: [String: Any]) async throws -> Carrier {
         let body = try JSONSerialization.data(withJSONObject: data)
-        return try await request("/api/v1/carrier", method: "POST", body: body)
+        return try await request("/api/v1/carrier/register", method: "POST", body: body)
     }
 
     public func update(_ id: String, _ data: [String: Any]) async throws -> Carrier {

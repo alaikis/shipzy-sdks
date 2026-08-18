@@ -18,11 +18,11 @@ class ShipmentClient
             'page_size' => $params['pageSize'] ?? 20,
             'status' => $params['status'] ?? null,
         ]));
-        return $this->client->request('GET', '/api/v1/shipment/list' . ($q ? '?' . $q : ''));
+        return $this->client->request('GET', '/api/v1/shipments/list' . ($q ? '?' . $q : ''));
     }
 
     public function get(string $id): array
     {
-        return $this->client->request('GET', "/api/v1/shipment/{$id}");
+        return $this->client->request('GET', "/api/v1/shipments/{$id}");
     }
 }

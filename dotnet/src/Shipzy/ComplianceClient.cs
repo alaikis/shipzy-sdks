@@ -21,8 +21,5 @@ namespace Shipzy.Sdk
 
         public async Task<ApiResult<object>> ValidateHsCodeAsync(string hsCode)
             => await RequestAsync<ApiResult<object>>($"/api/v1/compliance/hscode/{System.Uri.EscapeDataString(hsCode)}/validate");
-
-        public async Task<ApiResult<object>> GetProhibitedItemsAsync()
-            => await RequestAsync<ApiResult<object>>("/api/v1/compliance/prohibited");
     }
 }

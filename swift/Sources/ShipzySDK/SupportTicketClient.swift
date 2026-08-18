@@ -60,29 +60,29 @@ public class SupportTicketClient: HttpClient {
             "status": status,
             "priority": priority
         ])
-        return try await request("/api/v1/support/tickets\(q)")
+        return try await request("/api/v1/shipment/support/tickets\(q)")
     }
 
     public func get(_ id: String) async throws -> SupportTicket {
-        return try await request("/api/v1/support/tickets/\(id)")
+        return try await request("/api/v1/shipment/support/tickets/\(id)")
     }
 
     public func create(_ data: [String: Any]) async throws -> SupportTicket {
         let body = try JSONSerialization.data(withJSONObject: data)
-        return try await request("/api/v1/support/tickets", method: "POST", body: body)
+        return try await request("/api/v1/shipment/support/tickets", method: "POST", body: body)
     }
 
     public func update(_ id: String, _ data: [String: Any]) async throws -> SupportTicket {
         let body = try JSONSerialization.data(withJSONObject: data)
-        return try await request("/api/v1/support/tickets/\(id)/update", method: "POST", body: body)
+        return try await request("/api/v1/shipment/support/tickets/\(id)/update", method: "POST", body: body)
     }
 
     public func close(_ id: String) async throws -> SupportTicket {
-        return try await request("/api/v1/support/tickets/\(id)/close", method: "POST", body: Data())
+        return try await request("/api/v1/shipment/support/tickets/\(id)/close", method: "POST", body: Data())
     }
 
     public func addComment(_ id: String, content: String) async throws -> SupportTicketComment {
         let body = try JSONSerialization.data(withJSONObject: ["content": content])
-        return try await request("/api/v1/support/tickets/\(id)/comments", method: "POST", body: body)
+        return try await request("/api/v1/shipment/support/tickets/\(id)/comments", method: "POST", body: body)
     }
 }

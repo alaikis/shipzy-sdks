@@ -17,11 +17,6 @@ class ComplianceClient
             'page' => $params['page'] ?? 1,
             'page_size' => $params['pageSize'] ?? 20,
         ]));
-        return $this->client->request('GET', '/api/v1/shipment/compliance/list' . ($q ? '?' . $q : ''));
-    }
-
-    public function get(string $id): array
-    {
-        return $this->client->request('GET', "/api/v1/shipment/compliance/{$id}");
+        return $this->client->request('GET', '/api/v1/compliance/rules' . ($q ? '?' . $q : ''));
     }
 }

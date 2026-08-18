@@ -41,7 +41,6 @@ class ZymeupClient
     public PublicEpodClient $publicEpod;
     public CarrierClient $carrier;
     public PlatformConfigClient $platformConfig;
-    public UploadClient $upload;
     public TrackingClient $tracking;
     public CpscClient $cpsc;
     public ValidationClient $validation;
@@ -72,7 +71,6 @@ class ZymeupClient
         $this->publicEpod = new PublicEpodClient($this);
         $this->carrier = new CarrierClient($this);
         $this->platformConfig = new PlatformConfigClient($this);
-        $this->upload = new UploadClient($this);
         $this->tracking = new TrackingClient($this);
         $this->cpsc = new CpscClient($this);
         $this->validation = new ValidationClient($this);
