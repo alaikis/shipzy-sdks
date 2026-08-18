@@ -9,7 +9,7 @@ func NewSupportTicketClient(c *Client) *SupportTicketClient {
 }
 
 func (c *SupportTicketClient) Create(data map[string]interface{}) (map[string]interface{}, error) {
-	resp, err := c.client.doRequest("POST", "/api/v1/support/tickets", data)
+	resp, err := c.client.doRequest("POST", "/api/v1/shipment/support/tickets", data)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (c *SupportTicketClient) Create(data map[string]interface{}) (map[string]in
 }
 
 func (c *SupportTicketClient) List(params map[string]interface{}) ([]map[string]interface{}, error) {
-	path := "/api/v1/support/tickets" + buildQueryString(params)
+	path := "/api/v1/shipment/support/tickets" + buildQueryString(params)
 	resp, err := c.client.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (c *SupportTicketClient) List(params map[string]interface{}) ([]map[string]
 }
 
 func (c *SupportTicketClient) Get(id string) (map[string]interface{}, error) {
-	resp, err := c.client.doRequest("GET", "/api/v1/support/tickets/"+id, nil)
+	resp, err := c.client.doRequest("GET", "/api/v1/shipment/support/tickets/"+id, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *SupportTicketClient) Get(id string) (map[string]interface{}, error) {
 }
 
 func (c *SupportTicketClient) AddMessage(id string, content string) (map[string]interface{}, error) {
-	resp, err := c.client.doRequest("POST", "/api/v1/support/tickets/"+id+"/messages", map[string]interface{}{
+	resp, err := c.client.doRequest("POST", "/api/v1/shipment/support/tickets/"+id+"/messages", map[string]interface{}{
 		"content": content,
 	})
 	if err != nil {

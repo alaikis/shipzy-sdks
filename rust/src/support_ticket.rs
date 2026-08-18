@@ -27,7 +27,7 @@ impl SupportTicketClient {
         }
         self.inner
             .request(
-                &format!("/api/v1/support/tickets{}", q),
+                &format!("/api/v1/shipment/support/tickets{}", q),
                 Method::GET,
                 None,
             )
@@ -37,7 +37,7 @@ impl SupportTicketClient {
     pub async fn get(&self, id: &str) -> Result<SupportTicket> {
         self.inner
             .request(
-                &format!("/api/v1/support/tickets/{}", id),
+                &format!("/api/v1/shipment/support/tickets/{}", id),
                 Method::GET,
                 None,
             )
@@ -50,7 +50,7 @@ impl SupportTicketClient {
     ) -> Result<SupportTicket> {
         self.inner
             .request(
-                "/api/v1/support/tickets",
+                "/api/v1/shipment/support/tickets",
                 Method::POST,
                 Some(body),
             )
@@ -64,7 +64,7 @@ impl SupportTicketClient {
     ) -> Result<SupportTicket> {
         self.inner
             .request(
-                &format!("/api/v1/support/tickets/{}", id),
+                &format!("/api/v1/shipment/support/tickets/{}", id),
                 Method::PUT,
                 Some(body),
             )
@@ -78,7 +78,7 @@ impl SupportTicketClient {
     ) -> Result<TicketMessage> {
         self.inner
             .request(
-                &format!("/api/v1/support/tickets/{}/messages", ticket_id),
+                &format!("/api/v1/shipment/support/tickets/{}/messages", ticket_id),
                 Method::POST,
                 Some(body),
             )
@@ -94,7 +94,7 @@ impl SupportTicketClient {
         self.inner
             .request(
                 &format!(
-                    "/api/v1/support/tickets/{}/messages?page={}&page_size={}",
+                    "/api/v1/shipment/support/tickets/{}/messages?page={}&page_size={}",
                     ticket_id, page, page_size
                 ),
                 Method::GET,

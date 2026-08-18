@@ -11,6 +11,10 @@ pub struct Carrier {
     pub tracking_type: String,
     #[serde(rename = "business_type")]
     pub business_type: String,
+    #[serde(rename = "tracking_provider")]
+    pub tracking_provider: Option<String>,
+    #[serde(rename = "tracking_slug")]
+    pub tracking_slug: Option<String>,
     pub state: String,
     pub description: String,
     pub website: String,

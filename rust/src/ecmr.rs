@@ -62,6 +62,46 @@ impl EcmrClient {
             .await
     }
 
+    pub async fn update(&self, id: &str, body: serde_json::Value) -> Result<serde_json::Value> {
+        self.inner
+            .request(
+                &format!("/api/v1/shipment/ecmr/{}/update", id),
+                Method::POST,
+                Some(body),
+            )
+            .await
+    }
+
+    pub async fn cancel(&self, id: &str) -> Result<serde_json::Value> {
+        self.inner
+            .request(
+                &format!("/api/v1/shipment/ecmr/{}/cancel", id),
+                Method::POST,
+                None,
+            )
+            .await
+    }
+
+    pub async fn validate(&self, id: &str) -> Result<serde_json::Value> {
+        self.inner
+            .request(
+                &format!("/api/v1/shipment/ecmr/{}/validate", id),
+                Method::POST,
+                None,
+            )
+            .await
+    }
+
+    pub async fn submit_to_authority(&self, id: &str) -> Result<serde_json::Value> {
+        self.inner
+            .request(
+                &format!("/api/v1/shipment/ecmr/{}/submit-to-authority", id),
+                Method::POST,
+                None,
+            )
+            .await
+    }
+
     pub async fn sign(&self, id: &str) -> Result<serde_json::Value> {
         self.inner
             .request(

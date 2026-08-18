@@ -167,8 +167,6 @@ client.carrier_epod.upload_photo('epod-id', 'https://example.com/photo.jpg')
 | `list(params)` | List carrier addresses |
 | `create(data)` | Create address |
 | `update(id, data)` | Update address |
-| `delete(id)` | Delete address |
-| `set_default(id)` | Set as default address |
 
 ### `client.activation` — ActivationClient
 
@@ -218,7 +216,7 @@ client.carrier_epod.upload_photo('epod-id', 'https://example.com/photo.jpg')
 | `invoices` | List invoices |
 | `list_subscriptions` | List subscriptions |
 | `cancel_subscription(id)` | Cancel subscription |
-| `restore_subscription(id)` | Restore subscription |
+| `resume_subscription(id)` | Resume subscription |
 | `download_invoice(id)` | Download invoice PDF |
 
 ### `client.support_ticket` — SupportTicketClient

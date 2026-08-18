@@ -39,12 +39,6 @@ impl ComplianceClient {
             .await
     }
 
-    pub async fn prohibited_items(&self) -> Result<serde_json::Value> {
-        self.inner
-            .request("/api/v1/compliance/prohibited", Method::GET, None)
-            .await
-    }
-
     pub async fn create_customs(&self, body: serde_json::Value) -> Result<serde_json::Value> {
         self.inner
             .request("/api/v1/compliance/customs", Method::POST, Some(body))

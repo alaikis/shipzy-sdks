@@ -16,7 +16,6 @@ Go client library for the [Shipzy](https://shipzy.com) API. Provides typed acces
 - **PickupPointsClient** — Pickup point discovery and management
 - **ProductClient** — Product catalog operations
 - **FinanceClient** — Financial data and invoicing
-- **NotificationClient** — Notification channel management
 - **SupportTicketClient** — Support ticket operations
 
 ## Installation
@@ -68,7 +67,6 @@ All service clients are accessed through the top-level `ZymeupClient`:
 | `client.PickupPoints` | `*PickupPointsClient` | Pickup point management |
 | `client.Product` | `*ProductClient` | Product catalog |
 | `client.Finance` | `*FinanceClient` | Financial data |
-| `client.Notification` | `*NotificationClient` | Notifications |
 | `client.SupportTicket` | `*SupportTicketClient` | Support tickets |
 
 ### Custom HTTP Client

@@ -11,7 +11,6 @@ type ZymeupClient struct {
 	PickupPoint     *PickupPointClient
 	Product         *ProductClient
 	Finance         *FinanceClient
-	Notification    *NotificationClient
 	SupportTicket   *SupportTicketClient
 	Validation      *ValidationClient
 }
@@ -29,7 +28,6 @@ func NewZymeupClient(apiKey string) *ZymeupClient {
 		PickupPoint:     NewPickupPointClient(c),
 		Product:         NewProductClient(c),
 		Finance:         NewFinanceClient(c),
-		Notification:    NewNotificationClient(c),
 		SupportTicket:   NewSupportTicketClient(c),
 		Validation:      NewValidationClient(c),
 	}

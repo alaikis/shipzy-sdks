@@ -42,7 +42,7 @@ impl CarrierClient {
 
     pub async fn create(&self, body: serde_json::Value) -> Result<Carrier> {
         self.inner
-            .request("/api/v1/carrier", Method::POST, Some(body))
+            .request("/api/v1/carrier/register", Method::POST, Some(body))
             .await
     }
 

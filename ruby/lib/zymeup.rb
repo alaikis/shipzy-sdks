@@ -224,6 +224,22 @@ module Zymeup
       request('/api/v1/shipment/ecmr/generate-from-order', method: :post, body: { order_id: order_id })
     end
 
+    def update(id, data)
+      request("/api/v1/shipment/ecmr/#{id}/update", method: :post, body: data)
+    end
+
+    def cancel(id)
+      request("/api/v1/shipment/ecmr/#{id}/cancel", method: :post)
+    end
+
+    def validate(id)
+      request("/api/v1/shipment/ecmr/#{id}/validate", method: :post)
+    end
+
+    def submit_to_authority(id)
+      request("/api/v1/shipment/ecmr/#{id}/submit-to-authority", method: :post)
+    end
+
     def sign(id)
       request("/api/v1/shipment/ecmr/#{id}/sign", method: :post)
     end
@@ -293,14 +309,6 @@ module Zymeup
 
     def update(id, data)
       request("/api/v1/carrier/sdk/addresses/#{id}/update", method: :post, body: data)
-    end
-
-    def delete(id)
-      request("/api/v1/carrier/sdk/addresses/#{id}/delete", method: :post)
-    end
-
-    def set_default(id)
-      request("/api/v1/carrier/sdk/addresses/#{id}/set-default", method: :post)
     end
   end
 
@@ -404,23 +412,23 @@ module Zymeup
 
   class FinanceClient < HttpClient
     def invoices
-      request('/api/finance/invoices')
+      request('/api/v1/invoices')
     end
 
     def list_subscriptions
-      request('/api/finance/subscriptions')
+      request('/api/v1/subscriptions')
     end
 
     def cancel_subscription(id)
-      request("/api/finance/subscriptions/#{id}/cancel", method: :post)
+      request("/api/v1/subscriptions/#{id}/cancel", method: :post)
     end
 
-    def restore_subscription(id)
-      request("/api/finance/subscriptions/#{id}/restore", method: :post)
+    def resume_subscription(id)
+      request("/api/v1/subscriptions/#{id}/resume", method: :post)
     end
 
     def download_invoice(id)
-      request("/api/v1/merchant/invoices/#{id}/download")
+      request("/api/v1/invoices/#{id}/download")
     end
   end
 
@@ -446,20 +454,20 @@ module Zymeup
 
   class SupportTicketClient < HttpClient
     def create(data)
-      request('/shipment/support/tickets', method: :post, body: data)
+      request('/api/v1/shipment/support/tickets', method: :post, body: data)
     end
 
     def list(status: nil)
       q = build_query({ status: status })
-      request("/shipment/support/tickets#{q}")
+      request("/api/v1/shipment/support/tickets#{q}")
     end
 
     def get(id)
-      request("/shipment/support/tickets/#{id}")
+      request("/api/v1/shipment/support/tickets/#{id}")
     end
 
     def add_message(id, content)
-      request("/shipment/support/tickets/#{id}/messages", method: :post, body: { content: content })
+      request("/api/v1/shipment/support/tickets/#{id}/messages", method: :post, body: { content: content })
     end
 
     def admin_list(status: nil, priority: nil)
@@ -518,10 +526,6 @@ module Zymeup
     def upload_file(endpoint, file_path)
       request(endpoint, method: :post, file: file_path)
     end
-
-    def branding_upload_logo(file_path)
-      upload_file('/api/v1/merchant/branding/logo', file_path)
-    end
   end
 
   class PublicEpodClient
@@ -564,7 +568,7 @@ module Zymeup
     end
 
     def create(data)
-      request('/api/v1/carrier', method: :post, body: data)
+      request('/api/v1/carrier/register', method: :post, body: data)
     end
 
     def update(id, data)
@@ -605,10 +609,6 @@ module Zymeup
 
     def hscode_validate(hs_code)
       request("/api/v1/compliance/hscode/#{URI.encode_www_form_component(hs_code)}/validate")
-    end
-
-    def prohibited_items
-      request('/api/v1/compliance/prohibited')
     end
   end
 

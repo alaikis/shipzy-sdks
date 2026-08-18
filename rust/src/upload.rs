@@ -17,10 +17,4 @@ impl UploadClient {
             .request(endpoint, Method::POST, Some(body))
             .await
     }
-
-    pub async fn branding_upload_logo(&self, body: serde_json::Value) -> Result<serde_json::Value> {
-        self.inner
-            .request("/api/v1/merchant/branding/logo", Method::POST, Some(body))
-            .await
-    }
 }

@@ -42,24 +42,4 @@ impl CarrierAddressClient {
             )
             .await
     }
-
-    pub async fn delete(&self, id: &str) -> Result<serde_json::Value> {
-        self.inner
-            .request(
-                &format!("/api/v1/carrier/sdk/addresses/{}/delete", id),
-                Method::POST,
-                None,
-            )
-            .await
-    }
-
-    pub async fn set_default(&self, id: &str) -> Result<AddressItem> {
-        self.inner
-            .request(
-                &format!("/api/v1/carrier/sdk/addresses/{}/set-default", id),
-                Method::POST,
-                Some(serde_json::json!({})),
-            )
-            .await
-    }
 }

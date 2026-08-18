@@ -16,13 +16,13 @@ impl FinanceClient {
 impl FinanceClient {
     pub async fn get_invoices(&self) -> Result<serde_json::Value> {
         self.inner
-            .request("/api/finance/invoices", Method::GET, None)
+            .request("/api/v1/invoices", Method::GET, None)
             .await
     }
 
     pub async fn list_subscriptions(&self) -> Result<serde_json::Value> {
         self.inner
-            .request("/api/finance/subscriptions", Method::GET, None)
+            .request("/api/v1/subscriptions", Method::GET, None)
             .await
     }
 
@@ -32,20 +32,20 @@ impl FinanceClient {
     ) -> Result<serde_json::Value> {
         self.inner
             .request(
-                &format!("/api/finance/subscriptions/{}/cancel", id),
+                &format!("/api/v1/subscriptions/{}/cancel", id),
                 Method::POST,
                 None,
             )
             .await
     }
 
-    pub async fn restore_subscription(
+    pub async fn resume_subscription(
         &self,
         id: &str,
     ) -> Result<serde_json::Value> {
         self.inner
             .request(
-                &format!("/api/finance/subscriptions/{}/restore", id),
+                &format!("/api/v1/subscriptions/{}/resume", id),
                 Method::POST,
                 None,
             )
@@ -58,7 +58,7 @@ impl FinanceClient {
     ) -> Result<serde_json::Value> {
         self.inner
             .request(
-                &format!("/api/v1/merchant/invoices/{}/download", id),
+                &format!("/api/v1/invoices/{}/download", id),
                 Method::GET,
                 None,
             )

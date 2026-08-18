@@ -74,6 +74,66 @@ func (c *EcmrClient) GenerateFromOrder(orderID string) (map[string]interface{}, 
 	return result.Data, nil
 }
 
+func (c *EcmrClient) Update(id string, data map[string]interface{}) (map[string]interface{}, error) {
+	resp, err := c.client.doRequest("POST", "/api/v1/shipment/ecmr/"+id+"/update", data)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := decodeResponse(resp, &result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (c *EcmrClient) Cancel(id string) (map[string]interface{}, error) {
+	resp, err := c.client.doRequest("POST", "/api/v1/shipment/ecmr/"+id+"/cancel", nil)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := decodeResponse(resp, &result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (c *EcmrClient) Validate(id string) (map[string]interface{}, error) {
+	resp, err := c.client.doRequest("POST", "/api/v1/shipment/ecmr/"+id+"/validate", nil)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := decodeResponse(resp, &result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (c *EcmrClient) SubmitToAuthority(id string) (map[string]interface{}, error) {
+	resp, err := c.client.doRequest("POST", "/api/v1/shipment/ecmr/"+id+"/submit-to-authority", nil)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Code int                    `json:"code"`
+		Data map[string]interface{} `json:"data"`
+	}
+	if err := decodeResponse(resp, &result); err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
 func (c *EcmrClient) Sign(id string) (map[string]interface{}, error) {
 	resp, err := c.client.doRequest("POST", "/api/v1/shipment/ecmr/"+id+"/sign", nil)
 	if err != nil {

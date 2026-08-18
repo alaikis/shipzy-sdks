@@ -11,7 +11,7 @@ func NewFinanceClient(c *Client) *FinanceClient {
 }
 
 func (c *FinanceClient) Invoices(params map[string]interface{}) ([]map[string]interface{}, error) {
-	path := "/api/finance/invoices" + buildQueryString(params)
+	path := "/api/v1/invoices" + buildQueryString(params)
 	resp, err := c.client.doRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
@@ -30,12 +30,12 @@ func (c *FinanceClient) Invoices(params map[string]interface{}) ([]map[string]in
 }
 
 func (c *FinanceClient) ListSubscriptions() ([]map[string]interface{}, error) {
-	resp, err := c.client.doRequest("GET", "/api/finance/subscriptions", nil)
+	resp, err := c.client.doRequest("GET", "/api/v1/subscriptions", nil)
 	if err != nil {
 		return nil, err
 	}
 	var result struct {
-		Code int                    `json:"code"`
+		Code int                      `json:"code"`
 		Data []map[string]interface{} `json:"data"`
 	}
 	if err := decodeResponse(resp, &result); err != nil {
@@ -45,15 +45,15 @@ func (c *FinanceClient) ListSubscriptions() ([]map[string]interface{}, error) {
 }
 
 func (c *FinanceClient) CancelSubscription(id string) error {
-	resp, err := c.client.doRequest("POST", "/api/finance/subscriptions/"+id+"/cancel", nil)
+	resp, err := c.client.doRequest("POST", "/api/v1/subscriptions/"+id+"/cancel", nil)
 	if err != nil {
 		return err
 	}
 	return decodeResponse(resp, nil)
 }
 
-func (c *FinanceClient) RestoreSubscription(id string) error {
-	resp, err := c.client.doRequest("POST", "/api/finance/subscriptions/"+id+"/restore", nil)
+func (c *FinanceClient) ResumeSubscription(id string) error {
+	resp, err := c.client.doRequest("POST", "/api/v1/subscriptions/"+id+"/resume", nil)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (c *FinanceClient) RestoreSubscription(id string) error {
 }
 
 func (c *FinanceClient) DownloadInvoice(id string) ([]byte, error) {
-	resp, err := c.client.doRequest("GET", "/api/v1/merchant/invoices/"+id+"/download", nil)
+	resp, err := c.client.doRequest("GET", "/api/v1/invoices/"+id+"/download", nil)
 	if err != nil {
 		return nil, err
 	}
