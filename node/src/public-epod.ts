@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIG } from './http-client';
+import type { ApiResult } from './index';
 
 // ============ Types ============
 
@@ -39,19 +40,19 @@ export class PublicEpodClient {
         this.baseUrl = baseUrl.replace(/\/$/, '');
     }
 
-    async getSignDetail(signToken: string): Promise<PublicSignDetail> {
+    async getSignDetail(signToken: string): Promise<ApiResult<PublicSignDetail>> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
     }
 
-    async getPolicy(signToken: string, lang = 'en'): Promise<any> {
+    async getPolicy(signToken: string, lang = 'en'): Promise<ApiResult<any>> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/policy?lang=${lang}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
     }
 
-    async recordConsent(signToken: string, consentTypes: string[], policyVersionHash: string): Promise<PublicConsentResponse> {
+    async recordConsent(signToken: string, consentTypes: string[], policyVersionHash: string): Promise<ApiResult<PublicConsentResponse>> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/consent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -61,7 +62,7 @@ export class PublicEpodClient {
         return response.json();
     }
 
-    async captureSignature(signToken: string, consentId: string, signatureData: string, proofType = 'signature'): Promise<PublicCaptureResponse> {
+    async captureSignature(signToken: string, consentId: string, signatureData: string, proofType = 'signature'): Promise<ApiResult<PublicCaptureResponse>> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/capture`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

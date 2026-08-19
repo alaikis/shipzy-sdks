@@ -94,4 +94,24 @@ class EpodClient
         }
         return $decoded;
     }
+
+    public function markPartialDelivery(string $id, array $data): array
+    {
+        $now = date('c');
+        $exceptions = [];
+        foreach (($data['exceptions'] ?? []) as $exc) {
+            $exc['reported_at'] = $exc['reported_at'] ?? $now;
+            $exceptions[] = $exc;
+        }
+        return $this->client->request('PUT', '/api/v1/shipment/epod/' . $id . '/update', [
+            'status' => 'partial',
+            'exceptions' => $exceptions,
+            'remark' => $data['remark'] ?? null,
+        ]);
+    }
+
+    public function getPdfStatus(string $id): array
+    {
+        return $this->client->request('POST', '/api/v1/shipment/epod/' . $id . '/pdf', []);
+    }
 }

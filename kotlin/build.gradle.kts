@@ -12,9 +12,9 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:tor-client-core:2.3.12")
-    implementation("io.ktor:tor-client-cio:2.3.12")
-    implementation("io.ktor:tor-client-content-negotiation:2.3.12")
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-client-cio:2.3.12")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
     testImplementation(kotlin("test"))
 }

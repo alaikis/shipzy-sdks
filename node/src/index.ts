@@ -67,7 +67,7 @@ export { CarrierAddressClient } from './carrier-address';
 
 // ============ VERSION ============
 
-export const VERSION = '2.1.1';
+export const VERSION = '2.1.2';
 
 // ============ Main SDK ============
 

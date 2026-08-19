@@ -51,7 +51,7 @@ export class OrderClient extends HttpClient {
         return this.request('/api/v1/order/create', 'POST', data);
     }
 
-    async createWithDocuments(data: Record<string, unknown>): Promise<ApiResult<OrderDetail & { epod_id?: string; ecmr_id?: string }>> {
+    async createWithDocuments(data: Record<string, unknown>): Promise<ApiResult<any>> {
         return this.request('/api/v1/order/create-with-documents', 'POST', data);
     }
 

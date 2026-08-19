@@ -11,13 +11,30 @@ class PublicEpodClient
         $this->client = $client;
     }
 
-    public function get(string $token): array
+    public function getSignDetail(string $token): array
     {
-        return $this->client->request('GET', "/api/v1/open/ecmr/{$token}");
+        return $this->client->request('GET', "/api/v1/open/epod/sign/{$token}");
     }
 
-    public function sign(string $token, array $data): array
+    public function getPolicy(string $token, string $lang = 'en'): array
     {
-        return $this->client->request('POST', "/api/v1/open/ecmr/{$token}/sign", $data);
+        return $this->client->request('GET', "/api/v1/open/epod/sign/{$token}/policy?lang={$lang}");
+    }
+
+    public function recordConsent(string $token, array $consentTypes, string $policyVersionHash): array
+    {
+        return $this->client->request('POST', "/api/v1/open/epod/sign/{$token}/consent", [
+            'consent_types' => $consentTypes,
+            'policy_version_hash' => $policyVersionHash,
+        ]);
+    }
+
+    public function captureSignature(string $token, string $consentId, string $signatureData, string $proofType = 'signature'): array
+    {
+        return $this->client->request('POST', "/api/v1/open/epod/sign/{$token}/capture", [
+            'consent_id' => $consentId,
+            'signature_data' => $signatureData,
+            'proof_type' => $proofType,
+        ]);
     }
 }

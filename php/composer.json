@@ -1,7 +1,7 @@
 {
     "name": "alaikas/zymeup-sdk",
     "description": "Official Zymeup logistics platform SDK for PHP",
-    "version": "2.0.1",
+    "version": "2.1.2",
     "type": "library",
     "license": "MIT",
     "require": {
