@@ -69,7 +69,7 @@ class ActivationClient(private val config: ShipzyConfig) {
     suspend fun activate(data: Any): Any = request("/api/v1/marketplace/activations", HttpMethod.Post, data)
     suspend fun pause(id: String): Any = request("/api/v1/marketplace/activations/$id/pause", HttpMethod.Post)
     suspend fun resume(id: String): Any = request("/api/v1/marketplace/activations/$id/resume", HttpMethod.Post)
-    suspend fun revoke(id: String, reason: String? = null): Any = request("/api/v1/marketplace/activations/$id/revoke", HttpMethod.Post, reason?.let { mapOf("reason" to it) } ?: mapOf())
+    suspend fun revoke(id: String, reason: String? = null): Any = request("/api/v1/marketplace/activations/$id/revoke", HttpMethod.Post, (reason?.let { mapOf<String, Any>("reason" to it) } ?: mapOf<String, Any>()))
 }
 
 class TrackingClient(private val config: ShipzyConfig) {

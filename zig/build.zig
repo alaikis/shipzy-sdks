@@ -4,19 +4,27 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib = b.addStaticLibrary(.{
-        .name = "shipzy-sdk",
+    const root_module = b.createModule(.{
         .root_source_file = b.path("src/shipzy.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    b.installArtifact(lib);
+    const exe = b.addExecutable(.{
+        .name = "shipzy-sdk",
+        .root_module = root_module,
+    });
 
-    const main_tests = b.addTest(.{
+    b.installArtifact(exe);
+
+    const test_module = b.createModule(.{
         .root_source_file = b.path("src/shipzy.zig"),
         .target = target,
         .optimize = optimize,
+    });
+
+    const main_tests = b.addTest(.{
+        .root_module = test_module,
     });
 
     const run_main_tests = b.addRunArtifact(main_tests);
