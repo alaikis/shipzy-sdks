@@ -31,6 +31,7 @@ export interface EpodDetail {
     created_at: string;
     updated_at: string;
     sign_url?: string;
+    sign_token_expires_at?: string;
     evidence_hash?: string;
     document_hash?: string;
     signature_data?: string;
@@ -57,12 +58,30 @@ export class EpodClient extends HttpClient {
         return this.request('/api/v1/shipment/epod/create', 'POST', data);
     }
 
-    async generateFromOrder(orderId: string, options: Record<string, unknown> = {}): Promise<ApiResult<{ epod: EpodDetail; sign_url: string; sign_token_expires_at?: string }>> {
+    async generateFromOrder(orderId: string, options: Record<string, unknown> = {}): Promise<ApiResult<EpodDetail>> {
         return this.request('/api/v1/shipment/epod/generate-from-order', 'POST', { order_id: orderId, ...options });
     }
 
     async update(id: string, data: Record<string, unknown>): Promise<ApiResult<EpodDetail>> {
         return this.request(`/api/v1/shipment/epod/${id}/update`, 'PUT', data);
+    }
+
+    async markPartialDelivery(id: string, data: {
+        exceptions: Array<{
+            type: 'refused' | 'damaged' | 'missing' | 'late' | 'other';
+            order_item_id?: string;
+            parcel_id?: string;
+            quantity_affected?: number;
+            remark: string;
+            photo_url?: string;
+            reported_at?: string;
+        }>;
+        remark?: string;
+    }): Promise<ApiResult<EpodDetail>> {
+        const now = new Date().toISOString();
+        const normalized = data.exceptions.map((e) => ({ ...e, reported_at: e.reported_at || now }));
+        const payload = { status: 'partial', exceptions: normalized, remark: data.remark };
+        return this.request(`/api/v1/shipment/epod/${id}/update`, 'PUT', payload);
     }
 
     async deliver(id: string, data: Record<string, unknown> = {}): Promise<ApiResult<SignUrlResponse & { sign_token_expires_at?: string }>> {
@@ -86,6 +105,10 @@ export class EpodClient extends HttpClient {
     }
 
     async generatePdf(id: string): Promise<ApiResult<{ status?: string; pdf_url?: string; pdf_render_status?: string }>> {
+        return this.request(`/api/v1/shipment/epod/${id}/pdf`, 'POST', {});
+    }
+
+    async getPdfStatus(id: string): Promise<ApiResult<{ status?: string; pdf_url?: string; pdf_render_status?: string }>> {
         return this.request(`/api/v1/shipment/epod/${id}/pdf`, 'POST', {});
     }
 
