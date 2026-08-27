@@ -12,12 +12,12 @@ export abstract class EpodBaseComponent extends HTMLElement {
     protected apiClient: EpodApiClient;
     protected config: EpodComponentConfig;
 
-    constructor(config: EpodComponentConfig) {
+    constructor(config: EpodComponentConfig = {}) {
         super();
         this.shadow = this.attachShadow({ mode: 'open' });
         this.config = config;
         this.apiClient = new EpodApiClient({
-            baseUrl: config.baseUrl || 'https://api.shipzy.me',
+            baseUrl: config.baseUrl || 'https://api.zymeup.com',
             token: config.token || epodAuth.getToken() || undefined,
         });
     }

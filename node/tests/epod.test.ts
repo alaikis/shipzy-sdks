@@ -8,7 +8,7 @@ import { BASE_URL, skipIfDown, SKIP_REASON } from './live-helpers';
 
 describe('VERSION', () => {
     it('should have a version', () => {
-        expect(VERSION).toBe('2.1.4');
+        expect(VERSION).toBe('2.1.5');
     });
 });
 
