@@ -1,49 +1,69 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { UploadClient } from '../src/upload';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import http from 'node:http'
+import { UploadClient } from '../src/upload'
+import { BASE_URL, skipIfDown, SKIP_REASON } from './live-helpers'
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+// Mock-free upload test. Instead of stubbing fetch, we spin up a REAL local
+// HTTP server that captures the incoming request so we can assert the
+// multipart FormData body, the Authorization header, and the absence of a
+// manual Content-Type header (the boundary must be set by the browser/Node).
+describe.skipIf(skipIfDown())('UploadClient (LIVE capture server)', () => {
+    let server: http.Server
+    let port: number
+    let captured: { method?: string; headers: http.IncomingHttpHeaders; body: Buffer } | null = null
 
-function makeClient() {
-    return new UploadClient({ token: 'test-token', baseUrl: 'https://api.test.com' });
-}
+    beforeAll(
+        () =>
+            new Promise<void>((resolve) => {
+                server = http.createServer((req, res) => {
+                    const chunks: Buffer[] = []
+                    req.on('data', (c: Buffer) => chunks.push(c))
+                    req.on('end', () => {
+                        captured = {
+                            method: req.method,
+                            headers: req.headers,
+                            body: Buffer.concat(chunks),
+                        }
+                        res.writeHead(200, { 'content-type': 'application/json' })
+                        res.end(JSON.stringify({ code: 0, data: { url: 'https://cdn.example.com/file.png' } }))
+                    })
+                })
+                server.listen(0, '127.0.0.1', () => {
+                    port = (server.address() as any).port
+                    resolve()
+                })
+            })
+    )
 
-describe('UploadClient', () => {
-    beforeEach(() => {
-        mockFetch.mockReset();
-        mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ code: 0, data: { url: 'https://cdn.example.com/file.png' } }) });
-    });
+    afterAll(
+        () =>
+            new Promise<void>((resolve) => {
+                server.close(() => resolve())
+            })
+    )
 
-    it('uploadFile() uses FormData body (not JSON)', async () => {
-        const client = makeClient();
-        const file = new File(['content'], 'test.png', { type: 'image/png' });
+    it('uploadFile() sends a multipart FormData body with Authorization and no manual Content-Type', async () => {
+        const client = new UploadClient({
+            baseUrl: `http://127.0.0.1:${port}`,
+            token: 'test-token',
+        })
+        const file = new File(['hello-upload'], 'test.png', { type: 'image/png' })
 
-        await client.uploadFile('/upload', file);
+        await client.uploadFile('/upload', file)
 
-        const [, opts] = mockFetch.mock.calls[0];
-        expect(opts.body).toBeInstanceOf(FormData);
-        expect(typeof opts.body).not.toBe('string');
-        expect(opts.method).toBe('POST');
-    });
+        expect(captured).not.toBeNull()
+        expect(captured!.method).toBe('POST')
+        expect(captured!.headers.authorization).toBe('Bearer test-token')
+        // Content-Type must be multipart/form-data (auto-set), never application/json
+        expect(captured!.headers['content-type']?.toString().startsWith('multipart/form-data')).toBe(true)
+        // Body must contain the file content + boundary, not a JSON string
+        expect(captured!.body.toString()).toContain('hello-upload')
+        expect(captured!.body.toString().trim().startsWith('{')).toBe(false)
+    })
 
-    it('uploadFile() sets Authorization but not Content-Type header', async () => {
-        const client = makeClient();
-        const file = new File(['content'], 'test.png', { type: 'image/png' });
-
-        await client.uploadFile('/upload', file);
-
-        const [, opts] = mockFetch.mock.calls[0];
-        expect(opts.headers['Authorization']).toBe('Bearer test-token');
-        expect(opts.headers['Content-Type']).toBeUndefined();
-    });
-
-    it('uploadFile() calls correct URL', async () => {
-        const client = makeClient();
-        const file = new File(['data'], 'doc.pdf', { type: 'application/pdf' });
-
-        await client.uploadFile('/uploads', file);
-
-        const [url] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.test.com/uploads');
-    });
-});
+    it('uploadFile() against the real API throws on 401 without a token', async () => {
+        const client = new UploadClient({ baseUrl: BASE_URL })
+        const file = new File(['x'], 'test.png', { type: 'image/png' })
+        await expect(client.uploadFile('/upload', file)).rejects.toThrow()
+    })
+})

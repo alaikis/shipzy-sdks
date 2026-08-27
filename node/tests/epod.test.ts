@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
     ShipzyClient, EpodClient, OrderClient, EcmrClient, AddressClient,
-    CarrierEpodClient, CarrierAddressClient,
+    CarrierEpodClient, CarrierAddressClient, SupportTicketClient,
     ShipzyConfig, ZymeupError, ZymeupAuthError, VERSION
 } from '../src/index';
+import { BASE_URL, skipIfDown, SKIP_REASON } from './live-helpers';
 
 describe('VERSION', () => {
     it('should have a version', () => {
-        expect(VERSION).toBe('2.1.2');
+        expect(VERSION).toBe('2.1.4');
     });
 });
 
@@ -20,6 +21,7 @@ describe('ShipzyClient', () => {
         expect(client.address).toBeInstanceOf(AddressClient);
         expect(client.carrierEpod).toBeInstanceOf(CarrierEpodClient);
         expect(client.carrierAddress).toBeInstanceOf(CarrierAddressClient);
+        expect(client.supportTicket).toBeInstanceOf(SupportTicketClient);
     });
 
     it('should update token across all clients', () => {
@@ -31,6 +33,7 @@ describe('ShipzyClient', () => {
         expect(client.address.config.token).toBe('new-token');
         expect(client.carrierEpod.config.token).toBe('new-token');
         expect(client.carrierAddress.config.token).toBe('new-token');
+        expect(client.supportTicket.config.token).toBe('new-token');
     });
 
     it('should update base URL across all clients', () => {
@@ -38,6 +41,13 @@ describe('ShipzyClient', () => {
         client.updateConfig({ baseUrl: 'https://new.example.com' });
         expect(client.epod.config.baseUrl).toBe('https://new.example.com');
         expect(client.order.config.baseUrl).toBe('https://new.example.com');
+        expect(client.supportTicket.config.baseUrl).toBe('https://new.example.com');
+    });
+
+    it('should propagate updateConfig to supportTicket (regression)', () => {
+        const client = new ShipzyClient({ baseUrl: 'https://old.example.com' });
+        client.updateConfig({ baseUrl: 'https://sync.example.com' });
+        expect(client.supportTicket.config.baseUrl).toBe('https://sync.example.com');
     });
 });
 
@@ -72,3 +82,27 @@ describe('Errors', () => {
         expect(err.name).toBe('ZymeupAuthError');
     });
 });
+
+// Live (mock-free) EpodClient behaviour. Authenticated EPOD endpoints require a
+// merchant token we do not have, so each method is verified via the 401
+// response: the SDK must build the correct URL + method + auth header and
+// throw ZymeupAuthError. This proves request construction and error handling.
+describe.skipIf(skipIfDown())('EpodClient (LIVE)', () => {
+    const client = new EpodClient({ baseUrl: BASE_URL });
+
+    it('list() hits POST /api/v1/shipment/epod/list and throws on 401', async () => {
+        await expect(client.list()).rejects.toThrow(ZymeupAuthError);
+    });
+
+    it('get() hits the epod detail endpoint and throws on 401', async () => {
+        await expect(client.get('epod-123')).rejects.toThrow(ZymeupAuthError);
+    });
+
+    it('generateSignUrl() hits POST /:id/sign and throws on 401', async () => {
+        await expect(client.generateSignUrl('epod-123')).rejects.toThrow(ZymeupAuthError);
+    });
+
+    it('generatePdf() hits POST /:id/pdf and throws on 401', async () => {
+        await expect(client.generatePdf('epod-123')).rejects.toThrow(ZymeupAuthError);
+    });
+})

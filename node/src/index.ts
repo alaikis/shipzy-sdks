@@ -67,7 +67,7 @@ export { CarrierAddressClient } from './carrier-address';
 
 // ============ VERSION ============
 
-export const VERSION = '2.1.2';
+export const VERSION = '2.1.4';
 
 // ============ Main SDK ============
 
@@ -184,6 +184,7 @@ export class ZymeupClient {
         if (this.platformConfig) this.platformConfig.setConfig(config);
         if (this.upload) this.upload.setConfig(config);
         if (this.validation) this.validation.setConfig(config);
+        if (this.supportTicket) this.supportTicket.setConfig(config);
     }
 
     isMerchant(): boolean {

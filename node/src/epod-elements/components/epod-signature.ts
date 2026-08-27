@@ -86,11 +86,34 @@ export class EpodSignatureComponent extends EpodBaseComponent {
         if (!this.token) return;
 
         try {
-            const res = await fetch(`${this.config.baseUrl || 'https://api.zymeup.com'}/api/v1/open/epod/sign/${this.token}/capture`, {
+            const base = this.config.baseUrl || 'https://api.zymeup.com';
+            const detail = this.detail;
+
+            // Obtain a real consent_id from the /consent endpoint. The capture
+            // endpoint rejects placeholder ids (403 invalid consent).
+            let consentId = '';
+            if (detail && !detail.signature_waived) {
+                if (this.consentRequired && !this.consented) {
+                    throw new Error('Consent is required before submitting your signature');
+                }
+                const consentRes = await fetch(`${base}/api/v1/open/epod/sign/${this.token}/consent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        consent_types: ['delivery'],
+                        policy_version_hash: detail.policy_version_hash || '',
+                    }),
+                });
+                if (!consentRes.ok) throw new Error(`Consent HTTP ${consentRes.status}`);
+                const consentBody = await consentRes.json();
+                consentId = consentBody.consent_id || '';
+            }
+
+            const res = await fetch(`${base}/api/v1/open/epod/sign/${this.token}/capture`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    consent_id: this.consented ? 'web-component' : '',
+                    consent_id: consentId,
                     signature_data: this.signatureData || undefined,
                     proof_type: 'signature'
                 })

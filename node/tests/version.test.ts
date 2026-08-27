@@ -3,6 +3,6 @@ import { VERSION } from '../src/index'
 
 describe('VERSION', () => {
   it('exports the current version', () => {
-    expect(VERSION).toBe('2.1.2')
+    expect(VERSION).toBe('2.1.4')
   })
 })

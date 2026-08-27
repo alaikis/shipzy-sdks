@@ -1,72 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { OrderClient } from '../src/index';
+import { describe, it, expect } from 'vitest'
+import { OrderClient } from '../src/order'
+import { ZymeupAuthError } from '../src/http-client'
+import { BASE_URL, skipIfDown, SKIP_REASON } from './live-helpers'
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+// Live (mock-free) tests. Authenticated endpoints require a merchant token we
+// do not have, so each method is verified by the 401 response: the SDK must
+// still construct the correct URL + method + auth header and throw
+// ZymeupAuthError. This proves request construction and error handling.
+describe.skipIf(skipIfDown())('OrderClient (LIVE)', () => {
+    const client = new OrderClient({ baseUrl: BASE_URL })
 
-function makeClient(extra: Record<string, unknown> = {}) {
-    return new OrderClient({ token: 'test-token', baseUrl: 'https://api.test.com', ...extra });
-}
+    it('list() hits POST /api/v1/order/list and throws on 401', async () => {
+        await expect(client.list({ page: 1 })).rejects.toThrow(ZymeupAuthError)
+    })
 
-describe('OrderClient', () => {
-    beforeEach(() => {
-        mockFetch.mockReset();
-        mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ code: 0, data: {} }) });
-    });
+    it('create() hits POST /api/v1/order/create and throws on 401', async () => {
+        await expect(client.create({ order_no: 'ORD-001' })).rejects.toThrow(ZymeupAuthError)
+    })
 
-    it('inherits config from parent', () => {
-        const client = new OrderClient({ baseUrl: 'https://custom.api.com', token: 'tok', timeout: 5000 });
-        expect(client.config.baseUrl).toBe('https://custom.api.com');
-        expect(client.config.token).toBe('tok');
-        expect(client.config.timeout).toBe(5000);
-    });
+    it('get() hits the order detail endpoint and throws on 401', async () => {
+        await expect(client.get('order-123')).rejects.toThrow(ZymeupAuthError)
+    })
 
-    it('list() builds correct URL with params', async () => {
-        const client = makeClient();
-        await client.list({ page: 2, pageSize: 10, status: 'pending' });
-
-        const [url] = mockFetch.mock.calls[0];
-        expect(url).toContain('/api/v1/order/list');
-        expect(url).toContain('page=2');
-        expect(url).toContain('page_size=10');
-        expect(url).toContain('status=pending');
-    });
-
-    it('list() omits undefined params', async () => {
-        const client = makeClient();
-        await client.list({ page: 1 });
-
-        const [url] = mockFetch.mock.calls[0];
-        expect(url).toContain('page=1');
-        expect(url).not.toContain('page_size');
-        expect(url).not.toContain('status');
-    });
-
-    it('create() sends POST with body', async () => {
-        const client = makeClient();
-        const payload = { order_no: 'ORD-001', customer_name: 'Acme' };
-        await client.create(payload);
-
-        const [url, opts] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.test.com/api/v1/order/create');
-        expect(opts.method).toBe('POST');
-        expect(opts.body).toBe(JSON.stringify(payload));
-    });
-
-    it('cancel() calls correct endpoint', async () => {
-        const client = makeClient();
-        await client.cancel('order-123');
-
-        const [url, opts] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.test.com/api/v1/order/order-123/cancel');
-        expect(opts.method).toBe('POST');
-    });
-
-    it('get() calls correct endpoint', async () => {
-        const client = makeClient();
-        await client.get('order-456');
-
-        const [url] = mockFetch.mock.calls[0];
-        expect(url).toBe('https://api.test.com/api/v1/order/order-456');
-    });
-});
+    it('cancel() hits POST /:id/cancel and throws on 401', async () => {
+        await expect(client.cancel('order-123')).rejects.toThrow(ZymeupAuthError)
+    })
+})

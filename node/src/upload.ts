@@ -31,11 +31,11 @@ export class UploadClient extends HttpClient {
     async uploadFile(endpoint: string, file: File): Promise<ApiResult<{ url: string }>> {
         const formData = new FormData();
         formData.append('file', file);
-        const resp = await fetch(`${this.config.baseUrl}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${this.config.token}` },
-            body: formData,
-        });
-        return resp.json();
+        // Route through HttpClient.request so non-ok responses throw
+        // (ZymeupAuthError on 401, ZymeupError otherwise) and the auth
+        // header / retries / interceptors are applied consistently.
+        // The upload endpoint returns the standard ApiResult envelope
+        // ({ code, data: { url } }), so request<T> is typed as ApiResult.
+        return this.request<ApiResult<{ url: string }>>(endpoint, 'POST', formData, true)
     }
 }

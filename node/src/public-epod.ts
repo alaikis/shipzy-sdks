@@ -1,9 +1,12 @@
 import { DEFAULT_CONFIG } from './http-client';
-import type { ApiResult } from './index';
 
 // ============ Types ============
+// NOTE: the public EPOD endpoints return RAW objects (not the { code, data }
+// ApiResult envelope used by authenticated endpoints). See
+// public_epod_controller.go SignDetail / SignConsent / SignCapture.
 
 export interface PublicSignDetail {
+    epod_id: string;
     tracking_no: string;
     recipient_name: string;
     delivery_address_summary: string;
@@ -24,7 +27,6 @@ export interface PublicConsentResponse {
 export interface PublicCaptureResponse {
     evidence_hash: string;
     status: string;
-    hash_locked: boolean;
 }
 
 // ============ Client ============
@@ -32,6 +34,8 @@ export interface PublicCaptureResponse {
 /**
  * PublicEpodClient provides access to public EPOD signing endpoints.
  * These endpoints use token-based auth (sign_token) and do not require API keys.
+ *
+ * Responses are returned unwrapped (raw object), matching the public controller.
  */
 export class PublicEpodClient {
     private baseUrl: string;
@@ -40,19 +44,19 @@ export class PublicEpodClient {
         this.baseUrl = baseUrl.replace(/\/$/, '');
     }
 
-    async getSignDetail(signToken: string): Promise<ApiResult<PublicSignDetail>> {
+    async getSignDetail(signToken: string): Promise<PublicSignDetail> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
     }
 
-    async getPolicy(signToken: string, lang = 'en'): Promise<ApiResult<any>> {
+    async getPolicy(signToken: string, lang = 'en'): Promise<any> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/policy?lang=${lang}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
     }
 
-    async recordConsent(signToken: string, consentTypes: string[], policyVersionHash: string): Promise<ApiResult<PublicConsentResponse>> {
+    async recordConsent(signToken: string, consentTypes: string[], policyVersionHash: string): Promise<PublicConsentResponse> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/consent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -62,7 +66,7 @@ export class PublicEpodClient {
         return response.json();
     }
 
-    async captureSignature(signToken: string, consentId: string, signatureData: string, proofType = 'signature'): Promise<ApiResult<PublicCaptureResponse>> {
+    async captureSignature(signToken: string, consentId: string, signatureData: string, proofType = 'signature'): Promise<PublicCaptureResponse> {
         const response = await fetch(`${this.baseUrl}/api/v1/open/epod/sign/${signToken}/capture`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
