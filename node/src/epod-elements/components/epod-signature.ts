@@ -35,6 +35,10 @@ export class EpodSignatureComponent extends EpodBaseComponent {
     private canvasEl: HTMLCanvasElement | null = null;
     private signatureData: string = '';
     private consented = false;
+    private drawing = false;
+    private lastX = 0;
+    private lastY = 0;
+    private drawingEventsBound = false;
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         super.attributeChangedCallback(name, oldValue, newValue);
@@ -123,6 +127,99 @@ export class EpodSignatureComponent extends EpodBaseComponent {
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
         }
+    }
+
+    private attachDrawingEvents() {
+        if (!this.canvasEl || this.drawingEventsBound) return;
+        this.drawingEventsBound = true;
+
+        const canvas = this.canvasEl;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const getPos = (clientX: number, clientY: number) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / (rect.width || 1);
+            const scaleY = canvas.height / (rect.height || 1);
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY,
+            };
+        };
+
+        const start = (clientX: number, clientY: number) => {
+            const { x, y } = getPos(clientX, clientY);
+            this.drawing = true;
+            this.lastX = x;
+            this.lastY = y;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        };
+
+        const move = (clientX: number, clientY: number) => {
+            if (!this.drawing) return;
+            const { x, y } = getPos(clientX, clientY);
+            ctx.beginPath();
+            ctx.moveTo(this.lastX, this.lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            this.lastX = x;
+            this.lastY = y;
+        };
+
+        const stop = () => {
+            this.drawing = false;
+        };
+
+        canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+            e.preventDefault();
+            canvas.setPointerCapture(e.pointerId);
+            start(e.clientX, e.clientY);
+        });
+        canvas.addEventListener('pointermove', (e: PointerEvent) => {
+            if (!this.drawing) return;
+            e.preventDefault();
+            move(e.clientX, e.clientY);
+        });
+        canvas.addEventListener('pointerup', (e: PointerEvent) => {
+            e.preventDefault();
+            stop();
+        });
+        canvas.addEventListener('pointercancel', () => stop());
+        canvas.addEventListener('pointerleave', () => stop());
+
+        canvas.addEventListener('mousedown', (e: MouseEvent) => {
+            e.preventDefault();
+            start(e.clientX, e.clientY);
+        });
+        canvas.addEventListener('mousemove', (e: MouseEvent) => {
+            if (!this.drawing) return;
+            e.preventDefault();
+            move(e.clientX, e.clientY);
+        });
+        canvas.addEventListener('mouseup', () => stop());
+        canvas.addEventListener('mouseleave', () => stop());
+
+        canvas.addEventListener('touchstart', (e: TouchEvent) => {
+            e.preventDefault();
+            const t = e.touches[0];
+            if (t) start(t.clientX, t.clientY);
+        }, { passive: false });
+        canvas.addEventListener('touchmove', (e: TouchEvent) => {
+            if (!this.drawing) return;
+            e.preventDefault();
+            const t = e.touches[0];
+            if (t) move(t.clientX, t.clientY);
+        }, { passive: false });
+        canvas.addEventListener('touchend', (e: TouchEvent) => {
+            e.preventDefault();
+            stop();
+        }, { passive: false });
+        canvas.addEventListener('touchcancel', () => stop());
     }
 
     private captureSignature(): string {
@@ -222,6 +319,7 @@ export class EpodSignatureComponent extends EpodBaseComponent {
             wrapper.appendChild(canvasWrapper);
 
             this.initCanvas();
+            this.attachDrawingEvents();
 
             const clearBtn = this.createElement('button', 'epod-btn epod-btn-outline');
             clearBtn.textContent = 'Clear';
