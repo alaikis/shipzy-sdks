@@ -557,7 +557,17 @@ module Zymeup
     end
   end
 
-  class CarrierClient < HttpClient
+    # Carrier client.
+    #
+    # Carrier hash keys (all optional, returned by list/get):
+    #   id, name, code, carrier_type, tracking_type, business_type, state,
+    #   description, website, contact_email, contact_phone, created_at, updated_at,
+    #   tracking_provider, tracking_slug
+    #
+    # tracking_provider / tracking_slug — Change: tracking-carrier-fallback
+    #   tracking_provider: 'self' (self-built module, no fallback) | 'track123' | 'tracking51'
+    #   tracking_slug:     courier identifier inside the provider namespace; required when provider != 'self'
+    class CarrierClient < HttpClient
     def list(page: 1, page_size: 25, state: nil)
       q = build_query({ page: page, page_size: page_size, state: state }.compact)
       request("/api/v1/carrier/list#{q}")

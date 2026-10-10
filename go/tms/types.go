@@ -42,8 +42,11 @@ type Carrier struct {
 	Name             string
 	Services         []Service
 	TrackingURL      string
-	TrackingProvider string
-	TrackingSlug     string
+	// TrackingProvider / TrackingSlug — Change: tracking-carrier-fallback
+	// provider: self（自建模块，不走兜底）| track123 | tracking51（聚合器兜底）
+	// slug: provider 命名空间内的 courier 标识，provider != self 时必填
+	TrackingProvider string `json:"tracking_provider"`
+	TrackingSlug     string `json:"tracking_slug"`
 }
 
 type Service struct {
