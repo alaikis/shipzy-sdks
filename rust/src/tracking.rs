@@ -18,6 +18,14 @@ pub struct TrackingEvent {
     #[serde(rename = "event_type")]
     pub event_type: String,
     pub location: Option<TrackingLocation>,
+    #[serde(rename = "data_source")]
+    pub data_source: Option<String>,
+    #[serde(rename = "last_scrape_at")]
+    pub last_scrape_at: Option<String>,
+    #[serde(rename = "scrape_status")]
+    pub scrape_status: Option<String>,
+    #[serde(rename = "raw_status_text")]
+    pub raw_status_text: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -47,6 +55,14 @@ pub struct TrackingDetail {
     pub origin: Option<TrackingAddress>,
     pub destination: Option<TrackingAddress>,
     pub events: Vec<TrackingEvent>,
+    #[serde(rename = "data_source")]
+    pub data_source: Option<String>,
+    #[serde(rename = "last_scrape_at")]
+    pub last_scrape_at: Option<String>,
+    #[serde(rename = "scrape_status")]
+    pub scrape_status: Option<String>,
+    #[serde(rename = "raw_status_text")]
+    pub raw_status_text: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -60,6 +76,12 @@ pub struct TrackingListItem {
     pub latest_event: Option<String>,
     #[serde(rename = "updated_at")]
     pub updated_at: String,
+    #[serde(rename = "data_source")]
+    pub data_source: Option<String>,
+    #[serde(rename = "last_scrape_at")]
+    pub last_scrape_at: Option<String>,
+    #[serde(rename = "scrape_status")]
+    pub scrape_status: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]

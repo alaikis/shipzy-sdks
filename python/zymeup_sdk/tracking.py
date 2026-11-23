@@ -9,7 +9,14 @@ class TrackingClient:
         self._client = client
 
     def get(self, tracking_no: str) -> Dict[str, Any]:
-        """Get public tracking detail by tracking number"""
+        """Get public tracking detail by tracking number
+
+        Response is passed through as-is. When the tracking is sourced from
+        non-API scraping, the payload may include optional fields:
+        data_source (api|scrape), last_scrape_at, scrape_status
+        (ok|throttled|cooldown|blocked|aggregator_fallback), raw_status_text.
+        All optional fields are absent for API-sourced tracking (backward compatible).
+        """
         return self._client.request("GET", f"/api/v1/tracking/{tracking_no}")
 
     def stream(self, tracking_no: str) -> Dict[str, Any]:
@@ -21,7 +28,12 @@ class TrackingClient:
         return self._client.request("POST", f"/api/v1/tracking/{tracking_no}/events", json=data)
 
     def list(self, page: int = 1, page_size: int = 25, status: Optional[str] = None) -> Dict[str, Any]:
-        """List merchant's tracking subscriptions"""
+        """List merchant's tracking subscriptions
+
+        Response is passed through as-is. List items may include optional
+        non-API scrape metadata: data_source, last_scrape_at, scrape_status
+        (absent for API-sourced tracking; backward compatible).
+        """
         params = {"page": page, "page_size": page_size}
         if status:
             params["status"] = status

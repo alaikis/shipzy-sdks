@@ -32,6 +32,12 @@ type TrackingResult struct {
 	Origin            *AddressSummary `json:"origin,omitempty"`
 	Destination       *AddressSummary `json:"destination,omitempty"`
 	Events            []TrackingEvent `json:"events"`
+
+	// Non-API scrape metadata (optional, backward compatible; omitted when absent).
+	DataSource   string `json:"data_source,omitempty"`
+	LastScrapeAt string `json:"last_scrape_at,omitempty"`
+	ScrapeStatus string `json:"scrape_status,omitempty"`
+	RawStatusText string `json:"raw_status_text,omitempty"`
 }
 
 // AddressSummary holds origin/destination location info.
@@ -49,6 +55,12 @@ type TrackingEvent struct {
 	EventTime string         `json:"event_time"`
 	EventType string         `json:"event_type"`
 	Location  *EventLocation `json:"location,omitempty"`
+
+	// Non-API scrape metadata (optional, backward compatible; omitted when absent).
+	DataSource   string `json:"data_source,omitempty"`
+	LastScrapeAt string `json:"last_scrape_at,omitempty"`
+	ScrapeStatus string `json:"scrape_status,omitempty"`
+	RawStatusText string `json:"raw_status_text,omitempty"`
 }
 
 // EventLocation holds GPS coordinates and label for a tracking event.
@@ -73,6 +85,11 @@ type TrackingListItem struct {
 	CarrierName string `json:"carrier_name"`
 	LatestEvent string `json:"latest_event,omitempty"`
 	UpdatedAt   string `json:"updated_at"`
+
+	// Non-API scrape metadata (optional, backward compatible; omitted when absent).
+	DataSource   string `json:"data_source,omitempty"`
+	LastScrapeAt string `json:"last_scrape_at,omitempty"`
+	ScrapeStatus string `json:"scrape_status,omitempty"`
 }
 
 // TrackingListResponse is the paginated list of tracking records.

@@ -13,6 +13,19 @@ namespace Shipzy.Sdk.Models
         public string EventType { get; set; }
 
         public TrackingLocation Location { get; set; }
+
+        // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+        [JsonPropertyName("data_source")]
+        public string DataSource { get; set; }
+
+        [JsonPropertyName("last_scrape_at")]
+        public string LastScrapeAt { get; set; }
+
+        [JsonPropertyName("scrape_status")]
+        public string ScrapeStatus { get; set; }
+
+        [JsonPropertyName("raw_status_text")]
+        public string RawStatusText { get; set; }
     }
 
     public class TrackingLocation
@@ -44,6 +57,19 @@ namespace Shipzy.Sdk.Models
         public TrackingAddress Origin { get; set; }
         public TrackingAddress Destination { get; set; }
         public List<TrackingEvent> Events { get; set; }
+
+        // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+        [JsonPropertyName("data_source")]
+        public string DataSource { get; set; }
+
+        [JsonPropertyName("last_scrape_at")]
+        public string LastScrapeAt { get; set; }
+
+        [JsonPropertyName("scrape_status")]
+        public string ScrapeStatus { get; set; }
+
+        [JsonPropertyName("raw_status_text")]
+        public string RawStatusText { get; set; }
     }
 
     public class TrackingAddress
@@ -75,6 +101,16 @@ namespace Shipzy.Sdk.Models
 
         [JsonPropertyName("updated_at")]
         public string UpdatedAt { get; set; }
+
+        // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+        [JsonPropertyName("data_source")]
+        public string DataSource { get; set; }
+
+        [JsonPropertyName("last_scrape_at")]
+        public string LastScrapeAt { get; set; }
+
+        [JsonPropertyName("scrape_status")]
+        public string ScrapeStatus { get; set; }
     }
 
     public class TrackingListResponse

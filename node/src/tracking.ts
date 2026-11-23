@@ -13,6 +13,11 @@ export interface TrackingEvent {
         lng: number;
         label?: string;
     };
+    // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+    data_source?: string;
+    last_scrape_at?: string;
+    scrape_status?: string;
+    raw_status_text?: string;
 }
 
 export interface TrackingDetail {
@@ -37,6 +42,11 @@ export interface TrackingDetail {
         longitude?: number;
     };
     events: TrackingEvent[];
+    // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+    data_source?: string;
+    last_scrape_at?: string;
+    scrape_status?: string;
+    raw_status_text?: string;
 }
 
 export interface TrackingListItem {
@@ -45,6 +55,10 @@ export interface TrackingListItem {
     carrier_name: string;
     latest_event?: string;
     updated_at: string;
+    // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+    data_source?: string;
+    last_scrape_at?: string;
+    scrape_status?: string;
 }
 
 export interface TrackingListResponse {

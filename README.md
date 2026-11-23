@@ -55,6 +55,19 @@ Official multi-language SDK for the [Shipzy](https://shipzy.me) logistics platfo
 | Validation | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Web Components | ✅ | — | — | — | — | — | — | — | — | — | — |
 
+## Tracking — Non-API Carriers (Scrape Sources)
+
+Shipzy aggregates tracking data from both **API-connected carriers** and **non-API carriers** (e.g. EMS, EUB and major domestic Chinese carriers) collected via carrier-site scraping. Tracking responses may include the following **optional** fields for scrape-sourced records:
+
+| Field | Type | Values / Notes |
+|-------|------|----------------|
+| `data_source` | string | `api` (aggregator) \| `scrape` (carrier-site scraping) |
+| `last_scrape_at` | string | ISO 8601 time of the latest scrape |
+| `scrape_status` | string | `ok` \| `throttled` \| `cooldown` \| `blocked` \| `aggregator_fallback` |
+| `raw_status_text` | string | Raw carrier status text (detail/events; useful for display fallback & debugging) |
+
+All fields are optional: they are **absent** for API-sourced tracking, so existing consumers keep working unchanged (backward compatible). See `openspec/changes/tracking-contract-update/design.md` for the SDK-side contract.
+
 ## Quick Start
 
 ### Node.js

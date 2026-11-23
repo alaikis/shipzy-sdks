@@ -512,10 +512,16 @@ module Zymeup
 
   class TrackingClient < HttpClient
     def detail(tracking_no)
+      # Response Hash is passed through as-is. Non-API scraped tracking may
+      # include optional fields: data_source (api|scrape), last_scrape_at,
+      # scrape_status (ok|throttled|cooldown|blocked|aggregator_fallback),
+      # raw_status_text. Absent for API-sourced tracking (backward compatible).
       request("/api/v1/tracking/#{URI.encode_www_form_component(tracking_no)}")
     end
 
     def list(page: 1, page_size: 25, status: nil, tracking_no: nil)
+      # List items may include optional scrape metadata: data_source,
+      # last_scrape_at, scrape_status (absent for API-sourced tracking).
       q = build_query({ page: page, page_size: page_size, status: status, tracking_no: tracking_no }.compact)
       base_path = @config.carrier? ? '/api/v1/carrier/tracking/list' : '/api/v1/merchant/tracking/list'
       request("#{base_path}#{q}")

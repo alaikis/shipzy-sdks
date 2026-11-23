@@ -22,6 +22,10 @@ class TrackingClient
 
     public function get(string $id): array
     {
+        // Response array is passed through as-is. Non-API scraped tracking may
+        // include optional fields: data_source (api|scrape), last_scrape_at,
+        // scrape_status (ok|throttled|cooldown|blocked|aggregator_fallback),
+        // raw_status_text. Absent for API-sourced tracking (backward compatible).
         return $this->client->request('GET', "/api/v1/carrier/tracking/{$id}");
     }
 

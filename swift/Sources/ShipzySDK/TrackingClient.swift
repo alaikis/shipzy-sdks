@@ -7,12 +7,21 @@ public struct TrackingEvent: Codable, Sendable {
     public let eventTime: String
     public let eventType: String
     public let location: TrackingLocation?
+    // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+    public let dataSource: String?
+    public let lastScrapeAt: String?
+    public let scrapeStatus: String?
+    public let rawStatusText: String?
 
     enum CodingKeys: String, CodingKey {
         case remark
         case eventTime = "event_time"
         case eventType = "event_type"
         case location
+        case dataSource = "data_source"
+        case lastScrapeAt = "last_scrape_at"
+        case scrapeStatus = "scrape_status"
+        case rawStatusText = "raw_status_text"
     }
 }
 
@@ -32,6 +41,11 @@ public struct TrackingDetail: Codable, Sendable {
     public let origin: TrackingAddress?
     public let destination: TrackingAddress?
     public let events: [TrackingEvent]
+    // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+    public let dataSource: String?
+    public let lastScrapeAt: String?
+    public let scrapeStatus: String?
+    public let rawStatusText: String?
 
     enum CodingKeys: String, CodingKey {
         case trackingNo = "tracking_no"
@@ -43,6 +57,10 @@ public struct TrackingDetail: Codable, Sendable {
         case origin
         case destination
         case events
+        case dataSource = "data_source"
+        case lastScrapeAt = "last_scrape_at"
+        case scrapeStatus = "scrape_status"
+        case rawStatusText = "raw_status_text"
     }
 }
 
@@ -68,6 +86,10 @@ public struct TrackingListItem: Codable, Sendable {
     public let carrierName: String?
     public let latestEvent: String?
     public let updatedAt: String
+    // Non-API scrape metadata (optional, backward compatible; omitted when absent).
+    public let dataSource: String?
+    public let lastScrapeAt: String?
+    public let scrapeStatus: String?
 
     enum CodingKeys: String, CodingKey {
         case trackingNo = "tracking_no"
@@ -75,6 +97,9 @@ public struct TrackingListItem: Codable, Sendable {
         case carrierName = "carrier_name"
         case latestEvent = "latest_event"
         case updatedAt = "updated_at"
+        case dataSource = "data_source"
+        case lastScrapeAt = "last_scrape_at"
+        case scrapeStatus = "scrape_status"
     }
 }
 
