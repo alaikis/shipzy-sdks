@@ -47,6 +47,8 @@ export interface TrackingDetail {
     last_scrape_at?: string;
     scrape_status?: string;
     raw_status_text?: string;
+    // EU compliance — public view (Change: eu-tracking-compliance-integration; omitted when absent).
+    eu_compliance?: TrackingEuCompliancePublic;
 }
 
 export interface TrackingListItem {
@@ -66,6 +68,88 @@ export interface TrackingListResponse {
     total: number;
     page: number;
     page_size: number;
+}
+
+// ============ EU Compliance (Change: eu-tracking-compliance-integration) ============
+
+/**
+ * EU compliance fields — public view (carbon + customs only).
+ * GDPR governance fields (data_retention_until / lawful_basis / personal_data_minimized)
+ * are NEVER present in the public endpoint response.
+ */
+export interface TrackingEuCompliancePublic {
+    co2e_kg?: number;
+    co2e_methodology?: string;      // glec | env_freight | carrier_reported | estimated
+    co2e_calculated_at?: string;
+    co2e_source_provider?: string;  // transporeon | carrier_reported | ship24 | platform
+    customs_mrn?: string;
+    customs_eori?: string;
+    transit_document_type?: string; // t1 | t2 | t2f | tir | none
+    transit_document_ref?: string;
+    ens_declaration_ref?: string;
+}
+
+/** EU compliance fields — merchant/admin view (full, incl. GDPR governance group). */
+export interface TrackingEuCompliance extends TrackingEuCompliancePublic {
+    data_retention_until?: string;
+    lawful_basis?: string;          // contract | legal_obligation | legitimate_interest | consent
+    personal_data_minimized?: boolean;
+    compliance_metadata?: string;
+}
+
+/** Order-level CO2e summary (GET /order/:id/co2e-summary). */
+export interface OrderCo2eSummary {
+    order_id: string;
+    total_co2e_kg: number;
+    by_methodology: Record<string, number>;
+    coverage: { with_value: number; total: number };
+}
+
+// ============ Signer Identity (eID) / eSeal / Evidence (Change: base-full-process) ============
+
+/** eIDAS LoA (assurance level). */
+export type AssuranceLevel = 'low' | 'substantial' | 'high';
+
+/** Identity verification method. */
+export type IdentityMethod = 'eid' | 'wallet' | 'video' | 'otp';
+
+/** Identity verification status. */
+export type IdentityStatus = 'pending' | 'verified' | 'failed';
+
+/** Signer identity verification record (platform stores the verification
+ *  reference only — raw identity data stays at the QTSP). */
+export interface IdentityVerification {
+    verification_id: string;
+    provider: string; // signicat_id | itsme | bankid | eu_digital_wallet(draft)
+    method: IdentityMethod;
+    assurance_level: AssuranceLevel;
+    /** HMAC pseudonymous signer reference (irreversible) */
+    signer_ref: string;
+    qtsp_verification_ref?: string;
+    verified_at?: string;
+    status: IdentityStatus;
+}
+
+/** QTSP identity verification session (async: redirect/QR). */
+export interface IdentityVerifySession {
+    verification_id: string;
+    redirect_url?: string;
+    qr_code_payload?: string;
+    status: string;
+    expires_at?: string;
+}
+
+/** Signer type for eSeal (legal entity) signing. */
+export type SignerType = 'person' | 'legal_entity';
+
+/** Evidence bundle schema version (M1/M2 dual-read). */
+export type EvidenceSchemaVersion = 'phase-b-m1-v1' | 'm2-v1';
+
+/** Platform self-hosted RFC3161 TSA timestamp token. */
+export interface TSATimestamp {
+    token: string;
+    time: string;
+    root_hash?: string;
 }
 
 // ============ Client ============

@@ -1,6 +1,7 @@
 import { HttpClient } from './http-client';
 import type { ShipzyConfig } from './http-client';
 import type { ApiResult } from './index';
+import type { OrderCo2eSummary } from './tracking';
 
 // ============ Types ============
 
@@ -61,5 +62,10 @@ export class OrderClient extends HttpClient {
 
     async cancel(id: string): Promise<ApiResult<OrderDetail>> {
         return this.request(`/api/v1/order/${id}/cancel`, 'POST', {});
+    }
+
+    /** Order-level CO2e summary (Change: eu-tracking-compliance-integration). */
+    async co2eSummary(id: string): Promise<ApiResult<OrderCo2eSummary>> {
+        return this.request(`/api/v1/order/${id}/co2e-summary`);
     }
 }

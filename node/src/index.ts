@@ -22,6 +22,7 @@ export interface ApiResult<T> {
 import { EpodClient } from './epod';
 import { PublicEpodClient } from './public-epod';
 import { OrderClient } from './order';
+import { TSAClient } from './tsa';
 import { EcmrClient } from './ecmr';
 import { AddressClient } from './address';
 import { CarrierEpodClient } from './carrier-epod';
@@ -54,6 +55,8 @@ export { PublicEpodClient } from './public-epod';
 export type { PublicSignDetail, PublicConsentResponse, PublicCaptureResponse } from './public-epod';
 
 export { OrderClient } from './order';
+export { TSAClient } from './tsa';
+export type { TSACertificates } from './tsa';
 export type { OrderListItem, OrderListResponse, OrderDetail } from './order';
 
 export { EcmrClient } from './ecmr';
@@ -74,6 +77,7 @@ export const VERSION = '2.1.5';
 export class ZymeupClient {
     public epod: EpodClient;
     public order: OrderClient;
+    public tsa: TSAClient;
     public ecmr: EcmrClient;
     public address: AddressClient;
     public carrierEpod: CarrierEpodClient;
@@ -103,6 +107,7 @@ export class ZymeupClient {
         this.role = this.config.role || 'merchant';
         this.epod = new EpodClient(this.config);
         this.order = new OrderClient(this.config);
+        this.tsa = new TSAClient(this.config);
         this.ecmr = new EcmrClient(this.config);
         this.address = new AddressClient(this.config);
         this.carrierEpod = new CarrierEpodClient(this.config);
@@ -207,7 +212,7 @@ export type { AgeVerificationEvent, AgeVerificationMethod, AgeMinAge, CreateAgeV
 export type { Provider, ProviderActivation, Capability, ActivateRequest } from './activation';
 export type { Product, ProductStatus, ProductCategory, CreateProductRequest, ProductListResponse } from './product';
 export type { TenantAddress, TenantAddressListResponse } from './merchant-address';
-export type { TrackingEvent, TrackingDetail, TrackingListItem, TrackingListResponse } from './tracking';
+export type { TrackingEvent, TrackingDetail, TrackingListItem, TrackingListResponse, TrackingEuCompliancePublic, TrackingEuCompliance, OrderCo2eSummary, IdentityVerification, IdentityVerifySession, AssuranceLevel, IdentityMethod, IdentityStatus, SignerType, EvidenceSchemaVersion, TSATimestamp } from './tracking';
 export type { Invoice, Subscription } from './finance';
 export type { CustomsDeclaration, CreateCustomsRequest, ComplianceCheckRequest, ComplianceCheckResult, CountryRequirements } from './compliance';
 export type {

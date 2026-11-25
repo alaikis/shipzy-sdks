@@ -63,6 +63,94 @@ pub struct TrackingDetail {
     pub scrape_status: Option<String>,
     #[serde(rename = "raw_status_text")]
     pub raw_status_text: Option<String>,
+    /// EU compliance — public view (Change: eu-tracking-compliance-integration; omitted when absent).
+    /// GDPR governance fields are NEVER present on the public endpoint.
+    #[serde(rename = "eu_compliance")]
+    pub eu_compliance: Option<TrackingEuCompliancePublic>,
+}
+
+/// EU compliance fields — public view (carbon + customs only).
+/// Change: eu-tracking-compliance-integration
+#[derive(Debug, serde::Deserialize)]
+pub struct TrackingEuCompliancePublic {
+    #[serde(rename = "co2e_kg")]
+    pub co2e_kg: Option<f64>,
+    #[serde(rename = "co2e_methodology")]
+    pub co2e_methodology: Option<String>, // glec | env_freight | carrier_reported | estimated
+    #[serde(rename = "co2e_calculated_at")]
+    pub co2e_calculated_at: Option<String>,
+    #[serde(rename = "co2e_source_provider")]
+    pub co2e_source_provider: Option<String>, // transporeon | carrier_reported | ship24 | platform
+    #[serde(rename = "customs_mrn")]
+    pub customs_mrn: Option<String>,
+    #[serde(rename = "customs_eori")]
+    pub customs_eori: Option<String>,
+    #[serde(rename = "transit_document_type")]
+    pub transit_document_type: Option<String>, // t1 | t2 | t2f | tir | none
+    #[serde(rename = "transit_document_ref")]
+    pub transit_document_ref: Option<String>,
+    #[serde(rename = "ens_declaration_ref")]
+    pub ens_declaration_ref: Option<String>,
+}
+
+/// Order-level CO2e summary (GET /order/:id/co2e-summary).
+/// Change: eu-tracking-compliance-integration
+#[derive(Debug, serde::Deserialize)]
+pub struct OrderCo2eSummary {
+    pub order_id: String,
+    pub total_co2e_kg: f64,
+    pub by_methodology: std::collections::HashMap<String, i64>,
+    pub coverage: OrderCo2eCoverage,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct OrderCo2eCoverage {
+    pub with_value: i64,
+    pub total: i64,
+}
+
+// ============ Signer Identity (eID) / eSeal / Evidence (Change: base-full-process) ============
+
+/// QTSP identity verification record. The platform stores the verification
+/// reference only; raw identity data stays at the QTSP.
+#[derive(Debug, serde::Deserialize)]
+pub struct IdentityVerification {
+    #[serde(rename = "verification_id")]
+    pub verification_id: String,
+    pub provider: String, // signicat_id | itsme | bankid | eu_digital_wallet(draft)
+    pub method: String,   // eid | wallet | video | otp
+    #[serde(rename = "assurance_level")]
+    pub assurance_level: String, // low | substantial | high
+    #[serde(rename = "signer_ref")]
+    pub signer_ref: String, // HMAC pseudonymous reference (irreversible)
+    #[serde(rename = "qtsp_verification_ref")]
+    pub qtsp_verification_ref: Option<String>,
+    #[serde(rename = "verified_at")]
+    pub verified_at: Option<String>,
+    pub status: String, // pending | verified | failed
+}
+
+/// Async QTSP identity verification session (redirect/QR).
+#[derive(Debug, serde::Deserialize)]
+pub struct IdentityVerifySession {
+    #[serde(rename = "verification_id")]
+    pub verification_id: String,
+    #[serde(rename = "redirect_url")]
+    pub redirect_url: Option<String>,
+    #[serde(rename = "qr_code_payload")]
+    pub qr_code_payload: Option<String>,
+    pub status: String,
+    #[serde(rename = "expires_at")]
+    pub expires_at: Option<String>,
+}
+
+/// Platform self-hosted RFC3161 timestamp token.
+#[derive(Debug, serde::Deserialize)]
+pub struct TSATimestamp {
+    pub token: String,
+    pub time: String,
+    #[serde(rename = "root_hash")]
+    pub root_hash: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]

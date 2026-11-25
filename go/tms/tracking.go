@@ -34,10 +34,87 @@ type TrackingResult struct {
 	Events            []TrackingEvent `json:"events"`
 
 	// Non-API scrape metadata (optional, backward compatible; omitted when absent).
-	DataSource   string `json:"data_source,omitempty"`
+	DataSource    string `json:"data_source,omitempty"`
 	LastScrapeAt string `json:"last_scrape_at,omitempty"`
 	ScrapeStatus string `json:"scrape_status,omitempty"`
 	RawStatusText string `json:"raw_status_text,omitempty"`
+
+	// EU compliance — public view (Change: eu-tracking-compliance-integration; omitted when absent).
+	EuCompliance *TrackingEuCompliancePublic `json:"eu_compliance,omitempty"`
+}
+
+// TrackingEuCompliancePublic is the EU compliance field set exposed on the public
+// endpoint (carbon + customs only). The GDPR governance group
+// (data_retention_until / lawful_basis / personal_data_minimized) is NEVER included.
+type TrackingEuCompliancePublic struct {
+	Co2eKg              *float64 `json:"co2e_kg,omitempty"`
+	Co2eMethodology     string   `json:"co2e_methodology,omitempty"`      // glec | env_freight | carrier_reported | estimated
+	Co2eCalculatedAt    string   `json:"co2e_calculated_at,omitempty"`
+	Co2eSourceProvider  string   `json:"co2e_source_provider,omitempty"`  // transporeon | carrier_reported | ship24 | platform
+	CustomsMrn          string   `json:"customs_mrn,omitempty"`
+	CustomsEori         string   `json:"customs_eori,omitempty"`
+	TransitDocumentType string   `json:"transit_document_type,omitempty"` // t1 | t2 | t2f | tir | none
+	TransitDocumentRef  string   `json:"transit_document_ref,omitempty"`
+	EnsDeclarationRef   string   `json:"ens_declaration_ref,omitempty"`
+}
+
+// OrderCo2eSummary is the order-level carbon aggregation (GET /order/:id/co2e-summary).
+type OrderCo2eSummary struct {
+	OrderID       string         `json:"order_id"`
+	TotalCo2eKg   float64        `json:"total_co2e_kg"`
+	ByMethodology map[string]int `json:"by_methodology"`
+	Coverage      struct {
+		WithValue int `json:"with_value"`
+		Total     int `json:"total"`
+	} `json:"coverage"`
+}
+
+// ============ Signer Identity (eID) / eSeal / Evidence (Change: base-full-process) ============
+
+// AssuranceLevel is the eIDAS LoA.
+type AssuranceLevel string
+
+const (
+	AssuranceLevelLow         AssuranceLevel = "low"
+	AssuranceLevelSubstantial AssuranceLevel = "substantial"
+	AssuranceLevelHigh        AssuranceLevel = "high"
+)
+
+// IdentityVerification is a QTSP identity verification record.
+// The platform stores the verification reference only; raw identity data stays at the QTSP.
+type IdentityVerification struct {
+	VerificationID      string `json:"verification_id"`
+	Provider            string `json:"provider"` // signicat_id | itsme | bankid | eu_digital_wallet(draft)
+	Method              string `json:"method"`   // eid | wallet | video | otp
+	AssuranceLevel      string `json:"assurance_level"`
+	SignerRef           string `json:"signer_ref"` // HMAC pseudonymous reference (irreversible)
+	QTSPVerificationRef string `json:"qtsp_verification_ref,omitempty"`
+	VerifiedAt          string `json:"verified_at,omitempty"`
+	Status              string `json:"status"` // pending | verified | failed
+}
+
+// IdentityVerifySession is the async QTSP identity session (redirect/QR).
+type IdentityVerifySession struct {
+	VerificationID string `json:"verification_id"`
+	RedirectURL    string `json:"redirect_url,omitempty"`
+	QRCodePayload  string `json:"qr_code_payload,omitempty"`
+	Status         string `json:"status"`
+	ExpiresAt      string `json:"expires_at,omitempty"`
+}
+
+// SignerType for eSeal (legal entity) signing.
+type SignerType string
+
+const (
+	SignerTypePerson      SignerType = "person"
+	SignerTypeLegalEntity SignerType = "legal_entity"
+)
+
+// TSATimestamp is a platform self-hosted RFC3161 timestamp token.
+type TSATimestamp struct {
+	Token    string `json:"token"`
+	Time     string `json:"time"`
+	RootHash string `json:"root_hash,omitempty"`
 }
 
 // AddressSummary holds origin/destination location info.

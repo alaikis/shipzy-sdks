@@ -4,7 +4,15 @@ import type { ApiResult } from './index';
 
 // ============ Types ============
 
-export type Capability = 'signature' | 'timestamp' | 'identity';
+// Change: eu-tracking-compliance-integration — 新增 tracking_aggregator / carbon_emissions 能力
+// Change: base-full-process — 新增 signer_identity 能力
+export type Capability =
+    | 'signature'
+    | 'timestamp'
+    | 'identity'
+    | 'tracking_aggregator'
+    | 'carbon_emissions'
+    | 'signer_identity';
 
 export interface Provider {
     slug: string;
